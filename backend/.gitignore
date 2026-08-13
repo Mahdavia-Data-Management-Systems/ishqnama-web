@@ -1,0 +1,23 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+
+## SQLite database output
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+## IDE
+.vs/
+.vscode/
+*.swp
+
+## OS
+Thumbs.db
+.DS_Store
+
+## Build
+publish/
