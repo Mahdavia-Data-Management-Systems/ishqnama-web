@@ -6,36 +6,13 @@ on:
     paths-ignore:
       - ".claude/**"
   workflow_dispatch:
-    inputs:
-      deploy-prod:
-        description: "Deploy to production"
-        type: boolean
-        default: false
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      infra: ${{ steps.filter.outputs.infra }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            backend:
-              - 'backend/**'
-            infra:
-              - 'infra/**'
   build:
-    needs: changes
-    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -59,8 +36,6 @@ jobs:
         run: docker build -t ishqnama-api:ci .
 
   infra-dev:
-    needs: changes
-    if: needs.changes.outputs.infra == 'true'
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev
@@ -68,7 +43,6 @@ jobs:
 
   infra-prod:
     needs: infra-dev
-    if: inputs.deploy-prod == true
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: prod
