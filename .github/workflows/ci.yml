@@ -49,8 +49,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api:ci .
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api:ci
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api:dev .
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api:dev
 
   infra-dev:
     uses: ./.github/workflows/deploy-infra.yml
