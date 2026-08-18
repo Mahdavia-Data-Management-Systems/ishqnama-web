@@ -36,7 +36,7 @@ resource "azurerm_resource_group" "this" {
 #   containers = [
 #     {
 #       name   = "api"
-#       image  = "${var.container_registry_server}/ishqnama-api:latest"
+#       image  = "${var.container_registry_server}/ishqnama-api:ci"
 #       cpu    = 0.25
 #       memory = "0.5Gi"
 #       env = [
@@ -75,7 +75,7 @@ resource "azurerm_resource_group" "this" {
 #     },
 #     {
 #       name   = "db"
-#       image  = "${var.container_registry_server}/ishqnama-db:latest"
+#       image  = "${var.container_registry_server}/ishqnama-db:dev"
 #       cpu    = 0.25
 #       memory = "0.5Gi"
 #       env = [
