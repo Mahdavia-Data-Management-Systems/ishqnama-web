@@ -14,10 +14,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
-    azapi = {
-      source  = "azure/azapi"
-      version = "~> 2.0"
-    }
     tfe = {
       source  = "hashicorp/tfe"
       version = "~> 0.62"

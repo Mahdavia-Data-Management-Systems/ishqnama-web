@@ -19,6 +19,12 @@ variable "sku_tier" {
   default     = "Free"
 }
 
+variable "app_settings" {
+  description = "App settings for the Static Web App"
+  type        = map(string)
+  default     = {}
+}
+
 variable "tags" {
   description = "Tags to apply to the resource"
   type        = map(string)
