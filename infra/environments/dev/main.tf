@@ -22,16 +22,10 @@ module "swa" {
   tags                = local.tags
 }
 
-resource "time_sleep" "wait_for_rbac" {
-  depends_on      = [module.keyvault]
-  create_duration = "60s"
-}
-
 resource "azurerm_key_vault_secret" "swa_deployment_token" {
   name         = "swa-deployment-token"
   value        = module.swa.api_key
   key_vault_id = module.keyvault.id
-  depends_on   = [time_sleep.wait_for_rbac]
 }
 
 
