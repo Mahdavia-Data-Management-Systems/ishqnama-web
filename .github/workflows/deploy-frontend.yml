@@ -32,15 +32,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Azure Login
         uses: Azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Fetch SWA app settings
+        id: swa-settings
+        run: |
+          SETTINGS=$(az staticwebapp appsettings list \
+            --name "swa-ishqnama-${{ inputs.environment }}" \
+            --resource-group "rg-ishqnama-${{ inputs.environment }}" \
+            --query "properties" -o json)
+          echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_CLIENT_ID')" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_ENTRA_AUTHORITY=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_AUTHORITY')" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_ENTRA_REDIRECT_URI=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_REDIRECT_URI')" >> "$GITHUB_ENV"
+        working-directory: .
+
+      - name: Build
+        run: npm run build
 
       - name: Retrieve SWA deployment token from Key Vault
         id: get-token
