@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AuthProvider from "@/components/auth-provider";
+import AuthButton from "@/components/auth-button";
 
 export const metadata: Metadata = {
   title: "Ishqnama",
@@ -13,7 +15,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <header>
+            <AuthButton />
+          </header>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }
