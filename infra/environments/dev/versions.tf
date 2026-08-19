@@ -25,6 +25,8 @@ terraform {
   }
 }
 
+provider "tfe" {}
+
 provider "azurerm" {
   features {
     key_vault {
