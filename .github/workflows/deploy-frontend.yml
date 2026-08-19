@@ -42,13 +42,16 @@ jobs:
       - name: Fetch SWA app settings
         id: swa-settings
         run: |
+          SWA_NAME="swa-ishqnama-${{ inputs.environment }}"
+          RG_NAME="rg-ishqnama-${{ inputs.environment }}"
           SETTINGS=$(az staticwebapp appsettings list \
-            --name "swa-ishqnama-${{ inputs.environment }}" \
-            --resource-group "rg-ishqnama-${{ inputs.environment }}" \
+            --name "$SWA_NAME" \
+            --resource-group "$RG_NAME" \
             --query "properties" -o json)
           echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_CLIENT_ID')" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_ENTRA_AUTHORITY=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_AUTHORITY')" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_ENTRA_REDIRECT_URI=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_REDIRECT_URI')" >> "$GITHUB_ENV"
+          HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RG_NAME" --query "defaultHostname" -o tsv)
+          echo "NEXT_PUBLIC_ENTRA_REDIRECT_URI=https://$HOSTNAME" >> "$GITHUB_ENV"
         working-directory: .
 
       - name: Build
