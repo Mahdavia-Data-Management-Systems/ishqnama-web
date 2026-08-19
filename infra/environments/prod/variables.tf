@@ -9,6 +9,12 @@ variable "location" {
   default     = "centralindia"
 }
 
+variable "swa_location" {
+  description = "Azure region for Static Web App (may differ from main location)"
+  type        = string
+  default     = "eastasia"
+}
+
 # variable "container_registry_server" {
 #   description = "Container registry server URL"
 #   type        = string

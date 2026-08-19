@@ -3,3 +3,33 @@ resource "azurerm_resource_group" "this" {
   location = var.location
   tags     = local.tags
 }
+
+module "keyvault" {
+  source = "../../modules/keyvault"
+
+  name                = "kv-ishqnama-prod"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  tags                = local.tags
+}
+
+module "swa" {
+  source = "../../modules/swa"
+
+  name                = "swa-ishqnama-prod"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.swa_location
+  tags                = local.tags
+}
+
+resource "time_sleep" "wait_for_rbac" {
+  depends_on      = [module.keyvault]
+  create_duration = "60s"
+}
+
+resource "azurerm_key_vault_secret" "swa_deployment_token" {
+  name         = "swa-deployment-token"
+  value        = module.swa.api_key
+  key_vault_id = module.keyvault.id
+  depends_on   = [time_sleep.wait_for_rbac]
+}

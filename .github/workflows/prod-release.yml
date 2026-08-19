@@ -13,3 +13,9 @@ jobs:
     with:
       environment: prod
     secrets: inherit
+
+  deploy-frontend-prod:
+    needs: infra-prod
+    uses: ./.github/workflows/deploy-frontend.yml
+    with:
+      environment: prod
