@@ -22,10 +22,10 @@ module "swa" {
   tags                = local.tags
 }
 
-resource "azapi_resource_action" "swa_appsettings" {
-  type        = "Microsoft.Web/staticSites/config@2024-04-01"
-  resource_id = "${module.swa.id}/config/appsettings"
-  method      = "PUT"
+resource "azapi_resource" "swa_appsettings" {
+  type      = "Microsoft.Web/staticSites/config@2024-04-01"
+  name      = "appsettings"
+  parent_id = module.swa.id
 
   body = {
     properties = {
