@@ -5,5 +5,5 @@ resource "azurerm_static_web_app" "this" {
   sku_tier            = var.sku_tier
   sku_size            = var.sku_tier
 
-  tags                = var.tags
+  tags = var.tags
 }
