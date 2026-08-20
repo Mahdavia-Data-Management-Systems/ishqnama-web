@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   destroy:
+    name: Terraform Destroy
     if: inputs.confirm == 'DESTROY'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
@@ -52,6 +53,7 @@ jobs:
         run: terraform apply -destroy -auto-approve -input=false
 
   rejected:
+    name: Confirmation Failed
     if: inputs.confirm != 'DESTROY'
     runs-on: ubuntu-latest
     steps:

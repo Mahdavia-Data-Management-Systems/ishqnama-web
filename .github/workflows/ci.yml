@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   build:
+    name: Build Backend
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -33,12 +34,14 @@ jobs:
         run: dotnet build --no-restore -c Release
 
   infra-dev:
+    name: Deploy Infrastructure (Dev)
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev
     secrets: inherit
 
   deploy-frontend-dev:
+    name: Deploy Frontend (Dev)
     needs: infra-dev
     uses: ./.github/workflows/deploy-frontend.yml
     with:

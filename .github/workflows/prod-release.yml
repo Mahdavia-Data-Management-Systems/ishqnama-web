@@ -9,12 +9,14 @@ permissions:
 
 jobs:
   infra-prod:
+    name: Deploy Infrastructure (Prod)
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: prod
     secrets: inherit
 
   deploy-frontend-prod:
+    name: Deploy Frontend (Prod)
     needs: infra-prod
     uses: ./.github/workflows/deploy-frontend.yml
     with:
