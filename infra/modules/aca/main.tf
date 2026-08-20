@@ -23,6 +23,7 @@ resource "azurerm_container_app_environment" "this" {
   log_analytics_workspace_id     = azurerm_log_analytics_workspace.this.id
   infrastructure_subnet_id       = var.infrastructure_subnet_id
   internal_load_balancer_enabled = var.internal_load_balancer_enabled
+  public_network_access          = var.internal_load_balancer_enabled ? "Disabled" : "Enabled"
   tags                           = var.tags
 }
 
