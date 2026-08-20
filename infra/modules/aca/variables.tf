@@ -19,12 +19,13 @@ variable "container_app_name" {
 }
 
 variable "container_registry" {
-  description = "Container registry configuration"
+  description = "Container registry configuration (optional for public images)"
   type = object({
     server   = string
     username = string
     password = string
   })
+  default   = null
   sensitive = true
 }
 
@@ -92,6 +93,7 @@ variable "ingress" {
   type = object({
     external       = bool
     target_port    = number
+    exposed_port   = optional(number)
     transport      = optional(string, "auto")
     allow_insecure = optional(bool, false)
   })

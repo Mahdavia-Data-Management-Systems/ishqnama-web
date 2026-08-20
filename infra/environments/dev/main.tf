@@ -33,131 +33,75 @@ resource "azurerm_key_vault_secret" "swa_deployment_token" {
   key_vault_id = module.keyvault.id
 }
 
+resource "random_password" "postgres" {
+  length  = 32
+  special = false
+}
 
-# module "aca" {
-#   source = "../../modules/aca"
+resource "azurerm_key_vault_secret" "postgres_password" {
+  name         = "postgres-password"
+  value        = random_password.postgres.result
+  key_vault_id = module.keyvault.id
+}
 
-#   resource_group_name = azurerm_resource_group.this.name
-#   location            = azurerm_resource_group.this.location
-#   environment_name    = "ishqnama-dev"
-#   container_app_name  = "ishqnama-dev"
+module "aca" {
+  source = "../../modules/aca"
 
-#   container_registry = {
-#     server   = var.container_registry_server
-#     username = var.container_registry_username
-#     password = var.container_registry_password
-#   }
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  environment_name    = "ishqnama-db-dev"
+  container_app_name  = "ishqnama-db-dev"
 
-#   secrets = [
-#     {
-#       name  = "postgres-password"
-#       value = var.postgres_password
-#     }
-#   ]
+  container_registry = {
+    server   = "docker.io"
+    username = var.docker_hub_username
+    password = var.docker_hub_password
+  }
 
-#   volumes = [
-#     {
-#       name         = "pg-data"
-#       storage_type = "EmptyDir"
-#     }
-#   ]
+  containers = [
+    {
+      name   = "db"
+      image  = "docker.io/noormahdi/ishqnama-db:dev"
+      cpu    = 0.25
+      memory = "0.5Gi"
+      env = [
+        { name = "POSTGRES_DB", value = "ishqnama" },
+        { name = "POSTGRES_USER", value = "postgres" },
+        { name = "POSTGRES_PASSWORD", secret_name = "postgres-password" }
+      ]
+    }
+  ]
 
-#   containers = [
-#     {
-#       name   = "api"
-#       image  = "${var.container_registry_server}/ishqnama-api:dev"
-#       cpu    = 0.25
-#       memory = "0.5Gi"
-#       env = [
-#         {
-#           name  = "ASPNETCORE_URLS"
-#           value = "http://+:8000"
-#         },
-#         {
-#           name  = "ConnectionStrings__QuranDb"
-#           value = "Host=localhost;Port=5432;Database=ishqnama;Username=postgres;Password=${var.postgres_password}"
-#         }
-#       ]
-#       ports = [{ port = 8000 }]
-#       probes = [
-#         {
-#           type      = "Startup"
-#           transport = "HTTP"
-#           port      = 8000
-#           path      = "/healthz"
-#           interval_seconds  = 5
-#           timeout           = 2
-#           failure_threshold = 10
-#           initial_delay     = 5
-#         },
-#         {
-#           type      = "Liveness"
-#           transport = "HTTP"
-#           port      = 8000
-#           path      = "/healthz"
-#           interval_seconds  = 30
-#           timeout           = 2
-#           failure_threshold = 3
-#           initial_delay     = 0
-#         }
-#       ]
-#     },
-#     {
-#       name   = "db"
-#       image  = "${var.container_registry_server}/ishqnama-db:dev"
-#       cpu    = 0.25
-#       memory = "0.5Gi"
-#       env = [
-#         {
-#           name  = "POSTGRES_DB"
-#           value = "ishqnama"
-#         },
-#         {
-#           name  = "POSTGRES_USER"
-#           value = "postgres"
-#         },
-#         {
-#           name        = "POSTGRES_PASSWORD"
-#           secret_name = "postgres-password"
-#         }
-#       ]
-#       ports = [{ port = 5432 }]
-#       probes = [
-#         {
-#           type      = "Startup"
-#           transport = "TCP"
-#           port      = 5432
-#           interval_seconds  = 5
-#           timeout           = 2
-#           failure_threshold = 10
-#           initial_delay     = 10
-#         },
-#         {
-#           type      = "Liveness"
-#           transport = "TCP"
-#           port      = 5432
-#           interval_seconds  = 30
-#           timeout           = 2
-#           failure_threshold = 3
-#           initial_delay     = 0
-#         }
-#       ]
-#       volume_mounts = [
-#         {
-#           name = "pg-data"
-#           path = "/var/lib/postgresql/data"
-#         }
-#       ]
-#     }
-#   ]
+  secrets = [
+    { name = "postgres-password", value = random_password.postgres.result }
+  ]
 
-#   ingress = {
-#     external    = true
-#     target_port = 8000
-#   }
+  ingress = {
+    external     = true
+    target_port  = 5432
+    exposed_port = 5432
+    transport    = "tcp"
+  }
 
-#   min_replicas = 0
-#   max_replicas = 1
+  min_replicas = 0
+  max_replicas = 1
 
-#   tags = local.tags
-# }
+  tags = local.tags
+}
+
+module "functions" {
+  source = "../../modules/functions"
+
+  name                 = "func-ishqnama-dev"
+  resource_group_name  = azurerm_resource_group.this.name
+  location             = azurerm_resource_group.this.location
+  storage_account_name = "stishqnamadev"
+  tags                 = local.tags
+
+  connection_string = "Host=${module.aca.container_app_fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
+
+  cors_allowed_origins = [
+    "https://${module.swa.default_host_name}",
+    "http://localhost:3000"
+  ]
+}

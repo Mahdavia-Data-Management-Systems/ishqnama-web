@@ -15,27 +15,16 @@ variable "swa_location" {
   default     = "eastasia"
 }
 
-# variable "container_registry_server" {
-#   description = "Container registry server URL"
-#   type        = string
-# }
+variable "docker_hub_username" {
+  description = "Docker Hub username"
+  type        = string
+}
 
-# variable "container_registry_username" {
-#   description = "Container registry username"
-#   type        = string
-# }
-
-# variable "container_registry_password" {
-#   description = "Container registry password"
-#   type        = string
-#   sensitive   = true
-# }
-
-# variable "postgres_password" {
-#   description = "Password for the PostgreSQL database"
-#   type        = string
-#   sensitive   = true
-# }
+variable "docker_hub_password" {
+  description = "Docker Hub password/token"
+  type        = string
+  sensitive   = true
+}
 
 locals {
   tags = {

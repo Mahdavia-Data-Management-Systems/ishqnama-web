@@ -28,6 +28,8 @@ jobs:
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
       TFE_TOKEN: ${{ secrets.TF_API_TOKEN }}
       TF_VAR_azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_docker_hub_username: ${{ vars.DOCKERHUB_USERNAME }}
+      TF_VAR_docker_hub_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4

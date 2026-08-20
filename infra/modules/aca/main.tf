@@ -31,15 +31,21 @@ resource "azurerm_container_app" "this" {
   revision_mode                = var.revision_mode
   tags                         = var.tags
 
-  registry {
-    server               = var.container_registry.server
-    username             = var.container_registry.username
-    password_secret_name = "registry-password"
+  dynamic "registry" {
+    for_each = var.container_registry != null ? [var.container_registry] : []
+    content {
+      server               = registry.value.server
+      username             = registry.value.username
+      password_secret_name = "registry-password"
+    }
   }
 
-  secret {
-    name  = "registry-password"
-    value = var.container_registry.password
+  dynamic "secret" {
+    for_each = var.container_registry != null ? [var.container_registry] : []
+    content {
+      name  = "registry-password"
+      value = secret.value.password
+    }
   }
 
   dynamic "secret" {
@@ -135,6 +141,7 @@ resource "azurerm_container_app" "this" {
       external_enabled = ingress.value.external
       target_port      = ingress.value.target_port
       transport        = ingress.value.transport
+      exposed_port     = ingress.value.exposed_port
 
       traffic_weight {
         latest_revision = true
