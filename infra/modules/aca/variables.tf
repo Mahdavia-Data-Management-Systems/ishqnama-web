@@ -135,6 +135,17 @@ variable "internal_load_balancer_enabled" {
   default     = false
 }
 
+variable "public_network_access" {
+  description = "Whether the ACA environment is accessible from public networks"
+  type        = string
+  default     = "Enabled"
+
+  validation {
+    condition     = contains(["Enabled", "Disabled"], var.public_network_access)
+    error_message = "public_network_access must be 'Enabled' or 'Disabled'."
+  }
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
