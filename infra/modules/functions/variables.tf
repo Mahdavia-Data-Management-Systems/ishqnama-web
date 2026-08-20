@@ -41,6 +41,12 @@ variable "app_settings" {
   default     = {}
 }
 
+variable "virtual_network_subnet_id" {
+  description = "Subnet ID for Function App VNet integration (outbound traffic)"
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

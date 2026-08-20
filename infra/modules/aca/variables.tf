@@ -123,6 +123,18 @@ variable "revision_mode" {
   }
 }
 
+variable "infrastructure_subnet_id" {
+  description = "Subnet ID for the ACA environment (enables VNet integration)"
+  type        = string
+  default     = null
+}
+
+variable "internal_load_balancer_enabled" {
+  description = "Whether the ACA environment uses an internal load balancer (no public IP)"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
