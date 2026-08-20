@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ishqnama is a read-only .NET 10 API serving Quranic data (verses, translations, tafseer) in Arabic, English, Urdu, and Hindi. The API connects to an external PostgreSQL database (schema and data owned by the `database/` project). No mutations — just a data translation layer using Clean Architecture with Azure Functions as the presentation layer.
+Ishqnama is a read-only .NET 9 API serving Quranic data (verses, translations, tafseer) in Arabic, English, Urdu, and Hindi. The API connects to an external PostgreSQL database (schema and data owned by the `database/` project). No mutations — just a data translation layer using Clean Architecture with Azure Functions as the presentation layer.
 
 ## Build & Run Commands
 
@@ -19,7 +19,7 @@ cd src/Ishqnama.Functions && func start
 podman run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
 ```
 
-SDK pinned to **10.0.300** via `global.json`.
+SDK pinned to **9.0.300** via `global.json`.
 
 ## Architecture
 

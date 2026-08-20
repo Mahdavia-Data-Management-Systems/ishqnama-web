@@ -27,7 +27,7 @@ public sealed class QuranReadOnlyRepository(QuranDbContext db) : IQuranReadOnlyR
 
         return await db.Chapters
             .OrderBy(c => c.ChapterNumber)
-            .Select(c => c.ToDto())
+            .Select(c => c.ToDto(null))
             .ToListAsync();
     }
 
