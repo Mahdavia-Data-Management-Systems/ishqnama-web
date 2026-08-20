@@ -19,5 +19,8 @@ data/*.db-wal
 Thumbs.db
 .DS_Store
 
+## Azure Functions
+local.settings.json
+
 ## Build
 publish/

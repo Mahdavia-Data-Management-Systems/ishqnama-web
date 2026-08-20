@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Ishqnama.Api/Ishqnama.Api.csproj" />
+    <Project Path="src/Ishqnama.Domain/Ishqnama.Domain.csproj" />
+    <Project Path="src/Ishqnama.Application/Ishqnama.Application.csproj" />
+    <Project Path="src/Ishqnama.Infrastructure/Ishqnama.Infrastructure.csproj" />
+    <Project Path="src/Ishqnama.Functions/Ishqnama.Functions.csproj" />
   </Folder>
 </Solution>
