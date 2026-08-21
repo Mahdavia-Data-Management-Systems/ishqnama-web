@@ -86,8 +86,8 @@ module "aca" {
     {
       name   = "db"
       image  = "docker.io/noormahdi/ishqnama-db:dev"
-      cpu    = 0.1
-      memory = "0.1Gi"
+      cpu    = 0.25
+      memory = "0.5Gi"
       env = [
         { name = "POSTGRES_DB", value = "ishqnama" },
         { name = "POSTGRES_USER", value = "postgres" },
