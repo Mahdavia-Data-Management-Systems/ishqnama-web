@@ -134,6 +134,26 @@ variable "public_network_access" {
   }
 }
 
+variable "infrastructure_subnet_id" {
+  description = "Subnet ID for the ACA environment (required for TCP ingress / workload profiles)"
+  type        = string
+  default     = null
+}
+
+variable "workload_profiles" {
+  description = "Workload profiles for the ACA environment"
+  type = list(object({
+    name                  = string
+    workload_profile_type = string
+  }))
+  default = [
+    {
+      name                  = "Consumption"
+      workload_profile_type = "Consumption"
+    }
+  ]
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

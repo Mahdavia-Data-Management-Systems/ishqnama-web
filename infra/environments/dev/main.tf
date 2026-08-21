@@ -44,13 +44,37 @@ resource "azurerm_key_vault_secret" "postgres_password" {
   key_vault_id = module.keyvault.id
 }
 
+resource "azurerm_virtual_network" "this" {
+  name                = "vnet-ishqnama-dev"
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  address_space       = ["10.0.0.0/16"]
+  tags                = local.tags
+}
+
+resource "azurerm_subnet" "aca" {
+  name                 = "snet-aca"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.0.0/23"]
+
+  delegation {
+    name = "aca"
+    service_delegation {
+      name    = "Microsoft.App/environments"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+    }
+  }
+}
+
 module "aca" {
   source = "../../modules/aca"
 
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  environment_name    = "ishqnama-db-dev"
-  container_app_name  = "ishqnama-db-dev"
+  resource_group_name      = azurerm_resource_group.this.name
+  location                 = azurerm_resource_group.this.location
+  environment_name         = "ishqnama-db-dev"
+  container_app_name       = "ishqnama-db-dev"
+  infrastructure_subnet_id = azurerm_subnet.aca.id
 
   container_registry = {
     server   = "docker.io"
@@ -77,7 +101,7 @@ module "aca" {
   ]
 
   ingress = {
-    external     = false
+    external     = true
     target_port  = 5432
     exposed_port = 5432
     transport    = "tcp"
