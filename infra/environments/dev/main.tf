@@ -86,8 +86,8 @@ module "aca" {
     {
       name   = "db"
       image  = "docker.io/noormahdi/ishqnama-db:dev"
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu    = 0.1
+      memory = "0.1Gi"
       env = [
         { name = "POSTGRES_DB", value = "ishqnama" },
         { name = "POSTGRES_USER", value = "postgres" },
@@ -107,7 +107,7 @@ module "aca" {
     transport    = "tcp"
   }
 
-  min_replicas = 0
+  min_replicas = 1
   max_replicas = 1
 
   tags = local.tags
