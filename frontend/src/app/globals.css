@@ -1,3 +1,5 @@
+@import "./ornaments.css";
+
 /* ── Local Fonts ── */
 @font-face {
   font-family: 'Jameel Noori Nastaleeq';
@@ -34,11 +36,11 @@
 /* ── Design Tokens ── */
 :root {
   /* Colors – Surface */
-  --surface-page: #F0F3EA;
+  --surface-page: #EDF5ED;
   --surface-card: #FFFFFF;
   --surface-chrome: #004446;
-  --surface-chrome-deep: #0B2B2C;
-  --surface-overlay: rgba(11, 43, 44, 0.55);
+  --surface-chrome-deep: #00292B;
+  --surface-overlay: rgba(0, 41, 43, 0.55);
   --surface-selection: #FBF3D0;
 
   /* Colors – Text */
@@ -59,11 +61,12 @@
   --teal-primary: #004446;
   --teal-hover: #003234;
   --teal-press: #002526;
+  --teal-accent: #107E8D;
   --makki: #8A7A1E;
   --madani: #004446;
 
   /* Gradient */
-  --gradient-splash: linear-gradient(135deg, #004446 0%, #0B2B2C 100%);
+  --gradient-splash: linear-gradient(135deg, #004446 0%, #00292B 100%);
 
   /* Typography – Families */
   --font-display: var(--font-eb-garamond), 'Noto Serif', Georgia, serif;
@@ -95,7 +98,8 @@
   --leading-snug: 1.3;
   --leading-normal: 1.5;
   --leading-relaxed: 1.65;
-  --leading-scripture: 2.0;
+  --leading-arabic: 2.15;
+  --leading-urdu: 2.35;
 
   /* Spacing */
   --space-1: 0.25rem;   /* 4px */
@@ -128,6 +132,10 @@
   --duration-slow: 350ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* Ornament */
+  --ornament-gold: rgba(190, 170, 48, 0.08);
+  --ornament-gold-strong: rgba(190, 170, 48, 0.10);
 
   /* Layout */
   --max-width-page: 1140px;

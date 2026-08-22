@@ -19,7 +19,7 @@ export default function SuraHeader({
   verseCount,
 }: SuraHeaderProps) {
   return (
-    <div className={styles.header}>
+    <div className={`${styles.header} ornament-girih`}>
       <div className={styles.inner}>
         <span className={styles.number}>{number}</span>
         <div className={styles.content}>

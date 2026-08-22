@@ -1,6 +1,7 @@
 "use client";
 
 import IconButton from "@/components/ui/icon-button";
+import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import styles from "./ayah-block.module.css";
 
 export type TranslationLang = "urdu" | "hindi" | "english";
@@ -12,6 +13,7 @@ interface AyahBlockProps {
   activeLang: TranslationLang;
   isBookmarked?: boolean;
   onToggleBookmark?: () => void;
+  onShare?: () => void;
   fontScale?: number;
 }
 
@@ -22,10 +24,12 @@ export default function AyahBlock({
   activeLang,
   isBookmarked = false,
   onToggleBookmark,
-  fontScale = 0,
+  onShare,
+  fontScale = 1,
 }: AyahBlockProps) {
-  const arabicSize = 1.75 + fontScale * 0.125;
-  const translationSize = 1.5 + fontScale * 0.125;
+  const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
+  const arabicSize = Math.max(1.625, 1.75 * scale);
+  const translationSize = Math.max(1.1875, 1.5 * scale);
   const translation = translations[activeLang];
 
   const translationFontFamily =
@@ -41,13 +45,21 @@ export default function AyahBlock({
     <div className={styles.block}>
       <div className={styles.meta}>
         <span className={styles.number}>{number}</span>
-        <IconButton
-          icon={isBookmarked ? "bookmarkFilled" : "bookmark"}
-          label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
-          size="sm"
-          filled={isBookmarked}
-          onClick={onToggleBookmark}
-        />
+        <div className={styles.actions}>
+          <IconButton
+            icon="share"
+            label="Share verse"
+            size="sm"
+            onClick={onShare}
+          />
+          <IconButton
+            icon={isBookmarked ? "bookmarkFilled" : "bookmark"}
+            label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+            size="sm"
+            filled={isBookmarked}
+            onClick={onToggleBookmark}
+          />
+        </div>
       </div>
 
       <div
@@ -70,6 +82,7 @@ export default function AyahBlock({
           style={{
             fontSize: `${translationSize}rem`,
             fontFamily: translationFontFamily,
+            lineHeight: activeLang === "urdu" ? "var(--leading-urdu)" : undefined,
           }}
         >
           {translation}

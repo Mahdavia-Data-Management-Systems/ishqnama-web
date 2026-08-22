@@ -86,7 +86,7 @@ export default function SettingsSheet({
 
           <div className={styles.group}>
             <label className={styles.label}>Text size</label>
-            <FontSizeStepper value={fontScale} onChange={onFontScaleChange} />
+            <FontSizeStepper value={fontScale} onChange={onFontScaleChange} min={0} max={5} />
           </div>
 
           <div className={styles.group}>

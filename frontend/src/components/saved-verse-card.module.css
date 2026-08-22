@@ -29,14 +29,13 @@
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--gold-label);
 }
 
 .arabic {
   font-family: var(--font-arabic);
   font-size: var(--text-xl);
-  line-height: var(--leading-scripture);
+  line-height: var(--leading-arabic);
   color: var(--text-primary);
   margin-bottom: var(--space-3);
 }

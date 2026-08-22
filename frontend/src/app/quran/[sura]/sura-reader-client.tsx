@@ -9,6 +9,7 @@ import ChapterNav from "@/components/scripture/chapter-nav";
 import ReaderToolbar from "@/components/reader-toolbar";
 import SettingsSheet from "@/components/settings-sheet";
 import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
+import { DEFAULT_FONT_SIZE_INDEX } from "@/config/reader-config";
 import { suras } from "@/data/suras";
 import { fatihaVerses } from "@/data/sample-verses";
 import styles from "./page.module.css";
@@ -18,7 +19,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
 
   const [mode, setMode] = useState<ReadingMode>("verse");
   const [lang, setLang] = useState<TranslationLang>("urdu");
-  const [fontScale, setFontScale] = useState(0);
+  const [fontScale, setFontScale] = useState(DEFAULT_FONT_SIZE_INDEX);
   const [showTafseer, setShowTafseer] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
@@ -33,6 +34,19 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const verses = suraNumber === 1 ? fatihaVerses : [];
   const showBismillah = suraNumber !== 9 && suraNumber !== 1;
 
+  const handleShare = async (verseNum: number, arabicText: string) => {
+    const text = `${sura.name} ${verseNum} — ${arabicText}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {
+        /* user cancelled */
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+    }
+  };
+
   const toggleBookmark = (verseNum: number) => {
     setBookmarked((prev) => {
       const next = new Set(prev);
@@ -43,7 +57,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   };
 
   return (
-    <main className={styles.main}>
+    <main className={`${styles.main} ornament-mihrab`}>
       <SuraHeader
         number={sura.number}
         name={sura.name}
@@ -69,6 +83,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                   fontScale={fontScale}
                   isBookmarked={bookmarked.has(verse.number)}
                   onToggleBookmark={() => toggleBookmark(verse.number)}
+                  onShare={() => handleShare(verse.number, verse.arabic)}
                 />
               ))
             ) : (

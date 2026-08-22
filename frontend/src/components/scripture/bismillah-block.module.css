@@ -9,7 +9,7 @@
 .arabic {
   font-family: var(--font-arabic);
   font-size: var(--text-arabic-lg);
-  line-height: var(--leading-scripture);
+  line-height: var(--leading-arabic);
   color: var(--text-primary);
 }
 
@@ -37,7 +37,7 @@
 .translation {
   font-family: var(--font-urdu);
   font-size: var(--text-translation);
-  line-height: var(--leading-relaxed);
+  line-height: var(--leading-urdu);
   color: var(--text-tertiary);
   margin-top: var(--space-3);
 }

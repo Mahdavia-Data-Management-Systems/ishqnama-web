@@ -13,6 +13,12 @@
   margin-bottom: var(--space-4);
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .number {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
@@ -23,7 +29,7 @@
 
 .arabic {
   font-family: var(--font-arabic);
-  line-height: var(--leading-scripture);
+  line-height: var(--leading-arabic);
   color: var(--text-primary);
   text-align: right;
   margin-bottom: var(--space-4);

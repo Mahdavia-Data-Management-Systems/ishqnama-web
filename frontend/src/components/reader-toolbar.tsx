@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
+import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import styles from "./reader-toolbar.module.css";
 
 export type ReadingMode = "verse" | "continuous";
@@ -31,8 +32,8 @@ const langOptions = [
   { label: "English", value: "english" },
 ];
 
-const FONT_MIN = -3;
-const FONT_MAX = 3;
+const FONT_MIN = 0;
+const FONT_MAX = FONT_SIZE_STEPS.length - 1;
 
 export default function ReaderToolbar({
   prevSura,
@@ -45,7 +46,7 @@ export default function ReaderToolbar({
   onFontScaleChange,
   onSettingsOpen,
 }: ReaderToolbarProps) {
-  const pct = 100 + fontScale * 10;
+  const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
 
   return (
     <div className={styles.toolbar}>

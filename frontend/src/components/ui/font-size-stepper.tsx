@@ -14,8 +14,8 @@ interface FontSizeStepperProps {
 export default function FontSizeStepper({
   value,
   onChange,
-  min = -3,
-  max = 3,
+  min = 0,
+  max = 5,
   className = "",
 }: FontSizeStepperProps) {
   return (

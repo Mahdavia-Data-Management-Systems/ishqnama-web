@@ -29,7 +29,7 @@ export default function Home() {
               totalVerses={7}
             />
           ) : (
-            <div className={styles.heroCard}>
+            <div className={`${styles.heroCard} ornament-diagonal`}>
               <p className={styles.bismillah} dir="rtl" lang="ar">
                 بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
               </p>

@@ -1,0 +1,116 @@
+/* ── CSS Ornament Patterns ── */
+
+/* 1. Girih lattice — repeating linear gradients at 0/60/120° */
+.ornament-girih {
+  position: relative;
+  overflow: hidden;
+}
+
+.ornament-girih::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      var(--ornament-gold) 0px,
+      var(--ornament-gold) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      60deg,
+      var(--ornament-gold) 0px,
+      var(--ornament-gold) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      var(--ornament-gold) 0px,
+      var(--ornament-gold) 1px,
+      transparent 1px,
+      transparent 28px
+    );
+}
+
+.ornament-girih > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 2. Diagonal lattice — 45/-45° cross-hatch */
+.ornament-diagonal {
+  position: relative;
+  overflow: hidden;
+}
+
+.ornament-diagonal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      var(--ornament-gold) 0px,
+      var(--ornament-gold) 1px,
+      transparent 1px,
+      transparent 32px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      var(--ornament-gold) 0px,
+      var(--ornament-gold) 1px,
+      transparent 1px,
+      transparent 32px
+    );
+}
+
+.ornament-diagonal > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 3. Paper tint — subtle gold wash overlay */
+.ornament-paper-tint {
+  position: relative;
+}
+
+.ornament-paper-tint::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--ornament-gold-strong);
+}
+
+.ornament-paper-tint > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 4. Mihrab arch — single CSS border arch at top */
+.ornament-mihrab {
+  position: relative;
+}
+
+.ornament-mihrab::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 60vw);
+  height: 160px;
+  border: 1px solid var(--ornament-gold);
+  border-top: none;
+  border-radius: 0 0 50% 50%;
+  pointer-events: none;
+  z-index: 0;
+}

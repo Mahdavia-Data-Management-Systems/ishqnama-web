@@ -13,7 +13,7 @@
 .continuousArabic {
   font-family: var(--font-arabic);
   font-size: var(--text-arabic);
-  line-height: var(--leading-scripture);
+  line-height: var(--leading-arabic);
   color: var(--text-primary);
   text-align: right;
 }

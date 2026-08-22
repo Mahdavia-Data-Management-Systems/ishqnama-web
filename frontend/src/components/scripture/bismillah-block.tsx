@@ -7,7 +7,7 @@ interface BismillahBlockProps {
 
 export default function BismillahBlock({ showTranslation = true, className = "" }: BismillahBlockProps) {
   return (
-    <div className={`${styles.wrapper} ${className}`}>
+    <div className={`${styles.wrapper} ornament-paper-tint ${className}`}>
       <div className={styles.arabic} dir="rtl" lang="ar">
         بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
       </div>
