@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   border: none;
-  background: transparent;
+  background: var(--surface-card);
   font-family: var(--font-body);
   font-weight: 500;
   letter-spacing: normal;

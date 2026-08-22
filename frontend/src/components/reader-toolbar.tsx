@@ -49,7 +49,7 @@ export default function ReaderToolbar({
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
 
   return (
-    <div className={styles.toolbar}>
+    <div className={`${styles.toolbar} ornament-paper-tint`}>
       <div className={styles.inner}>
         <div className={styles.navSide}>
           {prevSura ? (
