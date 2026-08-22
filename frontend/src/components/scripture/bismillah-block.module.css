@@ -1,6 +1,9 @@
 .wrapper {
   text-align: center;
-  padding: var(--space-10) 0 var(--space-8);
+  padding: var(--space-10) var(--space-6) var(--space-8);
+  background: var(--gold-wash);
+  border-radius: var(--radius-md);
+  margin: var(--space-6) 0;
 }
 
 .arabic {
@@ -8,6 +11,27 @@
   font-size: var(--text-arabic-lg);
   line-height: var(--leading-scripture);
   color: var(--text-primary);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.dividerLine {
+  flex: 0 1 120px;
+  height: 1px;
+  background: var(--gold-bright);
+  opacity: 0.4;
+}
+
+.dividerGlyph {
+  color: var(--gold);
+  font-size: var(--text-sm);
+  line-height: 1;
 }
 
 .translation {

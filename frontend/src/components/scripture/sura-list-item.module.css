@@ -81,3 +81,11 @@
   color: var(--text-tertiary);
   line-height: 1.3;
 }
+
+.makki {
+  border-left: 3px solid var(--gold);
+}
+
+.madani {
+  border-left: 3px solid var(--teal-primary);
+}

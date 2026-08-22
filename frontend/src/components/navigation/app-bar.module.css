@@ -3,7 +3,7 @@
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: var(--gradient-splash);
+  background: var(--surface-chrome);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 

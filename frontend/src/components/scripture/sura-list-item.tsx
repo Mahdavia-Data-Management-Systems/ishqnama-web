@@ -20,7 +20,7 @@ export default function SuraListItem({
   verseCount,
 }: SuraListItemProps) {
   return (
-    <Link href={`/quran/${number}/`} className={styles.item}>
+    <Link href={`/quran/${number}/`} className={`${styles.item} ${revelationType === "Makki" ? styles.makki : styles.madani}`}>
       <span className={styles.number}>{number}</span>
 
       <div className={styles.info}>

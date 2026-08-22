@@ -15,6 +15,8 @@ interface ReaderToolbarProps {
   onModeChange: (mode: ReadingMode) => void;
   lang: TranslationLang;
   onLangChange: (lang: TranslationLang) => void;
+  fontScale: number;
+  onFontScaleChange: (scale: number) => void;
   onSettingsOpen: () => void;
 }
 
@@ -29,6 +31,9 @@ const langOptions = [
   { label: "English", value: "english" },
 ];
 
+const FONT_MIN = -3;
+const FONT_MAX = 3;
+
 export default function ReaderToolbar({
   prevSura,
   nextSura,
@@ -36,15 +41,20 @@ export default function ReaderToolbar({
   onModeChange,
   lang,
   onLangChange,
+  fontScale,
+  onFontScaleChange,
   onSettingsOpen,
 }: ReaderToolbarProps) {
+  const pct = 100 + fontScale * 10;
+
   return (
     <div className={styles.toolbar}>
       <div className={styles.inner}>
         <div className={styles.navSide}>
           {prevSura ? (
             <Link href={`/quran/${prevSura.number}/`} className={styles.navLink} aria-label={`Previous: ${prevSura.name}`}>
-              <Icon name="chevronLeft" size={18} />
+              <Icon name="chevronLeft" size={16} />
+              <span className={styles.navLabel}>Sura</span>
             </Link>
           ) : (
             <span className={styles.navPlaceholder} />
@@ -64,15 +74,35 @@ export default function ReaderToolbar({
             onChange={(v) => onLangChange(v as TranslationLang)}
             size="sm"
           />
+          <div className={styles.fontStepper}>
+            <button
+              onClick={() => onFontScaleChange(Math.max(FONT_MIN, fontScale - 1))}
+              disabled={fontScale <= FONT_MIN}
+              className={styles.fontBtn}
+              aria-label="Decrease font size"
+            >
+              <Icon name="minus" size={14} />
+            </button>
+            <span className={styles.fontLabel}>T {pct}%</span>
+            <button
+              onClick={() => onFontScaleChange(Math.min(FONT_MAX, fontScale + 1))}
+              disabled={fontScale >= FONT_MAX}
+              className={styles.fontBtn}
+              aria-label="Increase font size"
+            >
+              <Icon name="plus" size={14} />
+            </button>
+          </div>
         </div>
 
         <div className={styles.navSide}>
-          <button onClick={onSettingsOpen} className={styles.navLink} aria-label="Settings">
+          <button onClick={onSettingsOpen} className={styles.settingsBtn} aria-label="Settings">
             <Icon name="settings" size={18} />
           </button>
           {nextSura ? (
             <Link href={`/quran/${nextSura.number}/`} className={styles.navLink} aria-label={`Next: ${nextSura.name}`}>
-              <Icon name="chevronRight" size={18} />
+              <span className={styles.navLabel}>Sura</span>
+              <Icon name="chevronRight" size={16} />
             </Link>
           ) : (
             <span className={styles.navPlaceholder} />

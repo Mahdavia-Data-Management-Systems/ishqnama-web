@@ -1,6 +1,6 @@
 .wrapper {
   display: inline-flex;
-  background: rgba(0, 68, 70, 0.08);
+  border: 1px solid rgba(18, 49, 47, 0.2);
   border-radius: var(--radius-pill);
   padding: 3px;
 }
@@ -11,10 +11,10 @@
   justify-content: center;
   border: none;
   background: transparent;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--text-tertiary);
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -29,9 +29,9 @@
 }
 
 .active {
-  background: var(--surface-card);
-  color: var(--teal-primary);
-  box-shadow: 0 1px 2px rgba(0, 68, 70, 0.08);
+  background: var(--teal-primary);
+  color: var(--text-on-dark);
+  box-shadow: none;
 }
 
 .sm .segment {

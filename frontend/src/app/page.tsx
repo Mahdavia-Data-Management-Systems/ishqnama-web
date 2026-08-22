@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import ContinueReadingCard from "@/components/continue-reading-card";
@@ -28,13 +29,19 @@ export default function Home() {
               totalVerses={7}
             />
           ) : (
-            <div className={styles.welcome}>
-              <h1 className={styles.welcomeTitle}>
+            <div className={styles.heroCard}>
+              <p className={styles.bismillah} dir="rtl" lang="ar">
+                بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
+              </p>
+              <h1 className={styles.heroTitle}>
                 The Quran, with meaning
               </h1>
-              <p className={styles.welcomeBody}>
+              <p className={styles.heroBody}>
                 Read the Quran with Urdu, Hindi, and English translations, verse by verse or continuously.
               </p>
+              <Link href="/quran/" className={styles.heroCta}>
+                Start reading
+              </Link>
             </div>
           )}
         </section>

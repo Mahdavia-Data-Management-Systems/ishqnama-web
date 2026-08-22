@@ -113,6 +113,8 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         onModeChange={setMode}
         lang={lang}
         onLangChange={setLang}
+        fontScale={fontScale}
+        onFontScaleChange={setFontScale}
         onSettingsOpen={() => setSettingsOpen(true)}
       />
 
