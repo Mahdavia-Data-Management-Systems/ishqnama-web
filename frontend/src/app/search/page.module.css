@@ -1,0 +1,11 @@
+.main {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.searchBar {
+  margin-bottom: var(--space-6);
+}
+
+.results {
+  margin-top: var(--space-6);
+}

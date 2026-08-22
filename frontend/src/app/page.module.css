@@ -1,0 +1,39 @@
+.main {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.hero {
+  margin-bottom: var(--space-12);
+}
+
+.welcome {
+  text-align: center;
+  padding: var(--space-16) 0 var(--space-10);
+}
+
+.welcomeTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-4);
+}
+
+.welcomeBody {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: var(--leading-relaxed);
+}
+
+.section {
+  margin-bottom: var(--space-12);
+}
+
+.suraList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}

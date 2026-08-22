@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import AuthProvider from "@/components/auth-provider";
-import AuthButton from "@/components/auth-button";
+import AppBar from "@/components/navigation/app-bar";
 
 export const metadata: Metadata = {
   title: "Ishqnama",
-  description: "Ishqnama — Mahdavia Data Management System",
+  description: "Ishqnama — Quranic verses, translations and explanations",
 };
 
 export default function RootLayout({
@@ -17,9 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <header>
-            <AuthButton />
-          </header>
+          <AppBar />
           {children}
         </AuthProvider>
       </body>

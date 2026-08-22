@@ -1,0 +1,28 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.makki {
+  background: var(--gold-wash);
+  color: var(--makki);
+}
+
+.madani {
+  background: rgba(0, 68, 70, 0.1);
+  color: var(--madani);
+}
+
+.neutral {
+  background: rgba(18, 49, 47, 0.08);
+  color: var(--text-secondary);
+}

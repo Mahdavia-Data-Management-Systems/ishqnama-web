@@ -1,3 +1,154 @@
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Noto+Serif+Devanagari:wght@400;700&display=swap');
+
+/* ── Local Fonts ── */
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq';
+  src: url('/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jameel Noori Nastaleeq Kasheeda';
+  src: url('/fonts/JameelNooriNastaleeqKasheeda.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PDMS Saleem Quran';
+  src: url('/fonts/PDMSSaleemQuranFont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nafees Web Naskh';
+  src: url('/fonts/NafeesWebNaskh.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Design Tokens ── */
+:root {
+  /* Colors – Surface */
+  --surface-page: #EDF5ED;
+  --surface-card: #FFFFFF;
+  --surface-chrome: #004446;
+  --surface-chrome-deep: #0B2B2C;
+  --surface-overlay: rgba(11, 43, 44, 0.55);
+  --surface-selection: #FBF3D0;
+
+  /* Colors – Text */
+  --text-primary: #12312F;
+  --text-secondary: rgba(18, 49, 47, 0.72);
+  --text-tertiary: rgba(18, 49, 47, 0.55);
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-muted: rgba(255, 255, 255, 0.78);
+  --text-on-dark-subtle: rgba(255, 255, 255, 0.55);
+
+  /* Colors – Gold */
+  --gold: #BEAA30;
+  --gold-bright: #F7E497;
+  --gold-wash: #FBF3D0;
+  --gold-label: #8A7A1E;
+
+  /* Colors – Semantic */
+  --teal-primary: #004446;
+  --teal-hover: #003234;
+  --teal-press: #002526;
+  --makki: #8A7A1E;
+  --madani: #004446;
+
+  /* Gradient */
+  --gradient-splash: linear-gradient(135deg, #004446 0%, #0B2B2C 100%);
+
+  /* Typography – Families */
+  --font-display: 'EB Garamond', 'Noto Serif', Georgia, serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --font-arabic: 'PDMS Saleem Quran', 'Nafees Web Naskh', 'Traditional Arabic', serif;
+  --font-urdu: 'Jameel Noori Nastaleeq', 'Nafees Web Naskh', 'Urdu Typesetting', serif;
+  --font-hindi: 'Noto Serif Devanagari', serif;
+  --font-mono: 'Courier New', 'Courier', monospace;
+
+  /* Typography – Scale */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-md: 1rem;         /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.375rem;    /* 22px */
+  --text-2xl: 1.75rem;    /* 28px */
+  --text-3xl: 2.25rem;    /* 36px */
+  --text-4xl: 3rem;        /* 48px */
+
+  /* Scripture sizes */
+  --text-arabic: 1.75rem;
+  --text-arabic-lg: 2.125rem;
+  --text-urdu: 1.5rem;
+  --text-translation: 1.125rem;
+
+  /* Line heights */
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+  --leading-scripture: 2.0;
+
+  /* Spacing */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Elevation */
+  --shadow-card: 0 1px 3px rgba(0, 68, 70, 0.08), 0 1px 2px rgba(0, 68, 70, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(0, 68, 70, 0.12), 0 2px 4px rgba(0, 68, 70, 0.06);
+  --shadow-dropdown: 0 8px 24px rgba(0, 68, 70, 0.16), 0 2px 8px rgba(0, 68, 70, 0.08);
+  --shadow-modal: 0 16px 48px rgba(0, 68, 70, 0.2), 0 4px 16px rgba(0, 68, 70, 0.1);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* Layout */
+  --max-width-page: 1140px;
+  --max-width-reader: 760px;
+  --header-height: 60px;
+  --toolbar-height: 56px;
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+/* ── Base Reset ── */
 *,
 *::before,
 *::after {
@@ -6,14 +157,122 @@
   padding: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  height: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--surface-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Links ── */
+a {
+  color: var(--teal-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--teal-hover);
+}
+
+/* ── Focus ── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── Buttons ── */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ── Lists ── */
+ul, ol {
+  list-style: none;
+}
+
+/* ── Images ── */
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── Inputs ── */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ── Scripture direction helpers ── */
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* ── Hairline separators ── */
+.hairline-gold {
+  border: none;
+  height: 1px;
+  background: var(--gold-bright);
+  opacity: 0.4;
+}
+
+/* ── Press scale ── */
+.pressable {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.pressable:active {
+  transform: scale(0.985);
+}
+
+/* ── Page container ── */
+.page-container {
+  max-width: var(--max-width-page);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ── Reader container ── */
+.reader-container {
+  max-width: var(--max-width-reader);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ── Utility ── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

@@ -1,0 +1,34 @@
+.main {
+  padding-bottom: var(--toolbar-height);
+}
+
+.verses {
+  padding-bottom: var(--space-8);
+}
+
+.continuous {
+  padding: var(--space-8) 0;
+}
+
+.continuousArabic {
+  font-family: var(--font-arabic);
+  font-size: var(--text-arabic);
+  line-height: var(--leading-scripture);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.separator {
+  color: var(--gold);
+  font-size: 0.85em;
+}
+
+.placeholder {
+  padding: var(--space-16) 0;
+  text-align: center;
+}
+
+.placeholderText {
+  color: var(--text-tertiary);
+  font-size: var(--text-base);
+}

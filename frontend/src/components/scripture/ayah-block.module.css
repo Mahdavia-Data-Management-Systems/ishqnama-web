@@ -1,0 +1,42 @@
+.block {
+  padding: var(--space-8) 0;
+}
+
+.block + .block {
+  border-top: 1px solid rgba(0, 68, 70, 0.06);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.number {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+.arabic {
+  font-family: var(--font-arabic);
+  line-height: var(--leading-scripture);
+  color: var(--text-primary);
+  text-align: right;
+  margin-bottom: var(--space-4);
+  word-spacing: 0.08em;
+}
+
+.separator {
+  color: var(--gold);
+  font-size: 0.85em;
+}
+
+.translation {
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin-top: var(--space-4);
+}

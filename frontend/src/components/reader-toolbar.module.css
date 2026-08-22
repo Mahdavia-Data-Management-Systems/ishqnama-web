@@ -1,0 +1,66 @@
+.toolbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: var(--surface-chrome);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--max-width-page);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  gap: var(--space-3);
+  min-height: var(--toolbar-height);
+}
+
+.navSide {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--text-on-dark-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-on-dark);
+}
+
+.navPlaceholder {
+  width: 40px;
+  height: 40px;
+}
+
+@media (max-width: 640px) {
+  .controls {
+    gap: var(--space-2);
+  }
+}

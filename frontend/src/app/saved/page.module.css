@@ -1,0 +1,7 @@
+.main {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.content {
+  margin-top: var(--space-6);
+}

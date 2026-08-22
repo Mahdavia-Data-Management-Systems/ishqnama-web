@@ -1,0 +1,50 @@
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.iconButton:active {
+  transform: scale(0.985);
+}
+
+.sm {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
+.md {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+
+.default:hover {
+  background: rgba(0, 68, 70, 0.08);
+  color: var(--text-primary);
+}
+
+.ghost:hover {
+  background: rgba(0, 68, 70, 0.06);
+}
+
+.on-dark,
+.onDark {
+  color: var(--text-on-dark-muted);
+}
+
+.on-dark:hover,
+.onDark:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-on-dark);
+}
