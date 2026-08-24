@@ -7,21 +7,14 @@ import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import ChapterNav from "@/components/scripture/chapter-nav";
 import ReaderToolbar from "@/components/reader-toolbar";
-import SettingsSheet from "@/components/settings-sheet";
-import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
-import { DEFAULT_FONT_SIZE_INDEX } from "@/config/reader-config";
+import { useReaderSettings } from "@/context/reader-settings-context";
 import { suras } from "@/data/suras";
 import { fatihaVerses } from "@/data/sample-verses";
 import styles from "./page.module.css";
 
 export default function SuraReaderClient({ suraNumber }: { suraNumber: number }) {
   const sura = suras.find((s) => s.number === suraNumber);
-
-  const [mode, setMode] = useState<ReadingMode>("verse");
-  const [lang, setLang] = useState<TranslationLang>("urdu");
-  const [fontScale, setFontScale] = useState(DEFAULT_FONT_SIZE_INDEX);
-  const [showTafseer, setShowTafseer] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { mode, setMode, lang, setLang, fontScale, setFontScale } = useReaderSettings();
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
 
   if (!sura) {
@@ -130,20 +123,6 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         onLangChange={setLang}
         fontScale={fontScale}
         onFontScaleChange={setFontScale}
-        onSettingsOpen={() => setSettingsOpen(true)}
-      />
-
-      <SettingsSheet
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        mode={mode}
-        onModeChange={setMode}
-        lang={lang}
-        onLangChange={setLang}
-        fontScale={fontScale}
-        onFontScaleChange={setFontScale}
-        showTafseer={showTafseer}
-        onTafseerChange={setShowTafseer}
       />
     </main>
   );

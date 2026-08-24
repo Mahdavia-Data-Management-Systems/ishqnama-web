@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
+import { useReaderSettings } from "@/context/reader-settings-context";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import styles from "./reader-toolbar.module.css";
 
@@ -18,7 +19,6 @@ interface ReaderToolbarProps {
   onLangChange: (lang: TranslationLang) => void;
   fontScale: number;
   onFontScaleChange: (scale: number) => void;
-  onSettingsOpen: () => void;
 }
 
 const modeOptions = [
@@ -44,8 +44,8 @@ export default function ReaderToolbar({
   onLangChange,
   fontScale,
   onFontScaleChange,
-  onSettingsOpen,
 }: ReaderToolbarProps) {
+  const { openSettings } = useReaderSettings();
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
 
   return (
@@ -97,7 +97,7 @@ export default function ReaderToolbar({
         </div>
 
         <div className={styles.navSide}>
-          <button onClick={onSettingsOpen} className={styles.settingsBtn} aria-label="Settings">
+          <button onClick={openSettings} className={styles.settingsBtn} aria-label="Settings">
             <Icon name="settings" size={18} />
           </button>
           {nextSura ? (

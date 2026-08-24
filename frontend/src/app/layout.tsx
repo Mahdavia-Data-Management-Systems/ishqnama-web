@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { EB_Garamond, Source_Sans_3, Noto_Serif, Noto_Serif_Devanagari } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/auth-provider";
+import ReaderSettingsProvider from "@/context/reader-settings-context";
 import AppBar from "@/components/navigation/app-bar";
 import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
@@ -56,10 +57,12 @@ export default function RootLayout({
     >
       <body>
         <AuthProvider>
-          <AppBar />
-          {children}
-          <Footer />
-          <BottomNav />
+          <ReaderSettingsProvider>
+            <AppBar />
+            {children}
+            <Footer />
+            <BottomNav />
+          </ReaderSettingsProvider>
         </AuthProvider>
       </body>
     </html>

@@ -29,10 +29,16 @@
 .avatarButton {
   display: flex;
   align-items: center;
+  gap: var(--space-1);
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+}
+
+.chevron {
+  color: var(--text-on-dark-muted);
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .avatar {
@@ -64,9 +70,6 @@
 }
 
 .userInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   padding: var(--space-3);
 }
 
