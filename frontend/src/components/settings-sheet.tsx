@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
-import FontSizeStepper from "@/components/ui/font-size-stepper";
 import Switch from "@/components/ui/switch";
+import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { ReadingMode, TranslationLang } from "./reader-toolbar";
 import styles from "./settings-sheet.module.css";
 
@@ -44,6 +44,10 @@ export default function SettingsSheet({
   showTafseer,
   onTafseerChange,
 }: SettingsSheetProps) {
+  const FONT_MIN = 0;
+  const FONT_MAX = FONT_SIZE_STEPS.length - 1;
+  const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -86,7 +90,25 @@ export default function SettingsSheet({
 
           <div className={styles.group}>
             <label className={styles.label}>Text size</label>
-            <FontSizeStepper value={fontScale} onChange={onFontScaleChange} min={0} max={5} />
+            <div className={styles.fontStepper}>
+              <button
+                onClick={() => onFontScaleChange(Math.max(FONT_MIN, fontScale - 1))}
+                disabled={fontScale <= FONT_MIN}
+                className={styles.fontBtn}
+                aria-label="Decrease font size"
+              >
+                <Icon name="minus" size={14} />
+              </button>
+              <span className={styles.fontLabel}>T {pct}%</span>
+              <button
+                onClick={() => onFontScaleChange(Math.min(FONT_MAX, fontScale + 1))}
+                disabled={fontScale >= FONT_MAX}
+                className={styles.fontBtn}
+                aria-label="Increase font size"
+              >
+                <Icon name="plus" size={14} />
+              </button>
+            </div>
           </div>
 
           <div className={styles.group}>
@@ -96,6 +118,10 @@ export default function SettingsSheet({
               onChange={onTafseerChange}
             />
           </div>
+
+          <p className={styles.hint}>
+            Saved to your account when signed in, to this device otherwise.
+          </p>
         </div>
       </div>
     </div>
