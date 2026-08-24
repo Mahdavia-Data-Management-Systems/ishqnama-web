@@ -42,7 +42,7 @@ terraform apply                     # Deploy
 ```
 frontend/          Next.js 15 + React 19, static export, Azure Static Web App
 backend/           .NET 9 Azure Functions, Clean Architecture, PostgreSQL (read-only)
-infra/             Terraform modules: swa, functions, keyvault, aca
+infra/             Terraform modules: azure/ (swa, functions, keyvault, aca)
 ```
 
 ### Frontend

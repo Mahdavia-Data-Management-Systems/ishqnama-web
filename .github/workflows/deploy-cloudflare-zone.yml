@@ -1,35 +1,19 @@
-name: Deploy Infrastructure
+name: Setup ishqnama.com
 
 on:
   workflow_call:
-    inputs:
-      environment:
-        description: "Target environment (dev, prod)"
-        required: true
-        type: string
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     defaults:
       run:
-        working-directory: infra/environments/${{ inputs.environment }}
+        working-directory: infra/environments/cloudflare
     env:
-      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      ARM_USE_OIDC: true
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
-      TFE_TOKEN: ${{ secrets.TF_API_TOKEN }}
-      TF_VAR_azure_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      TF_VAR_docker_hub_username: ${{ vars.DOCKERHUB_USERNAME }}
-      TF_VAR_docker_hub_password: ${{ secrets.DOCKERHUB_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
