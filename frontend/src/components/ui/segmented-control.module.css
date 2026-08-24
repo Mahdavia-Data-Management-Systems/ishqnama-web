@@ -3,6 +3,7 @@
   border: 1px solid rgba(18, 49, 47, 0.2);
   border-radius: var(--radius-pill);
   padding: 3px;
+  background: #fff;
 }
 
 .segment {
