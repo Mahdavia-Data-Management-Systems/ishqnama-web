@@ -33,8 +33,14 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
 
+  setup-zone:
+    name: Setup ishqnama.com
+    uses: ./.github/workflows/deploy-cloudflare-zone.yml
+    secrets: inherit
+
   infra-dev:
     name: Deploy Infrastructure (Dev)
+    needs: setup-zone
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev

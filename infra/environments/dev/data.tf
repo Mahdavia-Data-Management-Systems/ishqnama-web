@@ -7,3 +7,10 @@ data "tfe_outputs" "apps-dev" {
   organization = "MDMS"
   workspace    = "apps-dev"
 }
+
+data "cloudflare_zone" "ishqnama" {
+  filter {
+    account_id = var.cloudflare_account_id
+    name       = "ishqnama.com"
+  }
+}

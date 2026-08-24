@@ -5,7 +5,7 @@ resource "azurerm_resource_group" "this" {
 }
 
 module "keyvault" {
-  source = "../../modules/keyvault"
+  source = "../../modules/azure/keyvault"
 
   name                = "kv-ishqnama-prod"
   resource_group_name = azurerm_resource_group.this.name
@@ -14,7 +14,7 @@ module "keyvault" {
 }
 
 module "swa" {
-  source = "../../modules/swa"
+  source = "../../modules/azure/swa"
 
   name                = "swa-ishqnama-prod"
   resource_group_name = azurerm_resource_group.this.name
