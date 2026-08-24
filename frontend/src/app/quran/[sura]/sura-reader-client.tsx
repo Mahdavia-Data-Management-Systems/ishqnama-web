@@ -16,6 +16,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const sura = suras.find((s) => s.number === suraNumber);
   const { mode, setMode, lang, setLang, fontScale, setFontScale } = useReaderSettings();
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
+  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
 
   if (!sura) {
     notFound();
@@ -92,7 +93,11 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
             {verses.length > 0 ? (
               <div className={styles.continuousArabic} dir="rtl" lang="ar">
                 {verses.map((verse) => (
-                  <span key={verse.number}>
+                  <span
+                    key={verse.number}
+                    className={`${styles.verseSpan} ${selectedVerse === verse.number ? styles.verseSelected : ""}`}
+                    onClick={() => setSelectedVerse(selectedVerse === verse.number ? null : verse.number)}
+                  >
                     {verse.arabic}
                     <span className={styles.separator}> &#1757; </span>
                   </span>

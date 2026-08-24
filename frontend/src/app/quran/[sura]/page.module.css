@@ -18,6 +18,16 @@
   text-align: right;
 }
 
+.verseSpan {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.verseSelected {
+  background-color: color-mix(in srgb, var(--gold) 15%, transparent);
+}
+
 .separator {
   color: var(--gold);
   font-size: 0.85em;
