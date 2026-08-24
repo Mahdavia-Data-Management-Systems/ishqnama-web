@@ -7,7 +7,9 @@ import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import ChapterNav from "@/components/scripture/chapter-nav";
 import ReaderToolbar from "@/components/reader-toolbar";
+import IconButton from "@/components/ui/icon-button";
 import { useReaderSettings } from "@/context/reader-settings-context";
+import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { suras } from "@/data/suras";
 import { fatihaVerses } from "@/data/sample-verses";
 import styles from "./page.module.css";
@@ -110,6 +112,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                 </p>
               </div>
             )}
+
           </div>
         )}
 
@@ -118,6 +121,62 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           nextSura={nextSura ? { number: nextSura.number, name: nextSura.name } : null}
         />
       </div>
+
+      {mode !== "verse" && selectedVerse != null && (() => {
+        const verse = verses.find((v) => v.number === selectedVerse);
+        if (!verse) return null;
+        const translation = verse.translations[lang];
+        const isRtl = lang === "urdu";
+        const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
+        const translationSize = Math.max(1.1875, 1.5 * scale);
+        const translationFontFamily =
+          lang === "urdu" ? "var(--font-urdu)"
+            : lang === "hindi" ? "var(--font-hindi)"
+              : "var(--font-display)";
+        return (
+          <div className={styles.versePopup}>
+            <div className={styles.popupHeader}>
+              <span className={styles.popupRef}>{suraNumber}:{verse.number}</span>
+              <div className={styles.popupActions}>
+                <IconButton
+                  icon={bookmarked.has(verse.number) ? "bookmarkFilled" : "bookmark"}
+                  label={bookmarked.has(verse.number) ? "Remove bookmark" : "Add bookmark"}
+                  size="sm"
+                  filled={bookmarked.has(verse.number)}
+                  onClick={() => toggleBookmark(verse.number)}
+                />
+                <IconButton
+                  icon="share"
+                  label="Share verse"
+                  size="sm"
+                  onClick={() => handleShare(verse.number, verse.arabic)}
+                />
+                <IconButton
+                  icon="close"
+                  label="Close"
+                  size="sm"
+                  onClick={() => setSelectedVerse(null)}
+                />
+              </div>
+            </div>
+            <hr className="hairline-gold" />
+            {translation && (
+              <div
+                className={styles.popupTranslation}
+                dir={isRtl ? "rtl" : "ltr"}
+                lang={isRtl ? "ur" : lang === "hindi" ? "hi" : "en"}
+                style={{
+                  fontSize: `${translationSize}rem`,
+                  fontFamily: translationFontFamily,
+                  lineHeight: isRtl ? "var(--leading-urdu)" : undefined,
+                }}
+              >
+                {translation}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       <ReaderToolbar
         prevSura={prevSura ? { number: prevSura.number, name: prevSura.name } : null}
