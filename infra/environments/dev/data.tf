@@ -9,8 +9,5 @@ data "tfe_outputs" "apps-dev" {
 }
 
 data "cloudflare_zone" "ishqnama" {
-  filter {
-    account_id = var.cloudflare_account_id
-    name       = "ishqnama.com"
-  }
+  name = "ishqnama.com"
 }
