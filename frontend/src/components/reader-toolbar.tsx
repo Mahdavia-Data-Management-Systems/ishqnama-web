@@ -22,14 +22,14 @@ interface ReaderToolbarProps {
 }
 
 const modeOptions = [
-  { label: "Verse by verse", value: "verse" },
-  { label: "Continuous", value: "continuous" },
+  { label: "Verse by verse", value: "verse", icon: <Icon name="listBullet" size={14} />, ariaLabel: "Verse by verse" },
+  { label: "Continuous", value: "continuous", icon: <Icon name="alignLeft" size={14} />, ariaLabel: "Continuous reading" },
 ];
 
 const langOptions = [
-  { label: "اردو", value: "urdu" },
-  { label: "हिन्दी", value: "hindi" },
-  { label: "English", value: "english" },
+  { label: "اردو", value: "urdu", shortLabel: "ار", ariaLabel: "اردو" },
+  { label: "हिन्दी", value: "hindi", shortLabel: "हि", ariaLabel: "हिन्दी" },
+  { label: "English", value: "english", shortLabel: "En", ariaLabel: "English" },
 ];
 
 const FONT_MIN = 0;

@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
 }
 
@@ -146,5 +146,28 @@
 
   .navPlaceholder {
     width: 28px;
+  }
+
+  .controls [data-seg-content="full"] {
+    display: none;
+  }
+
+  .controls [data-seg-content="icon"],
+  .controls [data-seg-content="short"] {
+    display: inline-flex;
+  }
+
+  .controls button[data-seg-has-icon] {
+    padding: 0 var(--space-2);
+  }
+
+  .fontLabel {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .fontStepper {
+    display: none;
   }
 }
