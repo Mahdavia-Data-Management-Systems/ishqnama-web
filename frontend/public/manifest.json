@@ -1,0 +1,17 @@
+{
+  "name": "Ishqnama",
+  "short_name": "Ishqnama",
+  "description": "Quranic verses, translations and explanations",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EDF5ED",
+  "theme_color": "#004446",
+  "icons": [
+    {
+      "src": "/logo-ishqnama.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
