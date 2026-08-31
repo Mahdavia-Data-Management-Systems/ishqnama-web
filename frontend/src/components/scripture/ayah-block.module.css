@@ -46,3 +46,69 @@
   color: var(--text-secondary);
   margin-top: var(--space-4);
 }
+
+.segSpan {
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.segHighlight {
+  background-color: color-mix(in srgb, var(--gold) 15%, transparent);
+}
+
+.segRef {
+  font-size: 0.7em;
+  color: var(--gold);
+  padding-inline-start: 2px;
+  font-weight: 600;
+}
+
+.tafseerSection {
+  margin-top: var(--space-4);
+}
+
+.tafseer {
+  background: rgba(0, 68, 70, 0.03);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--text-tertiary);
+}
+
+.tafseerRtl {
+  border-left: none;
+  border-right: 3px solid var(--gold);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+/* Language-specific spans inside tafseer HTML */
+.tafseer :global(span[lang="ar"]) {
+  font-family: var(--font-arabic);
+  line-height: var(--leading-arabic);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.tafseer :global(span[lang="ur"]) {
+  font-family: var(--font-urdu);
+  line-height: var(--leading-urdu);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.tafseer :global(span[lang="fa"]) {
+  font-family: var(--font-urdu);
+  line-height: var(--leading-urdu);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.tafseer :global(span[lang="en"]) {
+  font-family: var(--font-display);
+  direction: ltr;
+  unicode-bidi: isolate;
+}

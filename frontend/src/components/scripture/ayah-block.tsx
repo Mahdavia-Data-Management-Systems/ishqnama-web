@@ -1,7 +1,9 @@
 "use client";
 
+import { useRef, useState } from "react";
 import IconButton from "@/components/ui/icon-button";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
+import type { DisplaySegment } from "@/hooks/use-chapter-verses";
 import styles from "./ayah-block.module.css";
 
 export type TranslationLang = "urdu" | "hindi" | "english";
@@ -9,7 +11,9 @@ export type TranslationLang = "urdu" | "hindi" | "english";
 interface AyahBlockProps {
   number: number;
   arabic: string;
-  translations: Partial<Record<TranslationLang, string>>;
+  translations?: Partial<Record<TranslationLang, string>>;
+  segments?: DisplaySegment[];
+  showTafseer?: boolean;
   activeLang: TranslationLang;
   isBookmarked?: boolean;
   onToggleBookmark?: () => void;
@@ -21,16 +25,25 @@ export default function AyahBlock({
   number,
   arabic,
   translations,
+  segments,
+  showTafseer = false,
   activeLang,
   isBookmarked = false,
   onToggleBookmark,
   onShare,
   fontScale = 1,
 }: AyahBlockProps) {
+  const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
+  const explanationRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
   const arabicSize = Math.max(1.625, 1.75 * scale);
   const translationSize = Math.max(1.1875, 1.5 * scale);
-  const translation = translations[activeLang];
+
+  // Derive translation text: prefer segments, fall back to static translations map
+  const translation = segments
+    ? segments.map((s) => s.text).filter(Boolean).join(" ")
+    : translations?.[activeLang];
 
   const translationFontFamily =
     activeLang === "urdu"
@@ -40,6 +53,9 @@ export default function AyahBlock({
         : "var(--font-display)";
 
   const isRtl = activeLang === "urdu";
+  const langCode = activeLang === "urdu" ? "ur" : activeLang === "hindi" ? "hi" : "en";
+
+  const hasExplanations = showTafseer && segments?.some((s) => s.explanation);
 
   return (
     <div className={styles.block}>
@@ -78,14 +94,61 @@ export default function AyahBlock({
         <div
           className={styles.translation}
           dir={isRtl ? "rtl" : "ltr"}
-          lang={activeLang === "urdu" ? "ur" : activeLang === "hindi" ? "hi" : "en"}
+          lang={langCode}
           style={{
             fontSize: `${translationSize}rem`,
             fontFamily: translationFontFamily,
             lineHeight: activeLang === "urdu" ? "var(--leading-urdu)" : undefined,
           }}
         >
-          {translation}
+          {showTafseer && segments
+            ? segments.map((seg, i) =>
+                seg.text ? (
+                  <span
+                    key={i}
+                    className={`${styles.segSpan} ${highlightedSeg === i ? styles.segHighlight : ""}`}
+                    onClick={() => {
+                      const next = highlightedSeg === i ? null : i;
+                      setHighlightedSeg(next);
+                      if (next != null) {
+                        explanationRefs.current[next]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                      }
+                    }}
+                  >
+                    {seg.text}
+                    {seg.explanation && <sup className={styles.segRef}>{i + 1}</sup>}
+                    {" "}
+                  </span>
+                ) : null,
+              )
+            : translation}
+        </div>
+      )}
+
+      {hasExplanations && (
+        <div
+          className={styles.tafseerSection}
+          dir={isRtl ? "rtl" : "ltr"}
+          lang={langCode}
+          style={{
+            fontFamily: translationFontFamily,
+            lineHeight: activeLang === "urdu" ? "var(--leading-urdu)" : undefined,
+          }}
+        >
+          {segments!.map((seg, i) =>
+            seg.explanation ? (
+              <div
+                key={i}
+                ref={(el) => { explanationRefs.current[i] = el; }}
+                className={`${styles.tafseer} ${isRtl ? styles.tafseerRtl : ""} ${highlightedSeg === i ? styles.segHighlight : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
+              >
+                <sup className={styles.segRef}>{i + 1}</sup>{" "}
+                <span dangerouslySetInnerHTML={{ __html: seg.explanation }} />
+              </div>
+            ) : null,
+          )}
         </div>
       )}
     </div>
