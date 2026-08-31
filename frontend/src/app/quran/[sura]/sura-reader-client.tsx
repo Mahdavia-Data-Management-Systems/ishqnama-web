@@ -99,7 +99,12 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         ) : (
           <div className={styles.continuous}>
-            <div className={styles.continuousArabic} dir="rtl" lang="ar">
+            <div
+              className={styles.continuousArabic}
+              dir="rtl"
+              lang="ar"
+              style={{ fontSize: `${Math.max(1.625, 1.75 * ((FONT_SIZE_STEPS[fontScale] ?? 100) / 100))}rem` }}
+            >
               {verses.map((verse) => (
                 <span
                   key={verse.number}
