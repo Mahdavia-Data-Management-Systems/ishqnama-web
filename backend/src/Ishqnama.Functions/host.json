@@ -2,14 +2,7 @@
   "version": "2.0",
   "extensions": {
     "http": {
-      "routePrefix": "api",
-      "cors": {
-        "allowedOrigins": [
-          "https://your-swa-domain.azurestaticapps.net",
-          "http://localhost:3000"
-        ],
-        "supportCredentials": false
-      }
+      "routePrefix": "api"
     }
   },
   "logging": {

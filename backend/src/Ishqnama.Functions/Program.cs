@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
     {
+        builder.UseMiddleware<CorsMiddleware>();
         builder.UseMiddleware<ExceptionHandlingMiddleware>();
         builder.UseMiddleware<CacheHeaderMiddleware>();
     })
