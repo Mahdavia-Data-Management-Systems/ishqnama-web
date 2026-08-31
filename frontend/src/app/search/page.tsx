@@ -8,15 +8,14 @@ import SectionHeading from "@/components/navigation/section-heading";
 import styles from "./page.module.css";
 
 const tabOptions = [
-  { label: "All", value: "all" },
-  { label: "Chapters", value: "chapters" },
-  { label: "Verses", value: "verses" },
+  { label: "Both", value: "both" },
+  { label: "Tarjuma", value: "tarjuma" },
   { label: "Tafseer", value: "tafseer" },
 ];
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState("all");
+  const [tab, setTab] = useState("both");
 
   return (
     <main className={styles.main}>
@@ -38,8 +37,8 @@ export default function SearchPage() {
           {!query ? (
             <EmptyState
               icon="search"
-              title="Search the Quran"
-              body="Search for chapters, verses, or topics across translations and tafseer."
+              title="Search in Noor e Imaan"
+              body="Search anything across translations and tafseer."
             />
           ) : (
             <EmptyState

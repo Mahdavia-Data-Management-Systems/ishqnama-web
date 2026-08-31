@@ -14,7 +14,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
-        services.AddScoped<IQuranReadOnlyRepository, QuranReadOnlyRepository>();
+        services.AddSingleton<IQuranReadOnlyRepository, CachedQuranReadOnlyRepository>();
         return services;
     }
 }
