@@ -38,6 +38,9 @@ variable "cloudflare_account_id" {
 }
 
 locals {
+  functions_name     = "func-ishqnama-dev"
+  functions_hostname = "${local.functions_name}.azurewebsites.net"
+
   tags = {
     environment = "dev"
     project     = "ishqnama"

@@ -1,7 +1,7 @@
 module "functions" {
   source = "../../modules/azure/functions"
 
-  name                 = "func-ishqnama-dev"
+  name                 = local.functions_name
   resource_group_name  = azurerm_resource_group.this.name
   location             = azurerm_resource_group.this.location
   storage_account_name = "stishqnamadev"
