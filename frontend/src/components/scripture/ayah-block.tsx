@@ -39,6 +39,7 @@ export default function AyahBlock({
   const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
   const arabicSize = Math.max(1.625, 1.75 * scale);
   const translationSize = Math.max(1.1875, 1.5 * scale);
+  const tafseerSize = Math.max(1, 1.125 * scale);
 
   // Derive translation text: prefer segments, fall back to static translations map
   const translation = segments
@@ -141,7 +142,7 @@ export default function AyahBlock({
                 key={i}
                 ref={(el) => { explanationRefs.current[i] = el; }}
                 className={`${styles.tafseer} ${isRtl ? styles.tafseerRtl : ""} ${highlightedSeg === i ? styles.segHighlight : ""}`}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", fontSize: `${tafseerSize}rem` }}
                 onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
               >
                 <sup className={styles.segRef}>{i + 1}</sup>{" "}

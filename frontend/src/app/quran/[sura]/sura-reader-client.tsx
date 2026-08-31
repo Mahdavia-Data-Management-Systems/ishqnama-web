@@ -133,6 +133,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         const langCode = isRtl ? "ur" : lang === "hindi" ? "hi" : "en";
         const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
         const translationSize = Math.max(1.1875, 1.5 * scale);
+        const tafseerSize = Math.max(1, 1.125 * scale);
         const translationFontFamily =
           lang === "urdu" ? "var(--font-urdu)"
             : lang === "hindi" ? "var(--font-hindi)"
@@ -215,7 +216,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                       key={i}
                       ref={(el) => { popupExplanationRefs.current[i] = el; }}
                       className={`${styles.popupTafseerItem} ${isRtl ? styles.popupTafseerRtl : ""} ${highlightedSeg === i ? styles.popupSegHighlight : ""}`}
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", fontSize: `${tafseerSize}rem` }}
                       onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
                     >
                       <sup className={styles.popupSegRef}>{i + 1}</sup>{" "}
