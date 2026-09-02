@@ -144,7 +144,10 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                   }}
                 >
                   {verse.arabic}
-                  <span className={styles.separator}> &#1757; </span>
+                  <span className={styles.separator}>
+                    {" "}&#1757;{" "}
+                    <span className={styles.separatorNumber}>{verse.number}</span>
+                  </span>
                 </span>
               ))}
             </div>
