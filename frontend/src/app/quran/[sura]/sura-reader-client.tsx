@@ -12,6 +12,7 @@ import IconButton from "@/components/ui/icon-button";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
+import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
 import { getUserBookmarks, addBookmark, removeBookmark, addHistoryEntry } from "@/lib/user-api";
 import styles from "./page.module.css";
@@ -146,7 +147,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                   {verse.arabic}
                   <span className={styles.separator}>
                     {" "}&#1757;{" "}
-                    <span className={styles.separatorNumber}>{verse.number}</span>
+                    <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                   </span>
                 </span>
               ))}

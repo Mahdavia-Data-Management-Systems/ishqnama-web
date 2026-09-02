@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import IconButton from "@/components/ui/icon-button";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
+import { localizeNumber } from "@/lib/translation-map";
 import styles from "./ayah-block.module.css";
 
 export type TranslationLang = "urdu" | "hindi" | "english";
@@ -88,7 +89,7 @@ export default function AyahBlock({
         {arabic}
         <span className={styles.separator}>
           {" "}&#1757;{" "}
-          <span className={styles.separatorNumber}>{number}</span>
+          <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>
         </span>
       </div>
 
