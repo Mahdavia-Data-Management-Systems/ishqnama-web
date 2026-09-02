@@ -9,6 +9,7 @@ module "swa" {
   app_settings = {
     NEXT_PUBLIC_ENTRA_AUTHORITY = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}"
     NEXT_PUBLIC_ENTRA_CLIENT_ID = "127f0236-2b16-4f7a-9394-9a27a5fc20d2"
+    NEXT_PUBLIC_ENTRA_API_SCOPE = "api://${var.entra_api_client_id}/access_as_user"
     NEXT_PUBLIC_API_URL         = "https://${local.functions_hostname}/api"
   }
 }

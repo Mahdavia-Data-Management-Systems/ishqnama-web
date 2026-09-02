@@ -1,5 +1,7 @@
 # Clean Architecture Plan: Ishqnama Backend
 
+> **Status: IMPLEMENTED** — This migration is complete. The backend uses .NET 9 (not .NET 10 as originally planned). All layers (Domain, Application, Infrastructure, Functions) are in place. `CachedQuranReadOnlyRepository` replaced `QuranReadOnlyRepository` as the `IQuranReadOnlyRepository` implementation (singleton, loads all data into memory on first request). User data persistence (Cosmos DB, auth middleware, user data endpoints) was added on top — see `plans/user-data-persistance-plan.md`.
+
 ## Context
 
 The current backend is a single-project .NET 10 Minimal API (`Ishqnama.Api`) serving read-only Quran data from PostgreSQL. It uses OutputCache, ETag headers, and response compression, deployed as a container on Azure Container Apps.

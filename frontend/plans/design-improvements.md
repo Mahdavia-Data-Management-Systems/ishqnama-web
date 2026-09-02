@@ -1,5 +1,7 @@
 # Design Improvements Plan
 
+**Status: 9 of 10 IMPLEMENTED** — Only #10 (Page Background Warmth) remains unimplemented.
+
 ## Context
 
 Ishqnama is a Quranic reading web app (Noor e Imaan tafseer) being redeveloped from [ishqnama.com](https://ishqnama.com). The existing site is minimal — white background, basic grid of 114 chapter cards, simple reader. The new frontend (`frontend/`) already has a strong foundation: teal + gold palette, EB Garamond display type, dedicated Arabic/Urdu font stacks, and a well-structured token system in CSS custom properties.
@@ -12,7 +14,7 @@ This plan implements 10 visual design improvements identified during review, pri
 
 ## Changes
 
-### 1. Mobile Bottom Navigation (P0)
+### 1. Mobile Bottom Navigation (P0) — IMPLEMENTED
 
 **Problem:** Nav links are `display: none` below 640px with no replacement. Mobile users cannot navigate.
 
@@ -31,7 +33,7 @@ This plan implements 10 visual design improvements identified during review, pri
 - **Hide on sura reader pages** (`/quran/\d+/`) by returning `null` — `ReaderToolbar` already occupies `sticky bottom: 0; z-index: 50` on those pages
 - Labels: 10px `--font-body`, weight 600
 
-### 2. Google Fonts → next/font (P0)
+### 2. Google Fonts → next/font (P0) — IMPLEMENTED
 
 **Problem:** `globals.css` line 2 uses render-blocking `@import url(...)` for Google Fonts.
 
@@ -49,7 +51,7 @@ This plan implements 10 visual design improvements identified during review, pri
   - `Noto_Serif`: subsets `["latin"]`, weights `["400","700"]`, styles `["normal","italic"]`
   - `Noto_Serif_Devanagari`: subsets `["devanagari"]`, weights `["400","700"]`
 
-### 3. Home Hero Redesign (P1)
+### 3. Home Hero Redesign (P1) — IMPLEMENTED
 
 **Problem:** Unauthenticated hero is plain centered text — forgettable. The design deck says the signed-out home "leads with the volume and the index."
 
@@ -66,7 +68,7 @@ This plan implements 10 visual design improvements identified during review, pri
 - Add `import Link from "next/link"` (not currently imported in page.tsx)
 - Mobile: reduce Bismillah and title to `--text-2xl`, tighter padding
 
-### 4. Selection Styling + Smooth Scroll (P1 — 2-minute win)
+### 4. Selection Styling + Smooth Scroll (P1 — 2-minute win) — IMPLEMENTED
 
 **Files:**
 - **Modify** `src/app/globals.css`
@@ -81,7 +83,7 @@ Inside existing `@media (prefers-reduced-motion: reduce)`:
 html { scroll-behavior: auto; }
 ```
 
-### 5. Theme Color + Favicon (P1)
+### 5. Theme Color + Favicon (P1) — IMPLEMENTED
 
 **Problem:** No favicon, no theme-color meta tag. Browser shows blank tab icon.
 
@@ -98,7 +100,7 @@ export const metadata: Metadata = {
 };
 ```
 
-### 6. Footer (P1)
+### 6. Footer (P1) — IMPLEMENTED
 
 **Problem:** Static pages end abruptly with no navigation at the bottom.
 
@@ -113,7 +115,7 @@ export const metadata: Metadata = {
 - Links: `--text-sm`, `--text-tertiary` → `--text-primary` on hover
 - Tagline: `--font-display` italic
 
-### 7. Bismillah Block Elevation (P2)
+### 7. Bismillah Block Elevation (P2) — IMPLEMENTED
 
 **Problem:** The Bismillah appears 113 times but has no visual distinction — just centered text with padding.
 
@@ -121,14 +123,14 @@ export const metadata: Metadata = {
 - **Modify** `src/components/scripture/bismillah-block.module.css` — add `--gold-wash` background, `--radius-md`, horizontal padding, margin
 - **Modify** `src/components/scripture/bismillah-block.tsx` — add a decorative divider element
 
-### 8. Gradient-Splash Restraint (P2)
+### 8. Gradient-Splash Restraint (P2) — IMPLEMENTED
 
 **Problem:** Same gradient on nav bar, continue-reading card, sura header, reader toolbar → dilutes the signature.
 
 **Files:**
 - **Modify** `src/components/navigation/app-bar.module.css` — change `background: var(--gradient-splash)` to `background: var(--surface-chrome)`
 
-### 9. Sura List Differentiation (P2)
+### 9. Sura List Differentiation (P2) — IMPLEMENTED
 
 **Problem:** 114 identical white cards — hard to scan.
 
@@ -136,7 +138,7 @@ export const metadata: Metadata = {
 - **Modify** `src/components/scripture/sura-list-item.module.css` — add `.makki` and `.madani` classes
 - **Modify** `src/components/scripture/sura-list-item.tsx` — apply class based on `revelationType` prop
 
-### 10. Page Background Warmth (P3)
+### 10. Page Background Warmth (P3) — NOT IMPLEMENTED
 
 **Problem:** `--surface-page: #EDF5ED` leans minty/clinical rather than warm/literary.
 

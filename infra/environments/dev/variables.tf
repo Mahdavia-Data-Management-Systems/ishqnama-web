@@ -37,6 +37,12 @@ variable "cloudflare_account_id" {
   type        = string
 }
 
+variable "entra_api_client_id" {
+  description = "Entra ID app registration client ID for the backend API"
+  type        = string
+  default     = "fe35a79a-4d68-4e7c-bfa7-6ef1c4af4f83"
+}
+
 locals {
   functions_name     = "func-ishqnama-dev"
   functions_hostname = "${local.functions_name}.azurewebsites.net"

@@ -51,6 +51,7 @@ jobs:
             --query "properties" -o json)
           echo "NEXT_PUBLIC_ENTRA_CLIENT_ID=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_CLIENT_ID')" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_ENTRA_AUTHORITY=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_AUTHORITY')" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_ENTRA_API_SCOPE=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_API_SCOPE')" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_API_URL=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_API_URL')" >> "$GITHUB_ENV"
           HOSTNAME=$(az staticwebapp show --name "$SWA_NAME" --resource-group "$RG_NAME" --query "defaultHostname" -o tsv)
           echo "NEXT_PUBLIC_ENTRA_REDIRECT_URI=https://$HOSTNAME" >> "$GITHUB_ENV"

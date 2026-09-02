@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { notFound } from "next/navigation";
+import { useIsAuthenticated } from "@azure/msal-react";
 import SuraHeader from "@/components/scripture/sura-header";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
@@ -12,10 +13,12 @@ import { useReaderSettings } from "@/context/reader-settings-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { suras } from "@/data/suras";
+import { getUserBookmarks, addBookmark, removeBookmark, addHistoryEntry } from "@/lib/user-api";
 import styles from "./page.module.css";
 
 export default function SuraReaderClient({ suraNumber }: { suraNumber: number }) {
   const sura = suras.find((s) => s.number === suraNumber);
+  const isAuthenticated = useIsAuthenticated();
   const { mode, setMode, lang, setLang, fontScale, setFontScale, showTafseer } = useReaderSettings();
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
@@ -25,6 +28,27 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   if (!sura) {
     notFound();
   }
+
+  // Load bookmarks from API
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const controller = new AbortController();
+    getUserBookmarks(controller.signal)
+      .then((bookmarks) => {
+        const suraBookmarks = bookmarks
+          .filter((b) => b.chapterNumber === suraNumber)
+          .map((b) => b.verseNumber);
+        setBookmarked(new Set(suraBookmarks));
+      })
+      .catch(() => { /* keep empty set */ });
+    return () => controller.abort();
+  }, [isAuthenticated, suraNumber]);
+
+  // Record reading history
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    addHistoryEntry(suraNumber).catch(() => { /* silent */ });
+  }, [isAuthenticated, suraNumber]);
 
   const prevSura = suraNumber > 1 ? suras[suraNumber - 2] : null;
   const nextSura = suraNumber < 114 ? suras[suraNumber] : null;
@@ -45,14 +69,19 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     }
   };
 
-  const toggleBookmark = (verseNum: number) => {
+  const toggleBookmark = useCallback((verseNum: number) => {
     setBookmarked((prev) => {
       const next = new Set(prev);
-      if (next.has(verseNum)) next.delete(verseNum);
-      else next.add(verseNum);
+      if (next.has(verseNum)) {
+        next.delete(verseNum);
+        if (isAuthenticated) removeBookmark(suraNumber, verseNum).catch(() => { /* silent */ });
+      } else {
+        next.add(verseNum);
+        if (isAuthenticated) addBookmark(suraNumber, verseNum).catch(() => { /* silent */ });
+      }
       return next;
     });
-  };
+  }, [isAuthenticated, suraNumber]);
 
   return (
     <main className={`${styles.main} ornament-mihrab`}>

@@ -31,8 +31,8 @@ public sealed class CorsMiddleware : IFunctionsWorkerMiddleware
         if (isAllowed)
         {
             httpContext.Response.Headers["Access-Control-Allow-Origin"] = origin;
-            httpContext.Response.Headers["Access-Control-Allow-Methods"] = "GET, OPTIONS";
-            httpContext.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Accept";
+            httpContext.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            httpContext.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Accept, Authorization";
         }
 
         // Handle preflight

@@ -11,6 +11,7 @@ var host = new HostBuilder()
     .ConfigureFunctionsWebApplication(builder =>
     {
         builder.UseMiddleware<CorsMiddleware>();
+        builder.UseMiddleware<AuthMiddleware>();
         builder.UseMiddleware<ExceptionHandlingMiddleware>();
         builder.UseMiddleware<CacheHeaderMiddleware>();
     })
@@ -30,12 +31,24 @@ var host = new HostBuilder()
             ?? throw new InvalidOperationException("Connection string 'QuranDb' not found.");
         services.AddInfrastructure(connectionString);
 
+        // User data (Cosmos DB)
+        var cosmosEndpoint = context.Configuration["CosmosDb:Endpoint"];
+        var cosmosKey = context.Configuration["CosmosDb:Key"];
+        var cosmosDatabase = context.Configuration["CosmosDb:DatabaseName"] ?? "ishqnama-userdata";
+        var cosmosContainer = context.Configuration["CosmosDb:ContainerName"] ?? "user-data";
+
+        if (!string.IsNullOrEmpty(cosmosEndpoint) && !string.IsNullOrEmpty(cosmosKey))
+        {
+            services.AddUserDataInfrastructure(cosmosEndpoint, cosmosKey, cosmosDatabase, cosmosContainer);
+        }
+
         // Application services
         services.AddScoped<ChapterService>();
         services.AddScoped<JuzService>();
         services.AddScoped<RukuService>();
         services.AddScoped<TranslationService>();
         services.AddScoped<VerseService>();
+        services.AddScoped<UserDataService>();
 
         services.AddMemoryCache();
     })

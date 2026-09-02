@@ -13,4 +13,14 @@ module "functions" {
     "https://${module.swa.default_host_name}",
     "http://localhost:3000"
   ]
+
+  app_settings = {
+    "CosmosDb__Endpoint"      = module.cosmosdb.endpoint
+    "CosmosDb__Key"           = module.cosmosdb.primary_key
+    "CosmosDb__DatabaseName"  = module.cosmosdb.database_name
+    "CosmosDb__ContainerName" = module.cosmosdb.container_name
+    "Auth__ClientId"          = var.entra_api_client_id
+    "Auth__TenantId"          = data.tfe_outputs.mdms-core.values.tenant_id
+    "Auth__Authority"         = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}/v2.0"
+  }
 }

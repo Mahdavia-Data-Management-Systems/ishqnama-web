@@ -1,4 +1,6 @@
-# Ishqnama API — New .NET 10 Project Plan
+# Ishqnama API — Original Project Plan (SUPERSEDED)
+
+> **Status: SUPERSEDED** — This was the original plan for the API. The project has since evolved significantly: SQLite → PostgreSQL, Minimal API → Azure Functions (isolated worker), APIM removed, Clean Architecture adopted (see `backend/plans/clean-arch.md`), and .NET 10 → .NET 9. This file is kept for historical reference only.
 
 ## Context
 

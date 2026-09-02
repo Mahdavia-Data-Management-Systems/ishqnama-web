@@ -22,6 +22,7 @@ npm run lint      # ESLint via Next.js
 ```bash
 dotnet build                                    # Build solution
 cd src/Ishqnama.Functions && func start         # Run locally (needs Azure Functions Core Tools)
+bash start-local-db.sh                          # Start PostgreSQL + Cosmos DB emulator via Podman
 ```
 
 ### Database
@@ -41,17 +42,22 @@ terraform apply                     # Deploy
 
 ```
 frontend/          Next.js 15 + React 19, static export, Azure Static Web App
-backend/           .NET 9 Azure Functions, Clean Architecture, PostgreSQL (read-only)
-infra/             Terraform modules: azure/ (swa, functions, keyvault, aca)
+backend/           .NET 9 Azure Functions, Clean Architecture, PostgreSQL (read-only) + Cosmos DB (user data)
+infra/             Terraform modules: azure/ (swa, functions, keyvault, aca, cosmosdb)
 ```
 
 ### Frontend
 
 - **Next.js 15 App Router** with `output: "export"` and `trailingSlash: true` — generates static HTML into `out/`
+- **Fonts**: Google Fonts loaded via `next/font/google` (EB Garamond, Source Sans 3, Noto Serif, Noto Serif Devanagari) with CSS variable injection; local `@font-face` for Arabic/Urdu fonts
 - **Auth**: Azure Entra ID External (CIAM) via MSAL.js v5 client-side redirect flow with PKCE
   - Config: `src/config/auth-config.ts`
   - Components: `auth-provider.tsx`, `protected-route.tsx`, `auth-button.tsx`
-  - Env vars: `NEXT_PUBLIC_ENTRA_CLIENT_ID`, `NEXT_PUBLIC_ENTRA_AUTHORITY`, `NEXT_PUBLIC_ENTRA_REDIRECT_URI`
+  - Env vars: `NEXT_PUBLIC_ENTRA_CLIENT_ID`, `NEXT_PUBLIC_ENTRA_AUTHORITY`, `NEXT_PUBLIC_ENTRA_REDIRECT_URI`, `NEXT_PUBLIC_ENTRA_API_SCOPE`, `NEXT_PUBLIC_API_URL`
+- **User data**: Authenticated users get settings persistence, bookmarks, favorites, and reading history via `src/lib/user-api.ts` → backend Cosmos DB
+  - Reader settings synced via debounced save in `src/context/reader-settings-context.tsx`
+  - Bookmarks synced per-sura in `src/app/quran/[sura]/sura-reader-client.tsx`
+  - Saved page (`src/app/saved/page.tsx`) displays bookmarks, favorites, and history
 - **Public pages**: `/`, `/about`, `/contact`, `/terms`, `/privacy`
 - **Protected pages**: `/quran/*` — guarded by `<ProtectedRoute>` in `src/app/quran/layout.tsx`
 - **SPA routing**: `public/staticwebapp.config.json` configures Azure SWA fallback to `index.html`
@@ -59,11 +65,15 @@ infra/             Terraform modules: azure/ (swa, functions, keyvault, aca)
 
 ### Backend
 
-Clean Architecture: Domain → Application → Infrastructure → Functions. All queries async with NoTracking. See `backend/CLAUDE.md` for full details.
+Clean Architecture: Domain → Application → Infrastructure → Functions. Two data stores:
+1. **PostgreSQL** (read-only) — Quran data served via `IQuranReadOnlyRepository` with `CachedQuranReadOnlyRepository` (loads all data into memory on first request)
+2. **Cosmos DB** (read-write) — User data (settings, bookmarks, favorites, history) via `IUserDataRepository`, protected by JWT auth middleware
+
+See `backend/CLAUDE.md` for full details.
 
 ### Infrastructure
 
-Terraform modules deploy to Azure: Static Web App (frontend), Functions (backend), Container Apps (PostgreSQL), Key Vault (secrets). Two environments: dev and prod. Azure auth via OIDC federated identity.
+Terraform modules deploy to Azure: Static Web App (frontend), Functions (backend), Container Apps (PostgreSQL), Key Vault (secrets), Cosmos DB (user data, free tier). Two environments: dev and prod. Azure auth via OIDC federated identity.
 
 ## CI/CD
 
