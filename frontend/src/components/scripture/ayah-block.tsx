@@ -62,7 +62,6 @@ export default function AyahBlock({
   return (
     <div className={styles.block}>
       <div className={styles.meta}>
-        <span className={styles.number}>{number}</span>
         <div className={styles.actions}>
           <IconButton
             icon="share"

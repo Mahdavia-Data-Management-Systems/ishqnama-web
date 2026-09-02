@@ -9,7 +9,7 @@
 .meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-bottom: var(--space-4);
 }
 
@@ -17,14 +17,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-}
-
-.number {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-tertiary);
-  letter-spacing: 0.02em;
 }
 
 .arabic {
