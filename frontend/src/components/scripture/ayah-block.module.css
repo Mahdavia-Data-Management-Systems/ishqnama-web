@@ -23,7 +23,8 @@
   font-family: var(--font-arabic);
   line-height: var(--leading-arabic);
   color: var(--text-primary);
-  text-align: right;
+  text-align: justify;
+  direction: rtl;
   margin-bottom: var(--space-4);
   word-spacing: 0.08em;
 }

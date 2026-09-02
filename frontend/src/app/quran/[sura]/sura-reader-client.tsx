@@ -273,7 +273,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         prevSura={prevSura ? { number: prevSura.number, name: prevSura.name } : null}
         nextSura={nextSura ? { number: nextSura.number, name: nextSura.name } : null}
         mode={mode}
-        onModeChange={setMode}
+        onModeChange={(m) => { setMode(m); setSelectedVerse(null); }}
         lang={lang}
         onLangChange={setLang}
         fontScale={fontScale}

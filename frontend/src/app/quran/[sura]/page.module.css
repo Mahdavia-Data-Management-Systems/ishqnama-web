@@ -15,7 +15,8 @@
   font-size: var(--text-arabic);
   line-height: var(--leading-arabic);
   color: var(--text-primary);
-  text-align: right;
+  text-align: justify;
+  direction: rtl;
 }
 
 .verseSpan {
