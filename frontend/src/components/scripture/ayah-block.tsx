@@ -86,7 +86,10 @@ export default function AyahBlock({
         style={{ fontSize: `${arabicSize}rem` }}
       >
         {arabic}
-        <span className={styles.separator}> &#1757; </span>
+        <span className={styles.separator}>
+          {" "}&#1757;{" "}
+          <span className={styles.separatorNumber}>{number}</span>
+        </span>
       </div>
 
       <hr className="hairline-gold" />
