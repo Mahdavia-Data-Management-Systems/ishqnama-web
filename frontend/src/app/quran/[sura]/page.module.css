@@ -93,6 +93,7 @@
   color: var(--text-secondary);
   line-height: var(--leading-relaxed);
   padding-top: var(--space-2);
+  text-align: justify;
 }
 
 .popupSegSpan {
@@ -125,6 +126,7 @@
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   color: var(--text-tertiary);
+  text-align: justify;
 }
 
 .popupTafseerRtl {

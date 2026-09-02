@@ -55,6 +55,7 @@
   line-height: var(--leading-relaxed);
   color: var(--text-secondary);
   margin-top: var(--space-4);
+  text-align: justify;
 }
 
 .segSpan {
@@ -87,6 +88,7 @@
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   color: var(--text-tertiary);
+  text-align: justify;
 }
 
 .tafseerRtl {
