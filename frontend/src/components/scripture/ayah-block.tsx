@@ -10,6 +10,7 @@ import styles from "./ayah-block.module.css";
 export type TranslationLang = "urdu" | "hindi" | "english";
 
 interface AyahBlockProps {
+  chapterNumber: number;
   number: number;
   arabic: string;
   translations?: Partial<Record<TranslationLang, string>>;
@@ -23,6 +24,7 @@ interface AyahBlockProps {
 }
 
 export default function AyahBlock({
+  chapterNumber,
   number,
   arabic,
   translations,
@@ -34,6 +36,8 @@ export default function AyahBlock({
   onShare,
   fontScale = 1,
 }: AyahBlockProps) {
+  if (number === 0) return null;
+
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
   const explanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -87,7 +91,7 @@ export default function AyahBlock({
       >
         {arabic}
         <span className={styles.separator}>
-          {" "}&#1757;{" "}
+          {chapterNumber === 1 && number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
           <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>
         </span>
       </div>

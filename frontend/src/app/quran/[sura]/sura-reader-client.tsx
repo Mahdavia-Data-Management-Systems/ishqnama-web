@@ -55,7 +55,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const nextSura = suraNumber < 114 ? suras[suraNumber] : null;
 
   const { verses, loading, error, retry } = useChapterVerses(suraNumber, lang);
-  const showBismillah = suraNumber !== 9 && suraNumber !== 1;
+  const showBismillah = suraNumber !== 9;
 
   const handleShare = async (verseNum: number, arabicText: string) => {
     const text = `${sura.name} ${verseNum} — ${arabicText}`;
@@ -112,9 +112,10 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         ) : mode === "verse" ? (
           <div className={styles.verses}>
-            {verses.map((verse) => (
+            {verses.filter((v) => v.number !== 0).map((verse) => (
               <AyahBlock
                 key={verse.number}
+                chapterNumber={suraNumber}
                 number={verse.number}
                 arabic={verse.arabic}
                 segments={verse.segments}
@@ -135,7 +136,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
               lang="ar"
               style={{ fontSize: `${Math.max(1.625, 1.75 * ((FONT_SIZE_STEPS[fontScale] ?? 100) / 100))}rem` }}
             >
-              {verses.map((verse) => (
+              {verses.filter((v) => v.number !== 0).map((verse) => (
                 <span
                   key={verse.number}
                   className={`${styles.verseSpan} ${selectedVerse === verse.number ? styles.verseSelected : ""}`}
@@ -146,7 +147,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                 >
                   {verse.arabic}
                   <span className={styles.separator}>
-                    {" "}&#1757;{" "}
+                    {suraNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
                     <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                   </span>
                 </span>
