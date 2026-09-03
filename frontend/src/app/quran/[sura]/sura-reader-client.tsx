@@ -241,7 +241,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
               <div className={styles.popupActions}>
                 <IconButton
                   icon={bookmarkedVerses.has(verse.number) ? "bookmarkFilled" : "bookmark"}
-                  label={bookmarkedVerses.has(verse.number) ? "Remove bookmark" : "Add bookmark"}
+                  label="Save to bookmark"
                   size="sm"
                   filled={bookmarkedVerses.has(verse.number)}
                   onClick={() => handleBookmarkVerse(verse.number)}

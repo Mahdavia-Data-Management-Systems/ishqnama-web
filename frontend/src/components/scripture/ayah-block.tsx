@@ -105,7 +105,7 @@ export default function AyahBlock({
           />
           <IconButton
             icon={isBookmarked ? "bookmarkFilled" : "bookmark"}
-            label={isBookmarked ? "Remove bookmark" : "Add bookmark"}
+            label="Save to bookmark"
             size="sm"
             filled={isBookmarked}
             onClick={onToggleBookmark}
