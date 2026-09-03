@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import SuraHeader from "@/components/scripture/sura-header";
 import BismillahBlock from "@/components/scripture/bismillah-block";
@@ -20,6 +20,7 @@ import styles from "./page.module.css";
 export default function SuraReaderClient({ suraNumber }: { suraNumber: number }) {
   const sura = suras.find((s) => s.number === suraNumber);
   const isAuthenticated = useIsAuthenticated();
+  const searchParams = useSearchParams();
   const { mode, setMode, lang, setLang, fontScale, setFontScale, showTafseer } = useReaderSettings();
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
@@ -56,6 +57,20 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
 
   const { verses, loading, error, retry } = useChapterVerses(suraNumber, lang);
   const showBismillah = suraNumber !== 9;
+  const highlightQuery = searchParams.get("highlight") ?? undefined;
+
+  // Scroll to verse from ?verse= query param
+  useEffect(() => {
+    const verseParam = searchParams.get("verse");
+    if (!verseParam || loading || verses.length === 0) return;
+    const el = document.getElementById(`verse-${verseParam}`);
+    if (el) {
+      // Delay to allow layout to settle after render
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+  }, [searchParams, loading, verses]);
 
   const handleShare = async (verseNum: number, arabicText: string) => {
     const text = `${sura.name} ${verseNum} — ${arabicText}`;
@@ -125,6 +140,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                 isBookmarked={bookmarked.has(verse.number)}
                 onToggleBookmark={() => toggleBookmark(verse.number)}
                 onShare={() => handleShare(verse.number, verse.arabic)}
+                highlightQuery={highlightQuery}
               />
             ))}
           </div>
@@ -139,6 +155,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
               {verses.filter((v) => v.number !== 0).map((verse) => (
                 <span
                   key={verse.number}
+                  id={`verse-${verse.number}`}
                   className={`${styles.verseSpan} ${selectedVerse === verse.number ? styles.verseSelected : ""}`}
                   onClick={() => {
                     setSelectedVerse(selectedVerse === verse.number ? null : verse.number);

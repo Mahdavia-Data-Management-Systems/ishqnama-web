@@ -51,8 +51,10 @@ export default function SearchResultCard({ result, query, lang }: SearchResultCa
   const isRtl = lang === "urdu";
   const langCode = lang === "urdu" ? "ur" : lang === "hindi" ? "hi" : "en";
 
+  const textFragment = encodeURIComponent(query).replace(/-/g, "%2D");
+
   return (
-    <Link href={`/quran/${result.chapterNumber}/`} className={styles.card}>
+    <Link href={`/quran/${result.chapterNumber}/?verse=${result.verseNumber}&highlight=${encodeURIComponent(query)}#:~:text=${textFragment}`} className={styles.card}>
       <div className={styles.meta}>
         <span className={styles.ref}>
           {result.chapterName} {result.chapterNumber}:{result.verseNumber}

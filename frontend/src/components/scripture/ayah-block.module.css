@@ -124,3 +124,10 @@
   direction: ltr;
   unicode-bidi: isolate;
 }
+
+.searchHighlight {
+  background: var(--gold-wash);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}

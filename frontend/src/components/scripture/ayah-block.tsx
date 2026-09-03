@@ -9,6 +9,34 @@ import styles from "./ayah-block.module.css";
 
 export type TranslationLang = "urdu" | "hindi" | "english";
 
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function highlightText(text: string, query: string) {
+  const regex = new RegExp(`(${escapeRegExp(query)})`, "gi");
+  const parts = text.split(regex);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <mark key={i} className={styles.searchHighlight}>{part}</mark>
+    ) : (
+      part
+    ),
+  );
+}
+
+function highlightHtml(html: string, query: string) {
+  const escaped = escapeRegExp(query);
+  const matchRegex = new RegExp(escaped, "gi");
+  return html.replace(/(<[^>]*>)|([^<]+)/g, (segment, tag, text) => {
+    if (tag) return tag;
+    return text.replace(
+      matchRegex,
+      (m: string) => `<mark class="${styles.searchHighlight}">${m}</mark>`,
+    );
+  });
+}
+
 interface AyahBlockProps {
   chapterNumber: number;
   number: number;
@@ -21,6 +49,7 @@ interface AyahBlockProps {
   onToggleBookmark?: () => void;
   onShare?: () => void;
   fontScale?: number;
+  highlightQuery?: string;
 }
 
 export default function AyahBlock({
@@ -35,6 +64,7 @@ export default function AyahBlock({
   onToggleBookmark,
   onShare,
   fontScale = 1,
+  highlightQuery,
 }: AyahBlockProps) {
   if (number === 0) return null;
 
@@ -64,7 +94,7 @@ export default function AyahBlock({
   const hasExplanations = showTafseer && segments?.some((s) => s.explanation);
 
   return (
-    <div className={styles.block}>
+    <div id={`verse-${number}`} className={styles.block}>
       <div className={styles.meta}>
         <div className={styles.actions}>
           <IconButton
@@ -123,13 +153,13 @@ export default function AyahBlock({
                       }
                     }}
                   >
-                    {seg.text}
+                    {highlightQuery ? highlightText(seg.text, highlightQuery) : seg.text}
                     {seg.explanation && <sup className={styles.segRef}>{i + 1}</sup>}
                     {" "}
                   </span>
                 ) : null,
               )
-            : translation}
+            : highlightQuery ? highlightText(String(translation), highlightQuery) : translation}
         </div>
       )}
 
@@ -153,7 +183,7 @@ export default function AyahBlock({
                 onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
               >
                 <sup className={styles.segRef}>{i + 1}</sup>{" "}
-                <span dangerouslySetInnerHTML={{ __html: seg.explanation }} />
+                <span dangerouslySetInnerHTML={{ __html: highlightQuery ? highlightHtml(seg.explanation, highlightQuery) : seg.explanation }} />
               </div>
             ) : null,
           )}
