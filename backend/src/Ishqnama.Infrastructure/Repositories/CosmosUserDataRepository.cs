@@ -51,10 +51,8 @@ public sealed partial class CosmosUserDataRepository(
 
     public async Task<IReadOnlyList<UserBookmarkDto>> GetBookmarksAsync(string userId)
     {
-        await EnsureDefaultBookmarkAsync(userId);
-
         var query = new QueryDefinition(
-            "SELECT * FROM c WHERE c.type = 'bookmark' AND c.title != null ORDER BY c.isDefault DESC, c.createdAt DESC");
+            "SELECT * FROM c WHERE c.type = 'bookmark' ORDER BY c.isDefault DESC, c.createdAt DESC");
 
         var results = new List<UserBookmarkDto>();
         using var feed = _container.GetItemQueryIterator<UserBookmark>(query,
@@ -66,6 +64,12 @@ public sealed partial class CosmosUserDataRepository(
             results.AddRange(page.Select(ToDto));
         }
 
+        if (results.All(b => !b.IsDefault))
+        {
+            var nazra = await CreateDefaultBookmarkAsync(userId);
+            results.Insert(0, nazra);
+        }
+
         return results;
     }
 
@@ -75,8 +79,7 @@ public sealed partial class CosmosUserDataRepository(
         {
             var response = await _container.ReadItemAsync<UserBookmark>(
                 $"bookmark_{slug}", new PartitionKey(userId));
-            var b = response.Resource;
-            return b.Title is null ? null : ToDto(b);
+            return ToDto(response.Resource);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
@@ -138,49 +141,32 @@ public sealed partial class CosmosUserDataRepository(
         }
     }
 
-    private async Task EnsureDefaultBookmarkAsync(string userId)
+    private async Task<UserBookmarkDto> CreateDefaultBookmarkAsync(string userId)
     {
-        var pk = new PartitionKey(userId);
+        var now = DateTimeOffset.UtcNow;
+        var doc = new UserBookmark
+        {
+            Id = "bookmark_nazra",
+            UserId = userId,
+            Type = "bookmark",
+            Slug = "nazra",
+            Title = "Nazra",
+            Icon = "book",
+            ChapterNumber = 1,
+            VerseNumber = 0,
+            IsDefault = true,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
         try
         {
-            var response = await _container.ReadItemAsync<UserBookmark>("bookmark_nazra", pk);
-            if (response.Resource.Title is not null)
-                return;
-            // Legacy doc exists without Title — replace with new schema
-            var legacy = response.Resource;
-            legacy.Slug = "nazra";
-            legacy.Title = "Nazra";
-            legacy.Icon = "book";
-            legacy.IsDefault = true;
-            legacy.UpdatedAt = DateTimeOffset.UtcNow;
-            await _container.ReplaceItemAsync(legacy, legacy.Id, pk);
+            await _container.CreateItemAsync(doc, new PartitionKey(userId));
         }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
         {
-            var now = DateTimeOffset.UtcNow;
-            var doc = new UserBookmark
-            {
-                Id = "bookmark_nazra",
-                UserId = userId,
-                Type = "bookmark",
-                Slug = "nazra",
-                Title = "Nazra",
-                Icon = "book",
-                ChapterNumber = 1,
-                VerseNumber = 0,
-                IsDefault = true,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
-            try
-            {
-                await _container.CreateItemAsync(doc, pk);
-            }
-            catch (CosmosException createEx) when (createEx.StatusCode == HttpStatusCode.Conflict)
-            {
-                // Race condition — another request created it concurrently
-            }
+            // Race condition — another request created it concurrently
         }
+        return ToDto(doc);
     }
 
     private static UserBookmarkDto ToDto(UserBookmark b) =>
