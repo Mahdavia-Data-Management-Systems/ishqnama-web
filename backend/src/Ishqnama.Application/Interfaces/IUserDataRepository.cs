@@ -17,5 +17,5 @@ public interface IUserDataRepository
 
     // History
     Task<IReadOnlyList<UserHistoryDto>> GetHistoryAsync(string userId, int limit = 50);
-    Task AddHistoryEntryAsync(string userId, int chapterNumber);
+    Task AddHistoryEntryAsync(string userId, string title, string url);
 }

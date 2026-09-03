@@ -51,9 +51,9 @@ export function getUserHistory(signal?: AbortSignal): Promise<UserHistoryDto[]> 
   return authenticatedApiFetch<UserHistoryDto[]>("/user/history", { signal });
 }
 
-export function addHistoryEntry(chapterNumber: number): Promise<void> {
+export function addHistoryEntry(title: string, url: string): Promise<void> {
   return authenticatedApiFetch<void>("/user/history", {
     method: "POST",
-    body: { chapterNumber },
+    body: { title, url },
   });
 }

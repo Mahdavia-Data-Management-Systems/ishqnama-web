@@ -17,6 +17,7 @@ export interface UserBookmarkDto {
 }
 
 export interface UserHistoryDto {
-  chapterNumber: number;
+  title: string;
+  url: string;
   timestamp: string;
 }

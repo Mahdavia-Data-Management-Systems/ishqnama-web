@@ -86,7 +86,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   // Record reading history
   useEffect(() => {
     if (!isAuthenticated) return;
-    addHistoryEntry(suraNumber).catch(() => { /* silent */ });
+    addHistoryEntry(sura.name, `/quran/${suraNumber}/`).catch(() => { /* silent */ });
   }, [isAuthenticated, suraNumber]);
 
   const prevSura = suraNumber > 1 ? suras[suraNumber - 2] : null;

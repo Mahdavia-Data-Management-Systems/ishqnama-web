@@ -81,10 +81,16 @@ public sealed partial class UserDataService(IUserDataRepository repository)
         return repository.GetHistoryAsync(userId, limit);
     }
 
-    public Task AddHistoryEntryAsync(string userId, int chapterNumber)
+    public Task AddHistoryEntryAsync(string userId, string title, string url)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(chapterNumber, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(chapterNumber, 114);
-        return repository.AddHistoryEntryAsync(userId, chapterNumber);
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        if (title.Length > 200)
+            throw new ArgumentException("Title must be 200 characters or less.", nameof(title));
+        ArgumentException.ThrowIfNullOrWhiteSpace(url);
+        if (!url.StartsWith('/'))
+            throw new ArgumentException("Url must start with '/'.", nameof(url));
+        if (url.Length > 500)
+            throw new ArgumentException("Url must be 500 characters or less.", nameof(url));
+        return repository.AddHistoryEntryAsync(userId, title, url);
     }
 }

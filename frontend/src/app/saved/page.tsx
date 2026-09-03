@@ -11,7 +11,6 @@ import AddBookmarkTile from "@/components/add-bookmark-tile";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { getUserHistory } from "@/lib/user-api";
-import { suras } from "@/data/suras";
 import type { UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
 
@@ -19,10 +18,6 @@ const tabOptions = [
   { label: "Bookmarks", value: "bookmarks" },
   { label: "History", value: "history" },
 ];
-
-function getSuraName(chapterNumber: number): string {
-  return suras.find((s) => s.number === chapterNumber)?.name ?? `Sura ${chapterNumber}`;
-}
 
 export default function SavedPage() {
   const [tab, setTab] = useState("bookmarks");
@@ -109,12 +104,12 @@ export default function SavedPage() {
           ) : (
             <ul className={styles.list}>
               {history.map((h, i) => (
-                <li key={`${h.chapterNumber}-${h.timestamp}-${i}`} className={styles.item}>
+                <li key={`${h.url}-${h.timestamp}-${i}`} className={styles.item}>
                   <button
                     className={styles.itemButton}
-                    onClick={() => router.push(`/quran/${h.chapterNumber}/`)}
+                    onClick={() => router.push(h.url)}
                   >
-                    <span className={styles.itemTitle}>{getSuraName(h.chapterNumber)}</span>
+                    <span className={styles.itemTitle}>{h.title}</span>
                     <span className={styles.itemMeta}>
                       {new Date(h.timestamp).toLocaleDateString()}
                     </span>

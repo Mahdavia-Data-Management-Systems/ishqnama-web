@@ -128,9 +128,10 @@ public sealed class UserDataFunctions(UserDataService userDataService)
     {
         var userId = GetUserId(req.HttpContext);
         var body = await req.ReadFromJsonAsync<HistoryRequest>();
-        if (body is null) return Results.BadRequest(new { error = "Invalid request body." });
+        if (body is null || string.IsNullOrWhiteSpace(body.Title) || string.IsNullOrWhiteSpace(body.Url))
+            return Results.BadRequest(new { error = "Title and url are required." });
 
-        await userDataService.AddHistoryEntryAsync(userId, body.ChapterNumber);
+        await userDataService.AddHistoryEntryAsync(userId, body.Title, body.Url);
         return Results.Ok();
     }
 
@@ -138,5 +139,5 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     private sealed record CreateBookmarkRequest(string Title, string Icon);
     private sealed record UpdatePositionRequest(int ChapterNumber, int VerseNumber);
-    private sealed record HistoryRequest(int ChapterNumber);
+    private sealed record HistoryRequest(string Title, string Url);
 }

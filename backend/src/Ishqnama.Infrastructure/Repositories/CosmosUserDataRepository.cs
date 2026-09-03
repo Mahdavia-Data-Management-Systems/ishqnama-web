@@ -205,13 +205,13 @@ public sealed partial class CosmosUserDataRepository(
         while (feed.HasMoreResults)
         {
             var page = await feed.ReadNextAsync();
-            results.AddRange(page.Select(h => new UserHistoryDto(h.ChapterNumber, h.Timestamp)));
+            results.AddRange(page.Select(h => new UserHistoryDto(h.Title, h.Url, h.Timestamp)));
         }
 
         return results;
     }
 
-    public async Task AddHistoryEntryAsync(string userId, int chapterNumber)
+    public async Task AddHistoryEntryAsync(string userId, string title, string url)
     {
         var now = DateTimeOffset.UtcNow;
         var doc = new UserHistoryEntry
@@ -219,7 +219,8 @@ public sealed partial class CosmosUserDataRepository(
             Id = $"history_{now.ToUnixTimeMilliseconds()}",
             UserId = userId,
             Type = "history",
-            ChapterNumber = chapterNumber,
+            Title = title,
+            Url = url,
             Timestamp = now
         };
         await _container.UpsertItemAsync(doc, new PartitionKey(userId));
