@@ -35,6 +35,72 @@ function highlightHtml(html: string, query: string) {
   });
 }
 
+function trimTextAroundQuery(text: string, query: string, contextChars = 80): string {
+  if (!query || !text) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+
+  let start = Math.max(0, idx - contextChars);
+  let end = Math.min(text.length, idx + query.length + contextChars);
+
+  if (start > 0) {
+    const ws = text.indexOf(" ", start);
+    if (ws !== -1 && ws < idx) start = ws + 1;
+  }
+  if (end < text.length) {
+    const ws = text.lastIndexOf(" ", end);
+    if (ws > idx + query.length) end = ws;
+  }
+
+  const prefix = start > 0 ? "\u2026" : "";
+  const suffix = end < text.length ? "\u2026" : "";
+  return prefix + text.slice(start, end) + suffix;
+}
+
+function trimHtmlAroundQuery(html: string, query: string, contextChars = 80): string {
+  if (!query || !html) return html;
+
+  const plainText = html.replace(/<[^>]*>/g, "");
+  const idx = plainText.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return html;
+
+  let start = Math.max(0, idx - contextChars);
+  let end = Math.min(plainText.length, idx + query.length + contextChars);
+
+  if (start > 0) {
+    const ws = plainText.indexOf(" ", start);
+    if (ws !== -1 && ws < idx) start = ws + 1;
+  }
+  if (end < plainText.length) {
+    const ws = plainText.lastIndexOf(" ", end);
+    if (ws > idx + query.length) end = ws;
+  }
+
+  const startTrimmed = start > 0;
+  const endTrimmed = end < plainText.length;
+
+  let textPos = 0;
+  let result = "";
+  const segmentRegex = /(<[^>]*>)|([^<]+)/g;
+  let m;
+  while ((m = segmentRegex.exec(html)) !== null) {
+    const [, tag, text] = m;
+    if (tag) {
+      if (textPos >= start && textPos <= end) result += tag;
+    } else if (text) {
+      const segEnd = textPos + text.length;
+      if (segEnd > start && textPos < end) {
+        const from = Math.max(0, start - textPos);
+        const to = Math.min(text.length, end - textPos);
+        result += text.slice(from, to);
+      }
+      textPos += text.length;
+    }
+  }
+
+  return (startTrimmed ? "\u2026" : "") + result + (endTrimmed ? "\u2026" : "");
+}
+
 interface SearchResultCardProps {
   result: SearchResultDto;
   query: string;
@@ -74,7 +140,7 @@ export default function SearchResultCard({ result, query, lang, searchScope }: S
           dir={isRtl ? "rtl" : undefined}
           lang={langCode}
         >
-          {highlightText(result.translationText, query)}
+          {highlightText(trimTextAroundQuery(result.translationText, query), query)}
         </p>
       )}
       {result.explanation && (
@@ -84,7 +150,7 @@ export default function SearchResultCard({ result, query, lang, searchScope }: S
           dir={isRtl ? "rtl" : undefined}
           lang={langCode}
           dangerouslySetInnerHTML={{
-            __html: highlightHtml(result.explanation, query),
+            __html: highlightHtml(trimHtmlAroundQuery(result.explanation, query), query),
           }}
         />
       )}
