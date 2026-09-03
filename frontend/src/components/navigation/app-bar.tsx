@@ -8,7 +8,7 @@ import styles from "./app-bar.module.css";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/quran/", label: "Chapters" },
+  { href: "/quran/", label: "Quran" },
   { href: "/search/", label: "Search" },
   { href: "/saved/", label: "Saved", authOnly: true },
 ];

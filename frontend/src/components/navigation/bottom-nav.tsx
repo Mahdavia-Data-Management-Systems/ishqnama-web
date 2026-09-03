@@ -8,7 +8,7 @@ import styles from "./bottom-nav.module.css";
 
 const tabs = [
   { href: "/", icon: "home", label: "Home" },
-  { href: "/quran/", icon: "book", label: "Chapters" },
+  { href: "/quran/", icon: "book", label: "Quran" },
   { href: "/search/", icon: "search", label: "Search" },
   { href: "/saved/", icon: "bookmark", label: "Saved", authOnly: true },
 ];

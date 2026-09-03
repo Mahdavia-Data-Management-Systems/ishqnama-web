@@ -23,25 +23,3 @@
   font-size: var(--text-base);
 }
 
-.juzList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-}
-
-.juzGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.juzHeading {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gold-label);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid rgba(0, 68, 70, 0.08);
-}

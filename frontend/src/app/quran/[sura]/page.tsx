@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import SuraHeader from "@/components/scripture/sura-header";
 import { suras } from "@/data/suras";
 import SuraReaderLoader from "./sura-reader-loader";
-import styles from "./page.module.css";
 
 export function generateStaticParams() {
   return Array.from({ length: 114 }, (_, i) => ({
@@ -24,7 +23,7 @@ export default async function SuraReaderPage({
   const nextSura = suraNumber < 114 ? suras[suraNumber] : null;
 
   return (
-    <main className={`${styles.main} ornament-mihrab`}>
+    <main className="ornament-mihrab" style={{ paddingBottom: "var(--toolbar-height)" }}>
       <SuraHeader
         number={suraData.number}
         name={suraData.name}

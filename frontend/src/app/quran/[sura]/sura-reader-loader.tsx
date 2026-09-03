@@ -45,8 +45,6 @@ export default function SuraReaderLoader({ suraNumber, suraName, prev, next }: P
       loading={loading}
       error={error}
       retry={retry}
-      chapterNumber={suraNumber}
-      chapterName={suraName}
       lang={lang}
       onLangChange={setLang}
       prev={prev}
