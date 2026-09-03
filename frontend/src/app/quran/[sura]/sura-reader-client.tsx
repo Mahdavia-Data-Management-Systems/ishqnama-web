@@ -93,7 +93,6 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const nextSura = suraNumber < 114 ? suras[suraNumber] : null;
 
   const { verses, loading, error, retry } = useChapterVerses(suraNumber, lang);
-  const showBismillah = suraNumber !== 9;
   const highlightQuery = searchParams.get("highlight") ?? undefined;
 
   // Scroll to verse from ?verse= query param
@@ -138,8 +137,6 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   return (
     <>
       <div className="reader-container">
-        {showBismillah && <BismillahBlock />}
-
         {loading ? (
           <div className={styles.placeholder}>
             <div className={styles.spinner} />
@@ -154,48 +151,72 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         ) : mode === "verse" ? (
           <div className={styles.verses}>
-            {verses.filter((v) => v.number !== 0).map((verse) => (
-              <AyahBlock
-                key={verse.number}
-                chapterNumber={suraNumber}
-                number={verse.number}
-                arabic={verse.arabic}
-                segments={verse.segments}
-                showTafseer={showTafseer}
-                activeLang={lang}
-                fontScale={fontScale}
-                isBookmarked={bookmarkedVerses.has(verse.number)}
-                onToggleBookmark={() => handleBookmarkVerse(verse.number)}
-                onShare={() => handleShare(verse.number, verse.arabic)}
-                highlightQuery={highlightQuery}
-              />
-            ))}
+            {verses.map((verse) =>
+              verse.number === 0 ? (
+                <BismillahBlock
+                  key={0}
+                  arabic={verse.arabic}
+                  translation={verse.segments?.map((s) => s.text).filter(Boolean).join(" ")}
+                  explanation={verse.segments?.map((s) => s.explanation).filter(Boolean).join(" ")}
+                  lang={lang}
+                  fontScale={fontScale}
+                />
+              ) : (
+                <AyahBlock
+                  key={verse.number}
+                  chapterNumber={suraNumber}
+                  number={verse.number}
+                  arabic={verse.arabic}
+                  segments={verse.segments}
+                  showTafseer={showTafseer}
+                  activeLang={lang}
+                  fontScale={fontScale}
+                  isBookmarked={bookmarkedVerses.has(verse.number)}
+                  onToggleBookmark={() => handleBookmarkVerse(verse.number)}
+                  onShare={() => handleShare(verse.number, verse.arabic)}
+                  highlightQuery={highlightQuery}
+                />
+              ),
+            )}
           </div>
         ) : (
           <div className={styles.continuous}>
+            {verses[0]?.number === 0 && (
+              <BismillahBlock
+                arabic={verses[0].arabic}
+                lang={lang}
+                fontScale={fontScale}
+                onClick={() => {
+                  setSelectedVerse(selectedVerse === 0 ? null : 0);
+                  setHighlightedSeg(null);
+                }}
+              />
+            )}
             <div
               className={styles.continuousArabic}
               dir="rtl"
               lang="ar"
               style={{ fontSize: `${Math.max(1.625, 1.75 * ((FONT_SIZE_STEPS[fontScale] ?? 100) / 100))}rem` }}
             >
-              {verses.filter((v) => v.number !== 0).map((verse) => (
-                <span
-                  key={verse.number}
-                  id={`verse-${verse.number}`}
-                  className={`${styles.verseSpan} ${selectedVerse === verse.number ? styles.verseSelected : ""}`}
-                  onClick={() => {
-                    setSelectedVerse(selectedVerse === verse.number ? null : verse.number);
-                    setHighlightedSeg(null);
-                  }}
-                >
-                  {verse.arabic}
-                  <span className={styles.separator}>
-                    {suraNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
-                    <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
+              {verses.map((verse) =>
+                verse.number === 0 ? null : (
+                  <span
+                    key={verse.number}
+                    id={`verse-${verse.number}`}
+                    className={`${styles.verseSpan} ${selectedVerse === verse.number ? styles.verseSelected : ""}`}
+                    onClick={() => {
+                      setSelectedVerse(selectedVerse === verse.number ? null : verse.number);
+                      setHighlightedSeg(null);
+                    }}
+                  >
+                    {verse.arabic}
+                    <span className={styles.separator}>
+                      {suraNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
+                      <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
+                    </span>
                   </span>
-                </span>
-              ))}
+                ),
+              )}
             </div>
           </div>
         )}

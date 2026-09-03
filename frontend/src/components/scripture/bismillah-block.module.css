@@ -8,9 +8,13 @@
 
 .arabic {
   font-family: var(--font-arabic);
-  font-size: var(--text-arabic-lg);
   line-height: var(--leading-arabic);
   color: var(--text-primary);
+}
+
+.iconPlaceholder {
+  color: var(--gold);
+  opacity: 0.6;
 }
 
 .divider {
@@ -35,9 +39,42 @@
 }
 
 .translation {
-  font-family: var(--font-urdu);
-  font-size: var(--text-translation);
-  line-height: var(--leading-urdu);
   color: var(--text-tertiary);
   margin-top: var(--space-3);
+  text-align: justify;
+}
+
+.explanation {
+  color: var(--text-tertiary);
+  margin-top: var(--space-2);
+  opacity: 0.85;
+  text-align: justify;
+}
+
+/* Language-specific spans inside explanation HTML */
+.explanation :global(span[lang="ar"]) {
+  font-family: var(--font-arabic);
+  line-height: var(--leading-arabic);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.explanation :global(span[lang="ur"]) {
+  font-family: var(--font-urdu);
+  line-height: var(--leading-urdu);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.explanation :global(span[lang="fa"]) {
+  font-family: var(--font-urdu);
+  line-height: var(--leading-urdu);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.explanation :global(span[lang="en"]) {
+  font-family: var(--font-display);
+  direction: ltr;
+  unicode-bidi: isolate;
 }

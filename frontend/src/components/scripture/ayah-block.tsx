@@ -66,8 +66,6 @@ export default function AyahBlock({
   fontScale = 1,
   highlightQuery,
 }: AyahBlockProps) {
-  if (number === 0) return null;
-
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
   const explanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
