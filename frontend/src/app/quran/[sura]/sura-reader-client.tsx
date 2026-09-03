@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { notFound, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
-import SuraHeader from "@/components/scripture/sura-header";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
-import ChapterNav from "@/components/scripture/chapter-nav";
+import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
@@ -75,9 +74,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const pickerVerseRef = useRef<number>(0);
   const popupExplanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  if (!sura) {
-    notFound();
-  }
+  if (!sura) return null;
 
   // Compute which verses have bookmarks pointing to this sura
   const bookmarkedVerses = new Set(
@@ -139,16 +136,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   }, [savePosition, suraNumber]);
 
   return (
-    <main className={`${styles.main} ornament-mihrab`}>
-      <SuraHeader
-        number={sura.number}
-        name={sura.name}
-        arabicName={sura.arabicName}
-        urduName={sura.urduName}
-        revelationType={sura.revelationType}
-        verseCount={sura.verseCount}
-      />
-
+    <>
       <div className="reader-container">
         {showBismillah && <BismillahBlock />}
 
@@ -212,9 +200,9 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         )}
 
-        <ChapterNav
-          prevSura={prevSura ? { number: prevSura.number, name: prevSura.name } : null}
-          nextSura={nextSura ? { number: nextSura.number, name: nextSura.name } : null}
+        <PrevNextNav
+          prev={prevSura ? { href: `/quran/${prevSura.number}/`, name: prevSura.name } : null}
+          next={nextSura ? { href: `/quran/${nextSura.number}/`, name: nextSura.name } : null}
         />
       </div>
 
@@ -342,6 +330,6 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         fontScale={fontScale}
         onFontScaleChange={setFontScale}
       />
-    </main>
+    </>
   );
 }
