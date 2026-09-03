@@ -1,10 +1,11 @@
-import { apiFetch } from "@/lib/api-client";
+import { apiFetch, authenticatedApiFetch } from "@/lib/api-client";
 import type {
   ChapterDetailDto,
   ChapterDto,
   JuzDto,
   PagedResponse,
   RukuDto,
+  SearchResultDto,
   TranslationDto,
   VerseDto,
 } from "@/types/api";
@@ -109,6 +110,26 @@ export function getRukuVerses(
 
 export function getTranslations(signal?: AbortSignal) {
   return apiFetch<TranslationDto[]>("/translations", { signal });
+}
+
+// --- Search ---
+
+export function searchQuran(
+  query: string,
+  scope: string,
+  opts?: { translationId?: number; page?: number; pageSize?: number },
+  signal?: AbortSignal,
+) {
+  return authenticatedApiFetch<PagedResponse<SearchResultDto>>("/search", {
+    params: {
+      q: query,
+      scope,
+      translationId: opts?.translationId,
+      page: opts?.page,
+      pageSize: opts?.pageSize,
+    },
+    signal,
+  });
 }
 
 // --- Health ---

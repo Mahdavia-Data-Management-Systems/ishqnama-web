@@ -9,6 +9,8 @@ interface SearchFieldProps {
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
+  inputStyle?: React.CSSProperties;
+  dir?: "ltr" | "rtl";
 }
 
 export default function SearchField({
@@ -17,6 +19,8 @@ export default function SearchField({
   placeholder = "Search",
   className = "",
   autoFocus = false,
+  inputStyle,
+  dir,
 }: SearchFieldProps) {
   return (
     <div className={`${styles.wrapper} ${className}`}>
@@ -28,6 +32,8 @@ export default function SearchField({
         placeholder={placeholder}
         className={styles.input}
         autoFocus={autoFocus}
+        style={inputStyle}
+        dir={dir}
       />
       {value && (
         <button

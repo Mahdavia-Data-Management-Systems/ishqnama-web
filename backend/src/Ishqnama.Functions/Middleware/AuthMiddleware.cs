@@ -37,8 +37,9 @@ public sealed class AuthMiddleware : IFunctionsWorkerMiddleware
             return;
         }
 
-        // Only protect /api/user/* routes
-        if (!httpContext.Request.Path.StartsWithSegments("/api/user"))
+        // Only protect /api/user/* and /api/search routes
+        var path = httpContext.Request.Path;
+        if (!path.StartsWithSegments("/api/user") && !path.StartsWithSegments("/api/search"))
         {
             await next(context);
             return;

@@ -48,6 +48,7 @@ var host = new HostBuilder()
         services.AddScoped<RukuService>();
         services.AddScoped<TranslationService>();
         services.AddScoped<VerseService>();
+        services.AddScoped<SearchService>();
         services.AddScoped<UserDataService>();
 
         services.AddMemoryCache();

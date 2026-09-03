@@ -70,6 +70,15 @@ export interface RukuDto {
   verseCount: number;
 }
 
+export interface SearchResultDto {
+  chapterNumber: number;
+  chapterName: string;
+  verseNumber: number;
+  arabicText: string;
+  translationText?: string;
+  explanation?: string;
+}
+
 export interface PagedResponse<T> {
   items: T[];
   page: number;

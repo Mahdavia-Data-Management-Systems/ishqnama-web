@@ -6,6 +6,67 @@
   margin-bottom: var(--space-6);
 }
 
+.filters {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
 .results {
   margin-top: var(--space-6);
+}
+
+.resultCount {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.loadMore {
+  display: block;
+  margin: var(--space-6) auto 0;
+  padding: var(--space-2) var(--space-6);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gold-label);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.loadMore:hover {
+  background: var(--surface-card);
+}
+
+.loadMore:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loadingText {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: var(--space-8) 0;
+}
+
+@media (max-width: 480px) {
+  .filters [data-seg-content="full"] {
+    display: none;
+  }
+
+  .filters [data-seg-content="short"] {
+    display: inline;
+  }
 }

@@ -63,7 +63,7 @@ Config: `CosmosDb__Endpoint`, `CosmosDb__Key`, `CosmosDb__DatabaseName`, `Cosmos
 
 ## Authentication
 
-JWT auth via `AuthMiddleware` — only protects `/api/user/*` routes. Quran endpoints remain anonymous.
+JWT auth via `AuthMiddleware` — protects `/api/user/*` and `/api/search` routes. Other Quran endpoints remain anonymous. Search requires auth to prevent abuse.
 
 - Uses OIDC discovery from Entra ID External (CIAM) authority
 - Validates `aud` claim against the **API** app registration (`Auth__ClientId`)
@@ -107,6 +107,14 @@ All under `/api/` (route prefix set in `host.json`).
 ### Quran Endpoints (Anonymous)
 
 `/chapters`, `/chapters/{num}/verses`, `/juz`, `/juz/{num}/verses`, `/rukus`, `/translations`, `/verses?from=&to=`, `/healthz`. Verse endpoints support `translationId`, `page`, `pageSize` query params. Default page size 50, max 200.
+
+### Search Endpoint (Authenticated — Bearer token required)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/search?q=&scope=&translationId=&page=&pageSize=` | Search translations/tafseer |
+
+Query params: `q` (required, min 2 chars), `scope` (both/tarjuma/tafseer, default both), `translationId` (default 2), `page` (default 1), `pageSize` (default 20, max 50). Requires auth to prevent abuse.
 
 ### User Data Endpoints (Authenticated — Bearer token required)
 

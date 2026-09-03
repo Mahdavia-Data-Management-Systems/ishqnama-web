@@ -68,6 +68,7 @@ infra/             Terraform modules: azure/ (swa, functions, keyvault, aca, cos
 Clean Architecture: Domain → Application → Infrastructure → Functions. Two data stores:
 1. **PostgreSQL** (read-only) — Quran data served via `IQuranReadOnlyRepository` with `CachedQuranReadOnlyRepository` (loads all data into memory on first request)
 2. **Cosmos DB** (read-write) — User data (settings, bookmarks, favorites, history) via `IUserDataRepository`, protected by JWT auth middleware
+3. **Search** — `/api/search` searches translation/tafseer text, protected by JWT auth to prevent abuse
 
 See `backend/CLAUDE.md` for full details.
 

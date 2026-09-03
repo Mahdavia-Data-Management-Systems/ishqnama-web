@@ -156,6 +156,69 @@ public sealed class QuranReadOnlyRepository(QuranDbContext db) : IQuranReadOnlyR
         return await MapVersesWithTranslationsAsync(verses, translationId);
     }
 
+    // --- Search ---
+
+    public async Task<PagedResponse<SearchResultDto>> SearchAsync(
+        string query, string scope, int translationId, int page, int pageSize)
+    {
+        var escaped = query.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
+        var pattern = $"%{escaped}%";
+
+        var baseQuery = db.TranslationSegments
+            .Where(ts => ts.TranslationId == translationId);
+
+        IQueryable<TranslationSegment> matchingSegments = scope switch
+        {
+            "tarjuma" => baseQuery.Where(ts => EF.Functions.ILike(ts.TranslationText!, pattern, "\\")),
+            "tafseer" => baseQuery.Where(ts => EF.Functions.ILike(ts.Explanation!, pattern, "\\")),
+            _ => baseQuery.Where(ts => EF.Functions.ILike(ts.TranslationText!, pattern, "\\") || EF.Functions.ILike(ts.Explanation!, pattern, "\\")),
+        };
+
+        // Get distinct verse keys ordered
+        var verseKeys = matchingSegments
+            .Select(ts => new { ts.ChapterNumber, ts.VerseNumber })
+            .Distinct()
+            .OrderBy(k => k.ChapterNumber).ThenBy(k => k.VerseNumber);
+
+        var totalCount = await verseKeys.CountAsync();
+
+        var pagedKeys = await verseKeys
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .ToListAsync();
+
+        var pagedKeySet = pagedKeys.Select(k => (k.ChapterNumber, k.VerseNumber)).ToHashSet();
+        var pagedChapters = pagedKeys.Select(k => k.ChapterNumber).Distinct().ToList();
+        var pagedVerses = pagedKeys.Select(k => k.VerseNumber).Distinct().ToList();
+
+        // IN(chapters) × IN(verses) is a cross-product, not composite key match —
+        // client-side pagedKeySet filter below removes the false positives.
+        // Acceptable because pageSize ≤ 50 bounds the over-fetch.
+        var results = await (
+            from ts in matchingSegments
+            join v in db.Verses on new { ts.ChapterNumber, ts.VerseNumber } equals new { v.ChapterNumber, v.VerseNumber }
+            join c in db.Chapters on ts.ChapterNumber equals c.ChapterNumber
+            where pagedChapters.Contains(ts.ChapterNumber)
+                && pagedVerses.Contains(ts.VerseNumber)
+            orderby ts.ChapterNumber, ts.VerseNumber, ts.SegmentIndex
+            select new { ts.ChapterNumber, c.TransliteratedName, ts.VerseNumber, v.ArabicText, ts.TranslationText, ts.Explanation, ts.SegmentIndex }
+        ).ToListAsync();
+
+        var dtos = results
+            .Where(r => pagedKeySet.Contains((r.ChapterNumber, r.VerseNumber)))
+            .GroupBy(r => (r.ChapterNumber, r.VerseNumber))
+            .OrderBy(g => g.Key.ChapterNumber).ThenBy(g => g.Key.VerseNumber)
+            .Select(g =>
+            {
+                var first = g.OrderBy(x => x.SegmentIndex).First();
+                return new SearchResultDto(
+                    first.ChapterNumber, first.TransliteratedName, first.VerseNumber,
+                    first.ArabicText, first.TranslationText, first.Explanation);
+            })
+            .ToList();
+
+        return new PagedResponse<SearchResultDto>(dtos, page, pageSize, totalCount);
+    }
+
     // --- Private Helper ---
 
     private async Task<List<VerseDto>> MapVersesWithTranslationsAsync(

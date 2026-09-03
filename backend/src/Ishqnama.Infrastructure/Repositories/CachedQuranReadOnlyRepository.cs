@@ -21,6 +21,7 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
     private List<Ruku> _rukus = [];
     private List<Translation> _translations = [];
     private List<TranslationSegment> _translationSegments = [];
+    private Dictionary<int, string> _chapterNameLookup = [];
 
     public CachedQuranReadOnlyRepository(IServiceScopeFactory scopeFactory)
     {
@@ -47,6 +48,7 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
             _translations = await db.Translations.ToListAsync();
             _translationSegments = await db.TranslationSegments.ToListAsync();
 
+            _chapterNameLookup = _chapters.ToDictionary(c => c.ChapterNumber, c => c.TransliteratedName);
             _isLoaded = true;
         }
         finally
@@ -233,6 +235,66 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
             .ToList();
 
         return MapVersesWithTranslations(verses, translationId);
+    }
+
+    // --- Search ---
+
+    public async Task<PagedResponse<SearchResultDto>> SearchAsync(
+        string query, string scope, int translationId, int page, int pageSize)
+    {
+        await EnsureLoadedAsync();
+
+        var segments = _translationSegments
+            .Where(ts => ts.TranslationId == translationId)
+            .Where(ts =>
+            {
+                var matchTranslation = ts.TranslationText?.Contains(query, StringComparison.OrdinalIgnoreCase) == true;
+                var matchExplanation = ts.Explanation?.Contains(query, StringComparison.OrdinalIgnoreCase) == true;
+                return scope switch
+                {
+                    "tarjuma" => matchTranslation,
+                    "tafseer" => matchExplanation,
+                    _ => matchTranslation || matchExplanation,
+                };
+            })
+            .ToList();
+
+        // Group by verse to avoid duplicates (multiple segments per verse)
+        var verseKeys = segments
+            .Select(ts => (ts.ChapterNumber, ts.VerseNumber))
+            .Distinct()
+            .OrderBy(k => k.ChapterNumber).ThenBy(k => k.VerseNumber)
+            .ToList();
+
+        var totalCount = verseKeys.Count;
+        var pagedKeys = verseKeys.Skip((page - 1) * pageSize).Take(pageSize).ToHashSet();
+
+        var verseLookup = _verses
+            .Where(v => pagedKeys.Contains((v.ChapterNumber, v.VerseNumber)))
+            .ToDictionary(v => (v.ChapterNumber, v.VerseNumber));
+
+        var segmentLookup = segments
+            .Where(ts => pagedKeys.Contains((ts.ChapterNumber, ts.VerseNumber)))
+            .GroupBy(ts => (ts.ChapterNumber, ts.VerseNumber))
+            .ToDictionary(g => g.Key, g => g.OrderBy(ts => ts.SegmentIndex).First());
+
+        var results = pagedKeys
+            .OrderBy(k => k.ChapterNumber).ThenBy(k => k.VerseNumber)
+            .Select(key =>
+            {
+                var verse = verseLookup.GetValueOrDefault(key);
+                var seg = segmentLookup.GetValueOrDefault(key);
+                return new SearchResultDto(
+                    key.ChapterNumber,
+                    _chapterNameLookup.GetValueOrDefault(key.ChapterNumber, ""),
+                    key.VerseNumber,
+                    verse?.ArabicText ?? "",
+                    seg?.TranslationText,
+                    seg?.Explanation);
+            })
+            .ToList();
+
+        return new PagedResponse<SearchResultDto>(results, page, pageSize, totalCount);
     }
 
     // --- Private Helper ---
