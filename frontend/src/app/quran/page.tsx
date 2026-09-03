@@ -8,17 +8,8 @@ import SuraListItem from "@/components/scripture/sura-list-item";
 import JuzListItem from "@/components/scripture/juz-list-item";
 import { suras } from "@/data/suras";
 import { apiFetchWithOptionalAuth } from "@/lib/api-client";
+import type { JuzDto } from "@/types/api";
 import styles from "./page.module.css";
-
-interface JuzItem {
-  juzNumber: number;
-  arabicName: string;
-  transliteratedName: string;
-  startChapter: number;
-  startVerse: number;
-  endChapter: number;
-  endVerse: number;
-}
 
 const viewOptions = [
   { label: "SURA", value: "sura" },
@@ -28,13 +19,13 @@ const viewOptions = [
 export default function QuranIndexPage() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("sura");
-  const [juzData, setJuzData] = useState<JuzItem[]>([]);
+  const [juzData, setJuzData] = useState<JuzDto[]>([]);
 
   useEffect(() => {
     if (view !== "juz" || juzData.length > 0) return;
 
     let cancelled = false;
-    apiFetchWithOptionalAuth<JuzItem[]>("/juz").then((data) => {
+    apiFetchWithOptionalAuth<JuzDto[]>("/juz").then((data) => {
       if (!cancelled) setJuzData(data);
     });
     return () => { cancelled = true; };
@@ -102,10 +93,10 @@ export default function QuranIndexPage() {
                 juzNumber={juz.juzNumber}
                 arabicName={juz.arabicName}
                 transliteratedName={juz.transliteratedName}
-                startChapter={juz.startChapter}
-                startVerse={juz.startVerse}
-                endChapter={juz.endChapter}
-                endVerse={juz.endVerse}
+                startChapter={juz.startChapter ?? 0}
+                startVerse={juz.startVerse ?? 0}
+                endChapter={juz.endChapter ?? 0}
+                endVerse={juz.endVerse ?? 0}
               />
             ))}
             {filteredJuz.length === 0 && juzData.length > 0 && (

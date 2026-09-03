@@ -5,26 +5,9 @@ import { getJuzVerses } from "@/lib/api";
 import { getTranslationId } from "@/lib/translation-map";
 import type { VerseDto } from "@/types/api";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
-import type { DisplayVerse } from "@/hooks/use-chapter-verses";
+import { toDisplayVerse, type DisplayVerse } from "@/hooks/use-chapter-verses";
 
 const PAGE_SIZE = 200;
-
-function toDisplayVerse(dto: VerseDto): DisplayVerse {
-  const segments = dto.translations
-    ?.slice()
-    .sort((a, b) => a.segmentIndex - b.segmentIndex)
-    .map((seg) => ({
-      text: seg.translationText,
-      explanation: seg.explanation,
-    }));
-
-  return {
-    chapterNumber: dto.chapterNumber,
-    number: dto.verseNumber,
-    arabic: dto.arabicText,
-    segments: segments && segments.length > 0 ? segments : undefined,
-  };
-}
 
 export function useJuzVerses(juzNumber: number, lang: TranslationLang) {
   const [verses, setVerses] = useState<DisplayVerse[]>([]);

@@ -20,7 +20,7 @@ export interface DisplayVerse {
 
 const PAGE_SIZE = 200;
 
-function toDisplayVerse(dto: VerseDto): DisplayVerse {
+export function toDisplayVerse(dto: VerseDto): DisplayVerse {
   const segments = dto.translations
     ?.slice()
     .sort((a, b) => a.segmentIndex - b.segmentIndex)

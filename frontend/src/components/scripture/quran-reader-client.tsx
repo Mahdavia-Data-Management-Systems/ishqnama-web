@@ -156,9 +156,6 @@ export default function QuranReaderClient({
     savePosition(slug, pickerChapterRef.current, pickerVerseRef.current);
   }, [savePosition]);
 
-  // Track previous chapter number for rendering dividers
-  let lastChapter = -1;
-
   return (
     <>
       <div className="reader-container">
@@ -176,9 +173,8 @@ export default function QuranReaderClient({
           </div>
         ) : mode === "verse" ? (
           <div className={styles.verses}>
-            {verses.map((verse) => {
-              const showDivider = isMultiChapter && verse.chapterNumber !== lastChapter;
-              if (verse.chapterNumber !== lastChapter) lastChapter = verse.chapterNumber;
+            {verses.map((verse, i) => {
+              const showDivider = isMultiChapter && verse.chapterNumber !== verses[i - 1]?.chapterNumber;
               const dividerSura = showDivider
                 ? suras.find((s) => s.number === verse.chapterNumber)
                 : null;
