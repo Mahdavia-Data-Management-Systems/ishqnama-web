@@ -12,6 +12,7 @@ export interface DisplaySegment {
 }
 
 export interface DisplayVerse {
+  chapterNumber: number;
   number: number;
   arabic: string;
   segments?: DisplaySegment[];
@@ -29,6 +30,7 @@ function toDisplayVerse(dto: VerseDto): DisplayVerse {
     }));
 
   return {
+    chapterNumber: dto.chapterNumber,
     number: dto.verseNumber,
     arabic: dto.arabicText,
     segments: segments && segments.length > 0 ? segments : undefined,

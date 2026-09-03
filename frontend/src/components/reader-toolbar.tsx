@@ -11,8 +11,8 @@ export type ReadingMode = "verse" | "continuous";
 export type TranslationLang = "urdu" | "hindi" | "english";
 
 interface ReaderToolbarProps {
-  prevSura?: { number: number; name: string } | null;
-  nextSura?: { number: number; name: string } | null;
+  prev?: { href: string; name: string } | null;
+  next?: { href: string; name: string } | null;
   mode: ReadingMode;
   onModeChange: (mode: ReadingMode) => void;
   lang: TranslationLang;
@@ -36,8 +36,8 @@ const FONT_MIN = 0;
 const FONT_MAX = FONT_SIZE_STEPS.length - 1;
 
 export default function ReaderToolbar({
-  prevSura,
-  nextSura,
+  prev,
+  next,
   mode,
   onModeChange,
   lang,
@@ -52,10 +52,9 @@ export default function ReaderToolbar({
     <div className={`${styles.toolbar} ornament-paper-tint`}>
       <div className={styles.inner}>
         <div className={styles.navSide}>
-          {prevSura ? (
-            <Link href={`/quran/${prevSura.number}/`} className={styles.navLink} aria-label={`Previous: ${prevSura.name}`}>
+          {prev ? (
+            <Link href={prev.href} className={styles.navLink} aria-label={`Previous: ${prev.name}`}>
               <Icon name="chevronLeft" size={16} />
-              <span className={styles.navLabel}>Sura</span>
             </Link>
           ) : (
             <span className={styles.navPlaceholder} />
@@ -100,9 +99,8 @@ export default function ReaderToolbar({
           <button onClick={openSettings} className={styles.settingsBtn} aria-label="Settings">
             <Icon name="settings" size={18} />
           </button>
-          {nextSura ? (
-            <Link href={`/quran/${nextSura.number}/`} className={styles.navLink} aria-label={`Next: ${nextSura.name}`}>
-              <span className={styles.navLabel}>Sura</span>
+          {next ? (
+            <Link href={next.href} className={styles.navLink} aria-label={`Next: ${next.name}`}>
               <Icon name="chevronRight" size={16} />
             </Link>
           ) : (

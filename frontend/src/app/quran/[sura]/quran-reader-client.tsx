@@ -11,32 +11,49 @@ import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
-import { useChapterVerses } from "@/hooks/use-chapter-verses";
+import type { DisplayVerse } from "@/hooks/use-chapter-verses";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
-import { suras } from "@/data/suras";
-import { addHistoryEntry } from "@/lib/user-api";
 import styles from "./page.module.css";
 
-export default function SuraReaderClient({ suraNumber }: { suraNumber: number }) {
-  const sura = suras.find((s) => s.number === suraNumber);
+interface Props {
+  verses: DisplayVerse[];
+  loading: boolean;
+  error: string | null;
+  retry: () => void;
+  chapterNumber: number;
+  chapterName: string;
+  lang: TranslationLang;
+  onLangChange: (lang: TranslationLang) => void;
+  prev: { href: string; name: string } | null;
+  next: { href: string; name: string } | null;
+}
+
+export default function QuranReaderClient({
+  verses,
+  loading,
+  error,
+  retry,
+  chapterNumber,
+  chapterName,
+  lang,
+  onLangChange,
+  prev,
+  next,
+}: Props) {
   const isAuthenticated = useIsAuthenticated();
   const searchParams = useSearchParams();
   const {
-    mode: persistedMode, lang: persistedLang,
+    mode: persistedMode,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
   } = useReaderSettings();
   const { bookmarks, savePosition, hasCustomBookmarks } = useBookmarks();
 
   // Local page-level state: query param > persisted setting
   const qMode = searchParams.get("mode");
-  const qLang = searchParams.get("lang");
   const qTafseer = searchParams.get("tafseer");
   const [mode, setMode] = useState<ReadingMode>(
     qMode === "verse" || qMode === "continuous" ? qMode : persistedMode,
-  );
-  const [lang, setLang] = useState<TranslationLang>(
-    qLang === "english" || qLang === "hindi" || qLang === "urdu" ? qLang : persistedLang,
   );
   const [fontScale, setFontScale] = useState(persistedFontScale);
   const [showTafseer, setShowTafseer] = useState(
@@ -47,26 +64,10 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   useEffect(() => {
     if (!searchParams.get("mode")) setMode(persistedMode);
   }, [persistedMode, searchParams]);
-  useEffect(() => {
-    if (!searchParams.get("lang")) setLang(persistedLang);
-  }, [persistedLang, searchParams]);
   useEffect(() => { setFontScale(persistedFontScale); }, [persistedFontScale]);
   useEffect(() => {
     if (!searchParams.get("tafseer")) setShowTafseer(persistedShowTafseer);
   }, [persistedShowTafseer, searchParams]);
-
-  // Reset on sura navigation (re-apply query param overrides)
-  useEffect(() => {
-    const qm = searchParams.get("mode");
-    const ql = searchParams.get("lang");
-    const qt = searchParams.get("tafseer");
-    setMode(qm === "verse" || qm === "continuous" ? qm : persistedMode);
-    setLang(ql === "english" || ql === "hindi" || ql === "urdu" ? ql : persistedLang);
-    setFontScale(persistedFontScale);
-    setShowTafseer(qt === "true" || qt === "false" ? qt === "true" : persistedShowTafseer);
-    setSelectedVerse(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [suraNumber, searchParams]);
 
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
@@ -74,25 +75,13 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const pickerVerseRef = useRef<number>(0);
   const popupExplanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  if (!sura) return null;
-
   // Compute which verses have bookmarks pointing to this sura
   const bookmarkedVerses = new Set(
     bookmarks
-      .filter((b) => b.chapterNumber === suraNumber && b.verseNumber > 0)
+      .filter((b) => b.chapterNumber === chapterNumber && b.verseNumber > 0)
       .map((b) => b.verseNumber),
   );
 
-  // Record reading history
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    addHistoryEntry(sura.name, `/quran/${suraNumber}/`).catch(() => { /* silent */ });
-  }, [isAuthenticated, suraNumber]);
-
-  const prevSura = suraNumber > 1 ? suras[suraNumber - 2] : null;
-  const nextSura = suraNumber < 114 ? suras[suraNumber] : null;
-
-  const { verses, loading, error, retry } = useChapterVerses(suraNumber, lang);
   const highlightQuery = searchParams.get("highlight") ?? undefined;
 
   // Scroll to verse from ?verse= query param
@@ -108,7 +97,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   }, [searchParams, loading, verses]);
 
   const handleShare = async (verseNum: number, arabicText: string) => {
-    const text = `${sura.name} ${verseNum} — ${arabicText}`;
+    const text = `${chapterName} ${verseNum} — ${arabicText}`;
     if (navigator.share) {
       try {
         await navigator.share({ text });
@@ -123,16 +112,16 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const handleBookmarkVerse = useCallback((verseNum: number) => {
     if (!isAuthenticated) return;
     if (!hasCustomBookmarks) {
-      savePosition("nazra", suraNumber, verseNum);
+      savePosition("nazra", chapterNumber, verseNum);
     } else {
       pickerVerseRef.current = verseNum;
       setPickerOpen(true);
     }
-  }, [isAuthenticated, hasCustomBookmarks, savePosition, suraNumber]);
+  }, [isAuthenticated, hasCustomBookmarks, savePosition, chapterNumber]);
 
   const handlePickerSelect = useCallback((slug: string) => {
-    savePosition(slug, suraNumber, pickerVerseRef.current);
-  }, [savePosition, suraNumber]);
+    savePosition(slug, chapterNumber, pickerVerseRef.current);
+  }, [savePosition, chapterNumber]);
 
   return (
     <>
@@ -164,7 +153,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
               ) : (
                 <AyahBlock
                   key={verse.number}
-                  chapterNumber={suraNumber}
+                  chapterNumber={chapterNumber}
                   number={verse.number}
                   arabic={verse.arabic}
                   segments={verse.segments}
@@ -211,7 +200,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                   >
                     {verse.arabic}
                     <span className={styles.separator}>
-                      {suraNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
+                      {chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
                       <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                     </span>
                   </span>
@@ -221,10 +210,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         )}
 
-        <PrevNextNav
-          prev={prevSura ? { href: `/quran/${prevSura.number}/`, name: prevSura.name } : null}
-          next={nextSura ? { href: `/quran/${nextSura.number}/`, name: nextSura.name } : null}
-        />
+        <PrevNextNav prev={prev} next={next} />
       </div>
 
       {mode !== "verse" && selectedVerse != null && (() => {
@@ -246,7 +232,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         return (
           <div className={styles.versePopup}>
             <div className={styles.popupHeader}>
-              <span className={styles.popupRef}>{verse.number === 0 ? suraNumber : `${suraNumber}:${verse.number}`}</span>
+              <span className={styles.popupRef}>{verse.number === 0 ? chapterNumber : `${chapterNumber}:${verse.number}`}</span>
               <div className={styles.popupActions}>
                 <IconButton
                   icon={bookmarkedVerses.has(verse.number) ? "bookmarkFilled" : "bookmark"}
@@ -342,12 +328,12 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
       />
 
       <ReaderToolbar
-        prevSura={prevSura ? { number: prevSura.number, name: prevSura.name } : null}
-        nextSura={nextSura ? { number: nextSura.number, name: nextSura.name } : null}
+        prev={prev}
+        next={next}
         mode={mode}
         onModeChange={(m) => { setMode(m); setSelectedVerse(null); }}
         lang={lang}
-        onLangChange={setLang}
+        onLangChange={onLangChange}
         fontScale={fontScale}
         onFontScaleChange={setFontScale}
       />
