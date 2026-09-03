@@ -175,8 +175,8 @@ public sealed partial class CosmosUserDataRepository(
     private static string GenerateSlug(string title)
     {
         var slug = title.ToLowerInvariant().Trim();
-        slug = SlugInvalidChars().Replace(slug, "");
-        slug = SlugWhitespace().Replace(slug, "-");
+        slug = SlugInvalidCharsRegex.Replace(slug, "");
+        slug = SlugWhitespaceRegex.Replace(slug, "-");
         slug = slug.Trim('-');
         if (slug.Length == 0)
             slug = "bookmark";
@@ -187,11 +187,8 @@ public sealed partial class CosmosUserDataRepository(
         return slug;
     }
 
-    [GeneratedRegex(@"[^\w\s-]")]
-    private static partial Regex SlugInvalidChars();
-
-    [GeneratedRegex(@"\s+")]
-    private static partial Regex SlugWhitespace();
+    private static readonly Regex SlugInvalidCharsRegex = new(@"[^\w\s-]", RegexOptions.Compiled);
+    private static readonly Regex SlugWhitespaceRegex = new(@"\s+", RegexOptions.Compiled);
 
     // Favorites
 
