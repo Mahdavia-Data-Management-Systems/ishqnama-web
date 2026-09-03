@@ -27,9 +27,9 @@ const modeOptions = [
 ];
 
 const langOptions = [
-  { label: "اردو", value: "urdu" },
-  { label: "हिन्दी", value: "hindi" },
   { label: "English", value: "english" },
+  { label: "हिन्दी", value: "hindi" },
+  { label: "اردو", value: "urdu" },
 ];
 
 export default function SettingsSheet({

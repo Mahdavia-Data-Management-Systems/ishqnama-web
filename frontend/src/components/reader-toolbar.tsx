@@ -27,9 +27,9 @@ const modeOptions = [
 ];
 
 const langOptions = [
-  { label: "اردو", value: "urdu", shortLabel: "ار", ariaLabel: "اردو" },
-  { label: "हिन्दी", value: "hindi", shortLabel: "हि", ariaLabel: "हिन्दी" },
   { label: "English", value: "english", shortLabel: "En", ariaLabel: "English" },
+  { label: "हिन्दी", value: "hindi", shortLabel: "हि", ariaLabel: "हिन्दी" },
+  { label: "اردو", value: "urdu", shortLabel: "ار", ariaLabel: "اردو" },
 ];
 
 const FONT_MIN = 0;
