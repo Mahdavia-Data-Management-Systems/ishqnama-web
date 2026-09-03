@@ -6,8 +6,8 @@ namespace Ishqnama.Application.Services;
 
 public sealed partial class UserDataService(IUserDataRepository repository)
 {
-    [GeneratedRegex(@"^[a-z0-9][a-z0-9_-]{0,98}[a-z0-9]$")]
-    private static partial Regex ValidSlugPattern();
+    private static readonly Regex ValidSlugPattern =
+        new(@"^[a-z0-9][a-z0-9_-]{0,98}[a-z0-9]$", RegexOptions.Compiled);
     private static readonly HashSet<string> AllowedIcons =
     [
         "bookmark", "heart", "moon", "home", "clock", "user", "check"
@@ -70,7 +70,7 @@ public sealed partial class UserDataService(IUserDataRepository repository)
     private static void ValidateSlug(string slug)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(slug);
-        if (slug.Length > 100 || !ValidSlugPattern().IsMatch(slug))
+        if (slug.Length > 100 || !ValidSlugPattern.IsMatch(slug))
             throw new ArgumentException("Invalid bookmark slug.", nameof(slug));
     }
 
