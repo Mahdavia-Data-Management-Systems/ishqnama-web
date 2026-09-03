@@ -39,9 +39,10 @@ interface SearchResultCardProps {
   result: SearchResultDto;
   query: string;
   lang: string;
+  searchScope: string;
 }
 
-export default function SearchResultCard({ result, query, lang }: SearchResultCardProps) {
+export default function SearchResultCard({ result, query, lang, searchScope }: SearchResultCardProps) {
   const fontFamily =
     lang === "urdu"
       ? "var(--font-urdu)"
@@ -52,9 +53,11 @@ export default function SearchResultCard({ result, query, lang }: SearchResultCa
   const langCode = lang === "urdu" ? "ur" : lang === "hindi" ? "hi" : "en";
 
   const textFragment = encodeURIComponent(query).replace(/-/g, "%2D");
+  const showTafseer = searchScope === "both" || searchScope === "tafseer";
+  const href = `/quran/${result.chapterNumber}/?verse=${result.verseNumber}&mode=verse&lang=${lang}${showTafseer ? "&tafseer=true" : ""}&highlight=${encodeURIComponent(query)}#:~:text=${textFragment}`;
 
   return (
-    <Link href={`/quran/${result.chapterNumber}/?verse=${result.verseNumber}&highlight=${encodeURIComponent(query)}#:~:text=${textFragment}`} className={styles.card}>
+    <Link href={href} className={styles.card}>
       <div className={styles.meta}>
         <span className={styles.ref}>
           {result.chapterName} {result.chapterNumber}:{result.verseNumber}

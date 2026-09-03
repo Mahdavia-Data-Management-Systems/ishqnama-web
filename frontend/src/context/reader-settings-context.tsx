@@ -10,13 +10,10 @@ import type { UserSettingsDto } from "@/types/user";
 
 interface ReaderSettingsContextValue {
   mode: ReadingMode;
-  setMode: (mode: ReadingMode) => void;
   lang: TranslationLang;
-  setLang: (lang: TranslationLang) => void;
   fontScale: number;
-  setFontScale: (scale: number) => void;
   showTafseer: boolean;
-  setShowTafseer: (show: boolean) => void;
+  updateSettings: (patch: Partial<UserSettingsDto>) => void;
   settingsOpen: boolean;
   openSettings: () => void;
   closeSettings: () => void;
@@ -84,33 +81,12 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
     }, 500);
   }, [isAuthenticated, loaded]);
 
-  const setMode = useCallback(
-    (m: ReadingMode) => {
-      setModeState(m);
-      persistSettings();
-    },
-    [persistSettings],
-  );
-
-  const setLang = useCallback(
-    (l: TranslationLang) => {
-      setLangState(l);
-      persistSettings();
-    },
-    [persistSettings],
-  );
-
-  const setFontScale = useCallback(
-    (s: number) => {
-      setFontScaleState(s);
-      persistSettings();
-    },
-    [persistSettings],
-  );
-
-  const setShowTafseer = useCallback(
-    (t: boolean) => {
-      setShowTafseerState(t);
+  const updateSettings = useCallback(
+    (patch: Partial<UserSettingsDto>) => {
+      if (patch.mode !== undefined) setModeState(patch.mode as ReadingMode);
+      if (patch.lang !== undefined) setLangState(patch.lang as TranslationLang);
+      if (patch.fontScale !== undefined) setFontScaleState(patch.fontScale);
+      if (patch.showTafseer !== undefined) setShowTafseerState(patch.showTafseer);
       persistSettings();
     },
     [persistSettings],
@@ -123,13 +99,10 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
     <ReaderSettingsContext.Provider
       value={{
         mode,
-        setMode,
         lang,
-        setLang,
         fontScale,
-        setFontScale,
         showTafseer,
-        setShowTafseer,
+        updateSettings,
         settingsOpen,
         openSettings,
         closeSettings,
@@ -141,13 +114,13 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
           isOpen={settingsOpen}
           onClose={closeSettings}
           mode={mode}
-          onModeChange={setMode}
+          onModeChange={(m) => updateSettings({ mode: m })}
           lang={lang}
-          onLangChange={setLang}
+          onLangChange={(l) => updateSettings({ lang: l })}
           fontScale={fontScale}
-          onFontScaleChange={setFontScale}
+          onFontScaleChange={(s) => updateSettings({ fontScale: s })}
           showTafseer={showTafseer}
-          onTafseerChange={setShowTafseer}
+          onTafseerChange={(t) => updateSettings({ showTafseer: t })}
         />
       )}
     </ReaderSettingsContext.Provider>

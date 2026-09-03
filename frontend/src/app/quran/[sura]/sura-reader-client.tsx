@@ -8,6 +8,7 @@ import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import ChapterNav from "@/components/scripture/chapter-nav";
 import ReaderToolbar from "@/components/reader-toolbar";
+import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
@@ -21,7 +22,45 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const sura = suras.find((s) => s.number === suraNumber);
   const isAuthenticated = useIsAuthenticated();
   const searchParams = useSearchParams();
-  const { mode, setMode, lang, setLang, fontScale, setFontScale, showTafseer } = useReaderSettings();
+  const {
+    mode: persistedMode, lang: persistedLang,
+    fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
+  } = useReaderSettings();
+
+  // Local page-level state: query param > persisted setting
+  const qMode = searchParams.get("mode");
+  const qLang = searchParams.get("lang");
+  const qTafseer = searchParams.get("tafseer");
+  const [mode, setMode] = useState<ReadingMode>(
+    qMode === "verse" || qMode === "continuous" ? qMode : persistedMode,
+  );
+  const [lang, setLang] = useState<TranslationLang>(
+    qLang === "english" || qLang === "hindi" || qLang === "urdu" ? qLang : persistedLang,
+  );
+  const [fontScale, setFontScale] = useState(persistedFontScale);
+  const [showTafseer, setShowTafseer] = useState(
+    qTafseer === "true" || qTafseer === "false" ? qTafseer === "true" : persistedShowTafseer,
+  );
+
+  // Sync from persisted → local when settings sheet changes
+  useEffect(() => { setMode(persistedMode); }, [persistedMode]);
+  useEffect(() => { setLang(persistedLang); }, [persistedLang]);
+  useEffect(() => { setFontScale(persistedFontScale); }, [persistedFontScale]);
+  useEffect(() => { setShowTafseer(persistedShowTafseer); }, [persistedShowTafseer]);
+
+  // Reset on sura navigation (re-apply query param overrides)
+  useEffect(() => {
+    const qm = searchParams.get("mode");
+    const ql = searchParams.get("lang");
+    const qt = searchParams.get("tafseer");
+    setMode(qm === "verse" || qm === "continuous" ? qm : persistedMode);
+    setLang(ql === "english" || ql === "hindi" || ql === "urdu" ? ql : persistedLang);
+    setFontScale(persistedFontScale);
+    setShowTafseer(qt === "true" || qt === "false" ? qt === "true" : persistedShowTafseer);
+    setSelectedVerse(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suraNumber, searchParams]);
+
   const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);

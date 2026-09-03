@@ -202,6 +202,7 @@ export default function SearchPage() {
                     result={r}
                     query={query}
                     lang={lang}
+                    searchScope={tab}
                   />
                 ))}
               </div>
