@@ -52,7 +52,7 @@ export default function SuraRukuReaderLoader({
       `${suraName} — Ruku ${rank}`,
       `/quran/${suraNumber}/ruku/${rank}/`,
     ).catch(() => { /* silent */ });
-  }, [isAuthenticated, suraNumber, rank]); // eslint-disable-line react-hooks/exhaustive-deps -- suraName is stable per suraNumber
+  }, [isAuthenticated, suraNumber, rank]); // eslint-disable-line react-hooks/exhaustive-deps -- suraName is stable per suraNumber; key={`${suraNumber}-${rank}`} remounts on nav
 
   return (
     <>

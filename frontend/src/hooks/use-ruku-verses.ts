@@ -7,14 +7,17 @@ import type { RukuDto } from "@/types/api";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 import { toDisplayVerse, type DisplayVerse } from "@/hooks/use-chapter-verses";
 
-interface RukuLookup {
-  chapterNum?: number;
-  juzNum?: number;
-  rankInChapter?: number;
-  rankInJuz?: number;
-}
+type RukuLookup =
+  | { chapterNum: number; rankInChapter: number }
+  | { juzNum: number; rankInJuz: number };
 
 export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
+  const isChapter = "chapterNum" in lookup;
+  const chapterNum = isChapter ? lookup.chapterNum : undefined;
+  const juzNum = isChapter ? undefined : lookup.juzNum;
+  const rankInChapter = isChapter ? lookup.rankInChapter : undefined;
+  const rankInJuz = isChapter ? undefined : lookup.rankInJuz;
+
   const [ruku, setRuku] = useState<RukuDto | null>(null);
   const [verses, setVerses] = useState<DisplayVerse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,14 +35,14 @@ export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
       try {
         // Step 1: resolve rukuId via getRukus with chapter or juz filter
         const rukus = await getRukus(
-          { chapterNum: lookup.chapterNum, juzNum: lookup.juzNum },
+          { chapterNum, juzNum },
           signal,
         );
 
         const found = rukus.find((r) =>
-          lookup.rankInChapter !== undefined
-            ? r.rankInChapter === lookup.rankInChapter
-            : r.rankInJuz === lookup.rankInJuz,
+          rankInChapter !== undefined
+            ? r.rankInChapter === rankInChapter
+            : r.rankInJuz === rankInJuz,
         );
 
         if (!found) {
@@ -67,7 +70,7 @@ export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
 
     fetch();
     return () => controller.abort();
-  }, [lookup.chapterNum, lookup.juzNum, lookup.rankInChapter, lookup.rankInJuz, lang, retryCount]);
+  }, [chapterNum, juzNum, rankInChapter, rankInJuz, lang, retryCount]);
 
   const retry = useCallback(() => setRetryCount((c) => c + 1), []);
 

@@ -40,12 +40,12 @@ export default async function SuraRukuPage({
         rank={rank}
         totalRukus={maxRank}
         prev={
-          prevRuku
+          prevRuku !== null
             ? { href: `/quran/${suraNumber}/ruku/${prevRuku}/`, name: `Ruku ${prevRuku}` }
             : null
         }
         next={
-          nextRuku
+          nextRuku !== null
             ? { href: `/quran/${suraNumber}/ruku/${nextRuku}/`, name: `Ruku ${nextRuku}` }
             : null
         }

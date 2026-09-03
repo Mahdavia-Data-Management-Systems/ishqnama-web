@@ -18,10 +18,9 @@ export default function RukuHeader({
       <div className={styles.inner}>
         <span className={styles.number}>{rank}</span>
         <div className={styles.content}>
-          <h1 className={styles.name}>Ruku {rank} of {totalRukus}</h1>
-          <h2 className={styles.arabicName} style={{ fontSize: "1.25rem" }}>
-            {parentLabel}
-          </h2>
+          <h1 className={styles.name}>
+            {parentLabel} — Ruku {rank} of {totalRukus}
+          </h1>
           {verseCount !== undefined && (
             <div className={styles.badges}>
               <span className={styles.meta}>{verseCount} verses</span>
