@@ -16,12 +16,6 @@ export interface UserBookmarkDto {
   updatedAt: string;
 }
 
-export interface UserFavoriteDto {
-  chapterNumber: number;
-  verseNumber: number;
-  createdAt: string;
-}
-
 export interface UserHistoryDto {
   chapterNumber: number;
   timestamp: string;

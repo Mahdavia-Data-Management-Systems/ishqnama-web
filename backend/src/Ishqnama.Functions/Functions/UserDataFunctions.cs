@@ -110,39 +110,6 @@ public sealed class UserDataFunctions(UserDataService userDataService)
         }
     }
 
-    // Favorites
-
-    [Function("GetUserFavorites")]
-    public async Task<IResult> GetUserFavorites(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/favorites")] HttpRequest req)
-    {
-        var userId = GetUserId(req.HttpContext);
-        var favorites = await userDataService.GetFavoritesAsync(userId);
-        return Results.Ok(favorites);
-    }
-
-    [Function("AddUserFavorite")]
-    public async Task<IResult> AddUserFavorite(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user/favorites")] HttpRequest req)
-    {
-        var userId = GetUserId(req.HttpContext);
-        var body = await req.ReadFromJsonAsync<FavoriteRequest>();
-        if (body is null) return Results.BadRequest(new { error = "Invalid request body." });
-
-        await userDataService.AddFavoriteAsync(userId, body.ChapterNumber, body.VerseNumber);
-        return Results.Ok();
-    }
-
-    [Function("RemoveUserFavorite")]
-    public async Task<IResult> RemoveUserFavorite(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "user/favorites/{chapter:int}/{verse:int}")] HttpRequest req,
-        int chapter, int verse)
-    {
-        var userId = GetUserId(req.HttpContext);
-        await userDataService.RemoveFavoriteAsync(userId, chapter, verse);
-        return Results.Ok();
-    }
-
     // History
 
     [Function("GetUserHistory")]
@@ -171,6 +138,5 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     private sealed record CreateBookmarkRequest(string Title, string Icon);
     private sealed record UpdatePositionRequest(int ChapterNumber, int VerseNumber);
-    private sealed record FavoriteRequest(int ChapterNumber, int VerseNumber);
     private sealed record HistoryRequest(int ChapterNumber);
 }

@@ -15,11 +15,6 @@ public interface IUserDataRepository
     Task UpdateBookmarkPositionAsync(string userId, string slug, int chapterNumber, int verseNumber);
     Task DeleteBookmarkAsync(string userId, string slug);
 
-    // Favorites
-    Task<IReadOnlyList<UserFavoriteDto>> GetFavoritesAsync(string userId);
-    Task AddFavoriteAsync(string userId, int chapterNumber, int verseNumber);
-    Task RemoveFavoriteAsync(string userId, int chapterNumber, int verseNumber);
-
     // History
     Task<IReadOnlyList<UserHistoryDto>> GetHistoryAsync(string userId, int limit = 50);
     Task AddHistoryEntryAsync(string userId, int chapterNumber);

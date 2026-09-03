@@ -2,7 +2,6 @@ import { authenticatedApiFetch } from "./api-client";
 import type {
   UserSettingsDto,
   UserBookmarkDto,
-  UserFavoriteDto,
   UserHistoryDto,
 } from "@/types/user";
 
@@ -42,25 +41,6 @@ export function updateBookmarkPosition(slug: string, chapterNumber: number, vers
 
 export function deleteBookmark(slug: string): Promise<void> {
   return authenticatedApiFetch<void>(`/user/bookmarks/${encodeURIComponent(slug)}`, {
-    method: "DELETE",
-  });
-}
-
-// Favorites
-
-export function getUserFavorites(signal?: AbortSignal): Promise<UserFavoriteDto[]> {
-  return authenticatedApiFetch<UserFavoriteDto[]>("/user/favorites", { signal });
-}
-
-export function addFavorite(chapterNumber: number, verseNumber: number): Promise<void> {
-  return authenticatedApiFetch<void>("/user/favorites", {
-    method: "POST",
-    body: { chapterNumber, verseNumber },
-  });
-}
-
-export function removeFavorite(chapterNumber: number, verseNumber: number): Promise<void> {
-  return authenticatedApiFetch<void>(`/user/favorites/${chapterNumber}/${verseNumber}`, {
     method: "DELETE",
   });
 }

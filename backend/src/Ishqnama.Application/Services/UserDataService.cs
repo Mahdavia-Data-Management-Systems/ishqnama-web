@@ -74,21 +74,6 @@ public sealed partial class UserDataService(IUserDataRepository repository)
             throw new ArgumentException("Invalid bookmark slug.", nameof(slug));
     }
 
-    // Favorites
-    public Task<IReadOnlyList<UserFavoriteDto>> GetFavoritesAsync(string userId)
-        => repository.GetFavoritesAsync(userId);
-
-    public Task AddFavoriteAsync(string userId, int chapterNumber, int verseNumber)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(chapterNumber, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(chapterNumber, 114);
-        ArgumentOutOfRangeException.ThrowIfLessThan(verseNumber, 1);
-        return repository.AddFavoriteAsync(userId, chapterNumber, verseNumber);
-    }
-
-    public Task RemoveFavoriteAsync(string userId, int chapterNumber, int verseNumber)
-        => repository.RemoveFavoriteAsync(userId, chapterNumber, verseNumber);
-
     // History
     public Task<IReadOnlyList<UserHistoryDto>> GetHistoryAsync(string userId, int limit = 50)
     {

@@ -190,53 +190,6 @@ public sealed partial class CosmosUserDataRepository(
     private static readonly Regex SlugInvalidCharsRegex = new(@"[^\w\s-]", RegexOptions.Compiled);
     private static readonly Regex SlugWhitespaceRegex = new(@"\s+", RegexOptions.Compiled);
 
-    // Favorites
-
-    public async Task<IReadOnlyList<UserFavoriteDto>> GetFavoritesAsync(string userId)
-    {
-        var query = new QueryDefinition(
-            "SELECT * FROM c WHERE c.type = 'favorite' ORDER BY c.createdAt DESC");
-
-        var results = new List<UserFavoriteDto>();
-        using var feed = _container.GetItemQueryIterator<UserFavorite>(query,
-            requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
-
-        while (feed.HasMoreResults)
-        {
-            var page = await feed.ReadNextAsync();
-            results.AddRange(page.Select(f => new UserFavoriteDto(f.ChapterNumber, f.VerseNumber, f.CreatedAt)));
-        }
-
-        return results;
-    }
-
-    public async Task AddFavoriteAsync(string userId, int chapterNumber, int verseNumber)
-    {
-        var doc = new UserFavorite
-        {
-            Id = $"favorite_{chapterNumber}_{verseNumber}",
-            UserId = userId,
-            Type = "favorite",
-            ChapterNumber = chapterNumber,
-            VerseNumber = verseNumber,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-        await _container.UpsertItemAsync(doc, new PartitionKey(userId));
-    }
-
-    public async Task RemoveFavoriteAsync(string userId, int chapterNumber, int verseNumber)
-    {
-        try
-        {
-            await _container.DeleteItemAsync<UserFavorite>(
-                $"favorite_{chapterNumber}_{verseNumber}", new PartitionKey(userId));
-        }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            // Already deleted — no-op
-        }
-    }
-
     // History
 
     public async Task<IReadOnlyList<UserHistoryDto>> GetHistoryAsync(string userId, int limit = 50)

@@ -10,14 +10,13 @@ import BookmarkTile from "@/components/bookmark-tile";
 import AddBookmarkTile from "@/components/add-bookmark-tile";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import { useBookmarks } from "@/context/bookmarks-context";
-import { getUserFavorites, getUserHistory } from "@/lib/user-api";
+import { getUserHistory } from "@/lib/user-api";
 import { suras } from "@/data/suras";
-import type { UserFavoriteDto, UserHistoryDto } from "@/types/user";
+import type { UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
 
 const tabOptions = [
   { label: "Bookmarks", value: "bookmarks" },
-  { label: "Favourites", value: "favourites" },
   { label: "History", value: "history" },
 ];
 
@@ -32,24 +31,19 @@ export default function SavedPage() {
   const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [favorites, setFavorites] = useState<UserFavoriteDto[]>([]);
   const [history, setHistory] = useState<UserHistoryDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (tab === "bookmarks") return; // bookmarks come from context
+    if (tab !== "history") return;
 
     const controller = new AbortController();
     setLoading(true);
 
     const fetchData = async () => {
       try {
-        if (tab === "favourites") {
-          setFavorites(await getUserFavorites(controller.signal));
-        } else {
-          setHistory(await getUserHistory(controller.signal));
-        }
+        setHistory(await getUserHistory(controller.signal));
       } catch {
         // Failed to load — keep existing state
       } finally {
@@ -66,11 +60,6 @@ export default function SavedPage() {
       title: "No bookmarks yet",
       body: "Bookmark verses while reading to find them here.",
     },
-    favourites: {
-      icon: "heart",
-      title: "No favourites yet",
-      body: "Mark your favourite verses to build a personal collection.",
-    },
     history: {
       icon: "clock",
       title: "No reading history",
@@ -84,7 +73,6 @@ export default function SavedPage() {
 
   const hasItems =
     (tab === "bookmarks" && bookmarks.length > 0) ||
-    (tab === "favourites" && favorites.length > 0) ||
     (tab === "history" && history.length > 0);
 
   return (
@@ -118,22 +106,6 @@ export default function SavedPage() {
               body={config.body}
               action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
             />
-          ) : tab === "favourites" ? (
-            <ul className={styles.list}>
-              {favorites.map((f) => (
-                <li key={`${f.chapterNumber}:${f.verseNumber}`} className={styles.item}>
-                  <button
-                    className={styles.itemButton}
-                    onClick={() => router.push(`/quran/${f.chapterNumber}/`)}
-                  >
-                    <span className={styles.itemTitle}>
-                      {getSuraName(f.chapterNumber)} — Verse {f.verseNumber}
-                    </span>
-                    <span className={styles.itemMeta}>{f.chapterNumber}:{f.verseNumber}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
           ) : (
             <ul className={styles.list}>
               {history.map((h, i) => (
