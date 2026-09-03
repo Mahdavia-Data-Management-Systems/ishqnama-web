@@ -7,7 +7,7 @@ import { useReaderSettings } from "@/context/reader-settings-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
 import { addHistoryEntry } from "@/lib/user-api";
 import type { TranslationLang } from "@/components/reader-toolbar";
-import QuranReaderClient from "./quran-reader-client";
+import QuranReaderClient from "@/components/scripture/quran-reader-client";
 
 interface Props {
   suraNumber: number;
@@ -37,7 +37,7 @@ export default function SuraReaderLoader({ suraNumber, suraName, prev, next }: P
   useEffect(() => {
     if (!isAuthenticated) return;
     addHistoryEntry(suraName, `/quran/${suraNumber}/`).catch(() => { /* silent */ });
-  }, [isAuthenticated, suraNumber, suraName]);
+  }, [isAuthenticated, suraNumber]); // eslint-disable-line react-hooks/exhaustive-deps -- suraName is stable per suraNumber; key={suraNumber} remounts on nav
 
   return (
     <QuranReaderClient

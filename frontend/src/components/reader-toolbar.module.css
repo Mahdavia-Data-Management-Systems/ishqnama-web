@@ -57,10 +57,6 @@
   opacity: 0.75;
 }
 
-.navLabel {
-  white-space: nowrap;
-}
-
 .navPlaceholder {
   width: 60px;
   height: 36px;
@@ -138,10 +134,6 @@
 @media (max-width: 640px) {
   .controls {
     gap: var(--space-2);
-  }
-
-  .navLabel {
-    display: none;
   }
 
   .navPlaceholder {

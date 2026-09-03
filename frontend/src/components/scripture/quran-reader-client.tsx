@@ -14,7 +14,7 @@ import { useBookmarks } from "@/context/bookmarks-context";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
-import styles from "./page.module.css";
+import styles from "@/app/quran/[sura]/page.module.css";
 
 interface Props {
   verses: DisplayVerse[];
