@@ -7,8 +7,7 @@ import SuraHeader from "@/components/scripture/sura-header";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import ChapterNav from "@/components/scripture/chapter-nav";
-import ReaderToolbar from "@/components/reader-toolbar";
-import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
+import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
@@ -42,11 +41,17 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     qTafseer === "true" || qTafseer === "false" ? qTafseer === "true" : persistedShowTafseer,
   );
 
-  // Sync from persisted → local when settings sheet changes
-  useEffect(() => { setMode(persistedMode); }, [persistedMode]);
-  useEffect(() => { setLang(persistedLang); }, [persistedLang]);
+  // Sync from persisted → local when settings sheet changes (skip if query param override is active)
+  useEffect(() => {
+    if (!searchParams.get("mode")) setMode(persistedMode);
+  }, [persistedMode, searchParams]);
+  useEffect(() => {
+    if (!searchParams.get("lang")) setLang(persistedLang);
+  }, [persistedLang, searchParams]);
   useEffect(() => { setFontScale(persistedFontScale); }, [persistedFontScale]);
-  useEffect(() => { setShowTafseer(persistedShowTafseer); }, [persistedShowTafseer]);
+  useEffect(() => {
+    if (!searchParams.get("tafseer")) setShowTafseer(persistedShowTafseer);
+  }, [persistedShowTafseer, searchParams]);
 
   // Reset on sura navigation (re-apply query param overrides)
   useEffect(() => {
