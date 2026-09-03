@@ -61,5 +61,16 @@ resource "azurerm_cosmosdb_sql_container" "this" {
         order = "ascending"
       }
     }
+
+    composite_index {
+      index {
+        path  = "/isDefault"
+        order = "descending"
+      }
+      index {
+        path  = "/createdAt"
+        order = "descending"
+      }
+    }
   }
 }
