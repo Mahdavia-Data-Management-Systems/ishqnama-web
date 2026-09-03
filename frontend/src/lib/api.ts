@@ -1,4 +1,8 @@
-import { apiFetch, authenticatedApiFetch } from "@/lib/api-client";
+import {
+  apiFetch,
+  apiFetchWithOptionalAuth,
+  authenticatedApiFetch,
+} from "@/lib/api-client";
 import type {
   ChapterDetailDto,
   ChapterDto,
@@ -28,14 +32,17 @@ export function getChapterVerses(
   opts?: { translationId?: number; page?: number; pageSize?: number },
   signal?: AbortSignal,
 ) {
-  return apiFetch<PagedResponse<VerseDto>>(`/chapters/${num}/verses`, {
-    params: {
-      translationId: opts?.translationId,
-      page: opts?.page,
-      pageSize: opts?.pageSize,
+  return apiFetchWithOptionalAuth<PagedResponse<VerseDto>>(
+    `/chapters/${num}/verses`,
+    {
+      params: {
+        translationId: opts?.translationId,
+        page: opts?.page,
+        pageSize: opts?.pageSize,
+      },
+      signal,
     },
-    signal,
-  });
+  );
 }
 
 export function getVerse(
@@ -43,9 +50,10 @@ export function getVerse(
   verseNum: number,
   signal?: AbortSignal,
 ) {
-  return apiFetch<VerseDto>(`/chapters/${chapterNum}/verses/${verseNum}`, {
-    signal,
-  });
+  return apiFetchWithOptionalAuth<VerseDto>(
+    `/chapters/${chapterNum}/verses/${verseNum}`,
+    { signal },
+  );
 }
 
 // --- Verses (cross-chapter range) ---
@@ -56,7 +64,7 @@ export function getVerseRange(
   translationId?: number,
   signal?: AbortSignal,
 ) {
-  return apiFetch<VerseDto[]>("/verses", {
+  return apiFetchWithOptionalAuth<VerseDto[]>("/verses", {
     params: { from, to, translationId },
     signal,
   });
@@ -73,14 +81,17 @@ export function getJuzVerses(
   opts?: { translationId?: number; page?: number; pageSize?: number },
   signal?: AbortSignal,
 ) {
-  return apiFetch<PagedResponse<VerseDto>>(`/juz/${num}/verses`, {
-    params: {
-      translationId: opts?.translationId,
-      page: opts?.page,
-      pageSize: opts?.pageSize,
+  return apiFetchWithOptionalAuth<PagedResponse<VerseDto>>(
+    `/juz/${num}/verses`,
+    {
+      params: {
+        translationId: opts?.translationId,
+        page: opts?.page,
+        pageSize: opts?.pageSize,
+      },
+      signal,
     },
-    signal,
-  });
+  );
 }
 
 // --- Rukus ---
@@ -100,7 +111,7 @@ export function getRukuVerses(
   translationId?: number,
   signal?: AbortSignal,
 ) {
-  return apiFetch<VerseDto[]>(`/rukus/${id}/verses`, {
+  return apiFetchWithOptionalAuth<VerseDto[]>(`/rukus/${id}/verses`, {
     params: { translationId },
     signal,
   });

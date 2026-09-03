@@ -37,24 +37,50 @@ public sealed class AuthMiddleware : IFunctionsWorkerMiddleware
             return;
         }
 
-        // Only protect /api/user/* and /api/search routes
         var path = httpContext.Request.Path;
-        if (!path.StartsWithSegments("/api/user") && !path.StartsWithSegments("/api/search"))
+        var isProtectedRoute = path.StartsWithSegments("/api/user") || path.StartsWithSegments("/api/search");
+
+        var authHeader = httpContext.Request.Headers.Authorization.ToString();
+        var hasBearer = !string.IsNullOrEmpty(authHeader) &&
+                        authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
+
+        if (!isProtectedRoute && !hasBearer)
         {
+            // No auth needed, no token present — proceed anonymously
             await next(context);
             return;
         }
 
-        var authHeader = httpContext.Request.Headers.Authorization.ToString();
-        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        if (!hasBearer)
         {
+            // Protected route without token — 401
             httpContext.Response.StatusCode = 401;
             await httpContext.Response.WriteAsJsonAsync(new { error = "Missing or invalid Authorization header." });
             return;
         }
 
-        var token = authHeader["Bearer ".Length..].Trim();
+        var token = authHeader!["Bearer ".Length..].Trim();
+        var (isValid, userId) = await ValidateTokenAsync(token);
 
+        if (isValid && !string.IsNullOrEmpty(userId))
+        {
+            httpContext.Items["UserId"] = userId;
+            httpContext.Items["IsAuthenticated"] = true;
+        }
+        else if (isProtectedRoute)
+        {
+            // Protected route with invalid token — 401
+            httpContext.Response.StatusCode = 401;
+            await httpContext.Response.WriteAsJsonAsync(new { error = "Invalid token." });
+            return;
+        }
+        // else: non-protected route with invalid token — proceed anonymously
+
+        await next(context);
+    }
+
+    private async Task<(bool IsValid, string? UserId)> ValidateTokenAsync(string token)
+    {
         try
         {
             var oidcConfig = await _configManager.GetConfigurationAsync(CancellationToken.None);
@@ -74,29 +100,18 @@ public sealed class AuthMiddleware : IFunctionsWorkerMiddleware
             var result = await handler.ValidateTokenAsync(token, validationParams);
 
             if (!result.IsValid)
-                throw result.Exception;
+                return (false, null);
 
             var userId = result.Claims.TryGetValue("oid", out var oid) ? oid?.ToString()
                 : result.Claims.TryGetValue("sub", out var sub) ? sub?.ToString()
                 : null;
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                httpContext.Response.StatusCode = 401;
-                await httpContext.Response.WriteAsJsonAsync(new { error = "Token missing user identifier." });
-                return;
-            }
-
-            httpContext.Items["UserId"] = userId;
+            return string.IsNullOrEmpty(userId) ? (false, null) : (true, userId);
         }
-        catch (SecurityTokenException ex)
+        catch (Exception ex)
         {
             _logger.LogWarning(ex, "Token validation failed");
-            httpContext.Response.StatusCode = 401;
-            await httpContext.Response.WriteAsJsonAsync(new { error = "Invalid token." });
-            return;
+            return (false, null);
         }
-
-        await next(context);
     }
 }

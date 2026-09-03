@@ -1,4 +1,5 @@
 using Ishqnama.Application.Services;
+using Ishqnama.Functions.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 
@@ -21,6 +22,6 @@ public sealed class RukuFunctions(RukuService rukuService)
         int id, int? translationId = null)
     {
         var verses = await rukuService.GetRukuVersesAsync(id, translationId);
-        return verses is null ? Results.NotFound() : Results.Ok(verses);
+        return verses is null ? Results.NotFound() : Results.Ok(req.IsAuthenticated() ? verses : verses.StripExplanations());
     }
 }

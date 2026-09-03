@@ -1,4 +1,5 @@
 using Ishqnama.Application.Services;
+using Ishqnama.Functions.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 
@@ -18,6 +19,6 @@ public sealed class VerseFunctions(VerseService verseService)
         }
 
         var verses = await verseService.GetVerseRangeAsync(fromChapter, fromVerse, toChapter, toVerse, translationId);
-        return Results.Ok(verses);
+        return Results.Ok(req.IsAuthenticated() ? verses : verses.StripExplanations());
     }
 }

@@ -58,6 +58,66 @@ export async function apiFetch<T>(
   return response.json() as Promise<T>;
 }
 
+/**
+ * Like apiFetch, but silently attaches a Bearer token when the user is signed in.
+ * Falls back to an unauthenticated request if no account or token acquisition fails.
+ */
+export async function apiFetchWithOptionalAuth<T>(
+  path: string,
+  options?: ApiFetchOptions,
+): Promise<T> {
+  if (!API_BASE_URL) {
+    throw new Error("NEXT_PUBLIC_API_URL is not configured");
+  }
+
+  const { params, ...fetchOptions } = options ?? {};
+
+  let url = `${API_BASE_URL}${path}`;
+
+  if (params) {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined) {
+        searchParams.set(key, String(value));
+      }
+    }
+    const qs = searchParams.toString();
+    if (qs) {
+      url += `?${qs}`;
+    }
+  }
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(fetchOptions.headers as Record<string, string>),
+  };
+
+  // Silently attach token if user is signed in
+  const account = msalInstance.getActiveAccount();
+  if (account) {
+    try {
+      const result = await msalInstance.acquireTokenSilent({
+        scopes: [apiScope],
+        account,
+      });
+      headers.Authorization = `Bearer ${result.accessToken}`;
+    } catch {
+      // Token acquisition failed — proceed without auth
+    }
+  }
+
+  const response = await fetch(url, {
+    ...fetchOptions,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, response.statusText);
+  }
+
+  return response.json() as Promise<T>;
+}
+
 interface AuthenticatedFetchOptions extends Omit<RequestInit, "body"> {
   params?: Record<string, string | number | undefined>;
   body?: unknown;
