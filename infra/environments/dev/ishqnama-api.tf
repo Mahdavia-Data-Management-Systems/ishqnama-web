@@ -10,6 +10,7 @@ module "functions" {
   connection_string = "Host=${module.aca.container_app_fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
 
   cors_allowed_origins = [
+    "https://dev.ishqnama.com",
     "https://${module.swa.default_host_name}",
     "http://localhost:3000"
   ]
