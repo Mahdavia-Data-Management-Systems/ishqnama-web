@@ -9,12 +9,14 @@ import AyahBlock from "@/components/scripture/ayah-block";
 import ChapterNav from "@/components/scripture/chapter-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
+import BookmarkPicker from "@/components/bookmark-picker";
 import { useReaderSettings } from "@/context/reader-settings-context";
+import { useBookmarks } from "@/context/bookmarks-context";
 import { useChapterVerses } from "@/hooks/use-chapter-verses";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
-import { getUserBookmarks, addBookmark, removeBookmark, addHistoryEntry } from "@/lib/user-api";
+import { addHistoryEntry } from "@/lib/user-api";
 import styles from "./page.module.css";
 
 export default function SuraReaderClient({ suraNumber }: { suraNumber: number }) {
@@ -25,6 +27,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     mode: persistedMode, lang: persistedLang,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
   } = useReaderSettings();
+  const { bookmarks, savePosition, hasCustomBookmarks } = useBookmarks();
 
   // Local page-level state: query param > persisted setting
   const qMode = searchParams.get("mode");
@@ -66,29 +69,22 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suraNumber, searchParams]);
 
-  const [bookmarked, setBookmarked] = useState<Set<number>>(new Set());
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerVerse, setPickerVerse] = useState<number>(0);
   const popupExplanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   if (!sura) {
     notFound();
   }
 
-  // Load bookmarks from API
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const controller = new AbortController();
-    getUserBookmarks(controller.signal)
-      .then((bookmarks) => {
-        const suraBookmarks = bookmarks
-          .filter((b) => b.chapterNumber === suraNumber)
-          .map((b) => b.verseNumber);
-        setBookmarked(new Set(suraBookmarks));
-      })
-      .catch(() => { /* keep empty set */ });
-    return () => controller.abort();
-  }, [isAuthenticated, suraNumber]);
+  // Compute which verses have bookmarks pointing to this sura
+  const bookmarkedVerses = new Set(
+    bookmarks
+      .filter((b) => b.chapterNumber === suraNumber && b.verseNumber > 0)
+      .map((b) => b.verseNumber),
+  );
 
   // Record reading history
   useEffect(() => {
@@ -109,7 +105,6 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     if (!verseParam || loading || verses.length === 0) return;
     const el = document.getElementById(`verse-${verseParam}`);
     if (el) {
-      // Delay to allow layout to settle after render
       requestAnimationFrame(() => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       });
@@ -129,19 +124,19 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     }
   };
 
-  const toggleBookmark = useCallback((verseNum: number) => {
-    setBookmarked((prev) => {
-      const next = new Set(prev);
-      if (next.has(verseNum)) {
-        next.delete(verseNum);
-        if (isAuthenticated) removeBookmark(suraNumber, verseNum).catch(() => { /* silent */ });
-      } else {
-        next.add(verseNum);
-        if (isAuthenticated) addBookmark(suraNumber, verseNum).catch(() => { /* silent */ });
-      }
-      return next;
-    });
-  }, [isAuthenticated, suraNumber]);
+  const handleBookmarkVerse = useCallback((verseNum: number) => {
+    if (!isAuthenticated) return;
+    if (!hasCustomBookmarks) {
+      savePosition("nazra", suraNumber, verseNum);
+    } else {
+      setPickerVerse(verseNum);
+      setPickerOpen(true);
+    }
+  }, [isAuthenticated, hasCustomBookmarks, savePosition, suraNumber]);
+
+  const handlePickerSelect = useCallback((slug: string) => {
+    savePosition(slug, suraNumber, pickerVerse);
+  }, [savePosition, suraNumber, pickerVerse]);
 
   return (
     <main className={`${styles.main} ornament-mihrab`}>
@@ -181,8 +176,8 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                 showTafseer={showTafseer}
                 activeLang={lang}
                 fontScale={fontScale}
-                isBookmarked={bookmarked.has(verse.number)}
-                onToggleBookmark={() => toggleBookmark(verse.number)}
+                isBookmarked={bookmarkedVerses.has(verse.number)}
+                onToggleBookmark={() => handleBookmarkVerse(verse.number)}
                 onShare={() => handleShare(verse.number, verse.arabic)}
                 highlightQuery={highlightQuery}
               />
@@ -245,11 +240,11 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
               <span className={styles.popupRef}>{suraNumber}:{verse.number}</span>
               <div className={styles.popupActions}>
                 <IconButton
-                  icon={bookmarked.has(verse.number) ? "bookmarkFilled" : "bookmark"}
-                  label={bookmarked.has(verse.number) ? "Remove bookmark" : "Add bookmark"}
+                  icon={bookmarkedVerses.has(verse.number) ? "bookmarkFilled" : "bookmark"}
+                  label={bookmarkedVerses.has(verse.number) ? "Remove bookmark" : "Add bookmark"}
                   size="sm"
-                  filled={bookmarked.has(verse.number)}
-                  onClick={() => toggleBookmark(verse.number)}
+                  filled={bookmarkedVerses.has(verse.number)}
+                  onClick={() => handleBookmarkVerse(verse.number)}
                 />
                 <IconButton
                   icon="share"
@@ -329,6 +324,13 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
           </div>
         );
       })()}
+
+      <BookmarkPicker
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        bookmarks={bookmarks}
+        onSelect={handlePickerSelect}
+      />
 
       <ReaderToolbar
         prevSura={prevSura ? { number: prevSura.number, name: prevSura.name } : null}

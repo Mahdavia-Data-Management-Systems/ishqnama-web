@@ -6,9 +6,14 @@ export interface UserSettingsDto {
 }
 
 export interface UserBookmarkDto {
+  slug: string;
+  title: string;
+  icon: string;
   chapterNumber: number;
   verseNumber: number;
+  isDefault: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserFavoriteDto {

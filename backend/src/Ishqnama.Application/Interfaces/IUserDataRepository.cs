@@ -10,8 +10,10 @@ public interface IUserDataRepository
 
     // Bookmarks
     Task<IReadOnlyList<UserBookmarkDto>> GetBookmarksAsync(string userId);
-    Task AddBookmarkAsync(string userId, int chapterNumber, int verseNumber);
-    Task RemoveBookmarkAsync(string userId, int chapterNumber, int verseNumber);
+    Task<UserBookmarkDto?> GetBookmarkAsync(string userId, string slug);
+    Task<UserBookmarkDto> CreateBookmarkAsync(string userId, string title, string icon);
+    Task UpdateBookmarkPositionAsync(string userId, string slug, int chapterNumber, int verseNumber);
+    Task DeleteBookmarkAsync(string userId, string slug);
 
     // Favorites
     Task<IReadOnlyList<UserFavoriteDto>> GetFavoritesAsync(string userId);

@@ -6,9 +6,13 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import SectionHeading from "@/components/navigation/section-heading";
 import SegmentedControl from "@/components/ui/segmented-control";
 import EmptyState from "@/components/empty-state";
-import { getUserBookmarks, getUserFavorites, getUserHistory } from "@/lib/user-api";
+import BookmarkTile from "@/components/bookmark-tile";
+import AddBookmarkTile from "@/components/add-bookmark-tile";
+import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
+import { useBookmarks } from "@/context/bookmarks-context";
+import { getUserFavorites, getUserHistory } from "@/lib/user-api";
 import { suras } from "@/data/suras";
-import type { UserBookmarkDto, UserFavoriteDto, UserHistoryDto } from "@/types/user";
+import type { UserFavoriteDto, UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
 
 const tabOptions = [
@@ -25,23 +29,23 @@ export default function SavedPage() {
   const [tab, setTab] = useState("bookmarks");
   const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
+  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [bookmarks, setBookmarks] = useState<UserBookmarkDto[]>([]);
   const [favorites, setFavorites] = useState<UserFavoriteDto[]>([]);
   const [history, setHistory] = useState<UserHistoryDto[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    if (tab === "bookmarks") return; // bookmarks come from context
 
     const controller = new AbortController();
     setLoading(true);
 
     const fetchData = async () => {
       try {
-        if (tab === "bookmarks") {
-          setBookmarks(await getUserBookmarks(controller.signal));
-        } else if (tab === "favourites") {
+        if (tab === "favourites") {
           setFavorites(await getUserFavorites(controller.signal));
         } else {
           setHistory(await getUserHistory(controller.signal));
@@ -76,6 +80,8 @@ export default function SavedPage() {
 
   const config = emptyConfig[tab as keyof typeof emptyConfig];
 
+  const customBookmarks = bookmarks.filter((b) => !b.isDefault);
+
   const hasItems =
     (tab === "bookmarks" && bookmarks.length > 0) ||
     (tab === "favourites" && favorites.length > 0) ||
@@ -89,7 +95,21 @@ export default function SavedPage() {
         <SegmentedControl options={tabOptions} value={tab} onChange={setTab} />
 
         <div className={styles.content}>
-          {loading ? (
+          {tab === "bookmarks" ? (
+            <>
+              <div className={styles.bookmarkGrid}>
+                {customBookmarks.map((b) => (
+                  <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
+                ))}
+                <AddBookmarkTile onClick={() => setDialogOpen(true)} />
+              </div>
+              <CreateBookmarkDialog
+                isOpen={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                onCreate={(title, icon) => addBookmark(title, icon)}
+              />
+            </>
+          ) : loading ? (
             <p className={styles.loadingText}>Loading...</p>
           ) : !hasItems ? (
             <EmptyState
@@ -98,22 +118,6 @@ export default function SavedPage() {
               body={config.body}
               action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
             />
-          ) : tab === "bookmarks" ? (
-            <ul className={styles.list}>
-              {bookmarks.map((b) => (
-                <li key={`${b.chapterNumber}:${b.verseNumber}`} className={styles.item}>
-                  <button
-                    className={styles.itemButton}
-                    onClick={() => router.push(`/quran/${b.chapterNumber}/`)}
-                  >
-                    <span className={styles.itemTitle}>
-                      {getSuraName(b.chapterNumber)} — Verse {b.verseNumber}
-                    </span>
-                    <span className={styles.itemMeta}>{b.chapterNumber}:{b.verseNumber}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
           ) : tab === "favourites" ? (
             <ul className={styles.list}>
               {favorites.map((f) => (

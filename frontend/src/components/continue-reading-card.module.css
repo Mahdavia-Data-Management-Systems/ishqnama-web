@@ -24,12 +24,19 @@
 }
 
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gold-bright);
+}
+
+.nazraIcon {
+  flex-shrink: 0;
 }
 
 .arrow {

@@ -1,32 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import ContinueReadingCard from "@/components/continue-reading-card";
 import SectionHeading from "@/components/navigation/section-heading";
 import SuraListItem from "@/components/scripture/sura-list-item";
-import EmptyState from "@/components/empty-state";
+import BookmarkTile from "@/components/bookmark-tile";
+import AddBookmarkTile from "@/components/add-bookmark-tile";
+import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
+import { useBookmarks } from "@/context/bookmarks-context";
 import { suras } from "@/data/suras";
 import styles from "./page.module.css";
 
 export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
-  const previewSuras = suras.slice(0, 6);
+  const previewSuras = [1, 36, 67, 18, 55, 112].map((n) => suras[n - 1]);
+  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const nazra = bookmarks.find((b) => b.isDefault);
+  const customBookmarks = bookmarks.filter((b) => !b.isDefault);
+
+  const nazraSura = nazra ? suras.find((s) => s.number === nazra.chapterNumber) : null;
+  const showContinue = nazra && nazra.verseNumber > 0 && nazraSura;
 
   return (
     <main className={styles.main}>
       <div className="page-container">
         {/* Hero / Continue reading */}
         <section className={styles.hero}>
-          {isAuthenticated ? (
+          {isAuthenticated && showContinue ? (
             <ContinueReadingCard
-              suraNumber={1}
-              suraName="al-Fātiḥah"
-              arabicName="الفاتحة"
-              verseNumber={3}
-              totalVerses={7}
+              suraNumber={nazra.chapterNumber}
+              suraName={nazraSura.name}
+              arabicName={nazraSura.arabicName}
+              verseNumber={nazra.verseNumber}
+              totalVerses={nazraSura.verseCount}
             />
           ) : (
             <div className={`${styles.heroCard} ornament-diagonal`}>
@@ -34,10 +46,10 @@ export default function Home() {
                 بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
               </p>
               <h1 className={styles.heroTitle}>
-                The Quran, with meaning
+                Noor e Imaan, The Holy Quran
               </h1>
               <p className={styles.heroBody}>
-                Read the Quran with Urdu, Hindi, and English translations, verse by verse or continuously.
+                Read the Holy Quran with translations & explanation in Urdu, Hindi, and English, from authentic exegesis of Mahdavia Community.
               </p>
               <Link href="/quran/" className={styles.heroCta}>
                 Start reading
@@ -54,11 +66,16 @@ export default function Home() {
               title="Bookmarks"
               action={{ label: "View all", onClick: () => router.push("/saved/") }}
             />
-            <EmptyState
-              icon="bookmark"
-              title="No bookmarks yet"
-              body="Bookmark verses while reading to find them here later."
-              action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
+            <div className={styles.bookmarkGrid}>
+              {customBookmarks.map((b) => (
+                <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
+              ))}
+              <AddBookmarkTile onClick={() => setDialogOpen(true)} />
+            </div>
+            <CreateBookmarkDialog
+              isOpen={dialogOpen}
+              onClose={() => setDialogOpen(false)}
+              onCreate={(title, icon) => addBookmark(title, icon)}
             />
           </section>
         )}

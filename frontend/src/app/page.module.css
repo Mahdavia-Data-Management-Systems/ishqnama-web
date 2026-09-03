@@ -76,6 +76,12 @@
   margin-bottom: var(--space-12);
 }
 
+.bookmarkGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+
 .suraList {
   display: flex;
   flex-direction: column;

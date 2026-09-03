@@ -1,0 +1,78 @@
+.tile {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.tile:hover {
+  border-color: var(--gold);
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+  text-decoration: none;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 68, 70, 0.06);
+  color: var(--text-secondary);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.position {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  opacity: 0;
+  color: var(--color-error, #c0392b);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.deleteBtn:hover {
+  color: var(--color-error, #c0392b);
+}
+
+@media (hover: hover) {
+  .tile:hover .deleteBtn {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .deleteBtn {
+    opacity: 1;
+  }
+}

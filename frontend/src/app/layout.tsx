@@ -3,6 +3,7 @@ import { EB_Garamond, Source_Sans_3, Noto_Serif, Noto_Serif_Devanagari } from "n
 import "./globals.css";
 import AuthProvider from "@/components/auth-provider";
 import ReaderSettingsProvider from "@/context/reader-settings-context";
+import BookmarksProvider from "@/context/bookmarks-context";
 import AppBar from "@/components/navigation/app-bar";
 import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
@@ -63,11 +64,13 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <ReaderSettingsProvider>
-            <AppBar />
-            {children}
-            <Footer />
-            <BottomNav />
-            <PwaInstallPrompt />
+            <BookmarksProvider>
+              <AppBar />
+              {children}
+              <Footer />
+              <BottomNav />
+              <PwaInstallPrompt />
+            </BookmarksProvider>
           </ReaderSettingsProvider>
         </AuthProvider>
       </body>

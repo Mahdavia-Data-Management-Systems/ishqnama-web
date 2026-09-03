@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 using Ishqnama.Application.Dtos;
 using Ishqnama.Application.Interfaces;
 using Ishqnama.Domain.Entities;
@@ -6,7 +8,7 @@ using Microsoft.Azure.Cosmos;
 
 namespace Ishqnama.Infrastructure.Repositories;
 
-public sealed class CosmosUserDataRepository(
+public sealed partial class CosmosUserDataRepository(
     CosmosClient cosmosClient,
     string databaseName,
     string containerName) : IUserDataRepository
@@ -49,8 +51,10 @@ public sealed class CosmosUserDataRepository(
 
     public async Task<IReadOnlyList<UserBookmarkDto>> GetBookmarksAsync(string userId)
     {
+        await EnsureDefaultBookmarkAsync(userId);
+
         var query = new QueryDefinition(
-            "SELECT * FROM c WHERE c.type = 'bookmark' ORDER BY c.createdAt DESC");
+            "SELECT * FROM c WHERE c.type = 'bookmark' AND c.title != null ORDER BY c.isDefault DESC, c.createdAt DESC");
 
         var results = new List<UserBookmarkDto>();
         using var feed = _container.GetItemQueryIterator<UserBookmark>(query,
@@ -59,38 +63,142 @@ public sealed class CosmosUserDataRepository(
         while (feed.HasMoreResults)
         {
             var page = await feed.ReadNextAsync();
-            results.AddRange(page.Select(b => new UserBookmarkDto(b.ChapterNumber, b.VerseNumber, b.CreatedAt)));
+            results.AddRange(page.Select(ToDto));
         }
 
         return results;
     }
 
-    public async Task AddBookmarkAsync(string userId, int chapterNumber, int verseNumber)
+    public async Task<UserBookmarkDto?> GetBookmarkAsync(string userId, string slug)
     {
-        var doc = new UserBookmark
+        try
         {
-            Id = $"bookmark_{chapterNumber}_{verseNumber}",
-            UserId = userId,
-            Type = "bookmark",
-            ChapterNumber = chapterNumber,
-            VerseNumber = verseNumber,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-        await _container.UpsertItemAsync(doc, new PartitionKey(userId));
+            var response = await _container.ReadItemAsync<UserBookmark>(
+                $"bookmark_{slug}", new PartitionKey(userId));
+            var b = response.Resource;
+            return b.Title is null ? null : ToDto(b);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 
-    public async Task RemoveBookmarkAsync(string userId, int chapterNumber, int verseNumber)
+    public async Task<UserBookmarkDto> CreateBookmarkAsync(string userId, string title, string icon)
+    {
+        var slug = GenerateSlug(title);
+        var now = DateTimeOffset.UtcNow;
+        var doc = new UserBookmark
+        {
+            Id = $"bookmark_{slug}",
+            UserId = userId,
+            Type = "bookmark",
+            Slug = slug,
+            Title = title,
+            Icon = icon,
+            ChapterNumber = 1,
+            VerseNumber = 0,
+            IsDefault = false,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+        await _container.CreateItemAsync(doc, new PartitionKey(userId));
+        return ToDto(doc);
+    }
+
+    public async Task UpdateBookmarkPositionAsync(string userId, string slug, int chapterNumber, int verseNumber)
+    {
+        var pk = new PartitionKey(userId);
+        var response = await _container.ReadItemAsync<UserBookmark>(
+            $"bookmark_{slug}", pk);
+        var doc = response.Resource;
+        doc.ChapterNumber = chapterNumber;
+        doc.VerseNumber = verseNumber;
+        doc.UpdatedAt = DateTimeOffset.UtcNow;
+        await _container.ReplaceItemAsync(doc, doc.Id, pk);
+    }
+
+    public async Task DeleteBookmarkAsync(string userId, string slug)
     {
         try
         {
             await _container.DeleteItemAsync<UserBookmark>(
-                $"bookmark_{chapterNumber}_{verseNumber}", new PartitionKey(userId));
+                $"bookmark_{slug}", new PartitionKey(userId));
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
             // Already deleted — no-op
         }
     }
+
+    private async Task EnsureDefaultBookmarkAsync(string userId)
+    {
+        var pk = new PartitionKey(userId);
+        try
+        {
+            var response = await _container.ReadItemAsync<UserBookmark>("bookmark_nazra", pk);
+            if (response.Resource.Title is not null)
+                return;
+            // Legacy doc exists without Title — replace with new schema
+            var legacy = response.Resource;
+            legacy.Slug = "nazra";
+            legacy.Title = "Nazra";
+            legacy.Icon = "book";
+            legacy.IsDefault = true;
+            legacy.UpdatedAt = DateTimeOffset.UtcNow;
+            await _container.ReplaceItemAsync(legacy, legacy.Id, pk);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            var now = DateTimeOffset.UtcNow;
+            var doc = new UserBookmark
+            {
+                Id = "bookmark_nazra",
+                UserId = userId,
+                Type = "bookmark",
+                Slug = "nazra",
+                Title = "Nazra",
+                Icon = "book",
+                ChapterNumber = 1,
+                VerseNumber = 0,
+                IsDefault = true,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+            try
+            {
+                await _container.CreateItemAsync(doc, pk);
+            }
+            catch (CosmosException createEx) when (createEx.StatusCode == HttpStatusCode.Conflict)
+            {
+                // Race condition — another request created it concurrently
+            }
+        }
+    }
+
+    private static UserBookmarkDto ToDto(UserBookmark b) =>
+        new(b.Slug, b.Title, b.Icon, b.ChapterNumber, b.VerseNumber, b.IsDefault, b.CreatedAt, b.UpdatedAt);
+
+    private static string GenerateSlug(string title)
+    {
+        var slug = title.ToLowerInvariant().Trim();
+        slug = SlugInvalidChars().Replace(slug, "");
+        slug = SlugWhitespace().Replace(slug, "-");
+        slug = slug.Trim('-');
+        if (slug.Length == 0)
+            slug = "bookmark";
+        if (slug.Length > 40)
+            slug = slug[..40].TrimEnd('-');
+        // Append timestamp suffix for uniqueness
+        slug = $"{slug}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture)}";
+        return slug;
+    }
+
+    [GeneratedRegex(@"[^\w\s-]")]
+    private static partial Regex SlugInvalidChars();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex SlugWhitespace();
 
     // Favorites
 

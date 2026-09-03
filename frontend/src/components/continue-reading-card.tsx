@@ -20,9 +20,12 @@ export default function ContinueReadingCard({
   const progress = Math.round((verseNumber / totalVerses) * 100);
 
   return (
-    <Link href={`/quran/${suraNumber}/`} className={styles.card}>
+    <Link href={`/quran/${suraNumber}/?verse=${verseNumber}`} className={styles.card}>
       <div className={styles.header}>
-        <span className={styles.eyebrow}>Continue reading</span>
+        <span className={styles.eyebrow}>
+          <Icon name="book" size={14} className={styles.nazraIcon} />
+          Nazra — Continue reading
+        </span>
         <Icon name="chevronRight" size={18} className={styles.arrow} />
       </div>
 

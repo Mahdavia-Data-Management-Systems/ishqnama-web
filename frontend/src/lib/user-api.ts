@@ -26,15 +26,22 @@ export function getUserBookmarks(signal?: AbortSignal): Promise<UserBookmarkDto[
   return authenticatedApiFetch<UserBookmarkDto[]>("/user/bookmarks", { signal });
 }
 
-export function addBookmark(chapterNumber: number, verseNumber: number): Promise<void> {
-  return authenticatedApiFetch<void>("/user/bookmarks", {
+export function createBookmark(title: string, icon: string): Promise<UserBookmarkDto> {
+  return authenticatedApiFetch<UserBookmarkDto>("/user/bookmarks", {
     method: "POST",
+    body: { title, icon },
+  });
+}
+
+export function updateBookmarkPosition(slug: string, chapterNumber: number, verseNumber: number): Promise<void> {
+  return authenticatedApiFetch<void>(`/user/bookmarks/${encodeURIComponent(slug)}/position`, {
+    method: "PUT",
     body: { chapterNumber, verseNumber },
   });
 }
 
-export function removeBookmark(chapterNumber: number, verseNumber: number): Promise<void> {
-  return authenticatedApiFetch<void>(`/user/bookmarks/${chapterNumber}/${verseNumber}`, {
+export function deleteBookmark(slug: string): Promise<void> {
+  return authenticatedApiFetch<void>(`/user/bookmarks/${encodeURIComponent(slug)}`, {
     method: "DELETE",
   });
 }

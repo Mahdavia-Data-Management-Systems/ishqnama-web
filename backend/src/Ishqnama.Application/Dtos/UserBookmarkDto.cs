@@ -1,6 +1,11 @@
 namespace Ishqnama.Application.Dtos;
 
 public sealed record UserBookmarkDto(
+    string Slug,
+    string Title,
+    string Icon,
     int ChapterNumber,
     int VerseNumber,
-    DateTimeOffset CreatedAt);
+    bool IsDefault,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt);
