@@ -25,6 +25,8 @@ public sealed class CacheHeaderMiddleware : IFunctionsWorkerMiddleware
             if (httpContext.Request.Headers.IfNoneMatch.ToString() == etag)
             {
                 httpContext.Response.StatusCode = 304;
+                httpContext.Response.Headers.CacheControl = "public, max-age=2592000, immutable";
+                httpContext.Response.Headers.ETag = etag;
                 httpContext.Response.Headers.Vary = "Authorization";
                 return;
             }

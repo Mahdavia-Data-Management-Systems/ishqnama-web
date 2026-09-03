@@ -108,9 +108,14 @@ public sealed class AuthMiddleware : IFunctionsWorkerMiddleware
 
             return string.IsNullOrEmpty(userId) ? (false, null) : (true, userId);
         }
-        catch (Exception ex)
+        catch (SecurityTokenException ex)
         {
             _logger.LogWarning(ex, "Token validation failed");
+            return (false, null);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Unexpected error during token validation");
             return (false, null);
         }
     }

@@ -66,33 +66,8 @@ export async function apiFetchWithOptionalAuth<T>(
   path: string,
   options?: ApiFetchOptions,
 ): Promise<T> {
-  if (!API_BASE_URL) {
-    throw new Error("NEXT_PUBLIC_API_URL is not configured");
-  }
+  const authHeaders: Record<string, string> = {};
 
-  const { params, ...fetchOptions } = options ?? {};
-
-  let url = `${API_BASE_URL}${path}`;
-
-  if (params) {
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined) {
-        searchParams.set(key, String(value));
-      }
-    }
-    const qs = searchParams.toString();
-    if (qs) {
-      url += `?${qs}`;
-    }
-  }
-
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    ...(fetchOptions.headers as Record<string, string>),
-  };
-
-  // Silently attach token if user is signed in
   const account = msalInstance.getActiveAccount();
   if (account) {
     try {
@@ -100,22 +75,18 @@ export async function apiFetchWithOptionalAuth<T>(
         scopes: [apiScope],
         account,
       });
-      headers.Authorization = `Bearer ${result.accessToken}`;
-    } catch {
-      // Token acquisition failed — proceed without auth
+      authHeaders.Authorization = `Bearer ${result.accessToken}`;
+    } catch (err) {
+      if (err instanceof InteractionRequiredAuthError) {
+        console.warn("Token acquisition requires interaction:", err.message);
+      }
     }
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
+  return apiFetch<T>(path, {
+    ...options,
+    headers: { ...authHeaders, ...options?.headers },
   });
-
-  if (!response.ok) {
-    throw new ApiError(response.status, response.statusText);
-  }
-
-  return response.json() as Promise<T>;
 }
 
 interface AuthenticatedFetchOptions extends Omit<RequestInit, "body"> {
