@@ -3,7 +3,7 @@ import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import styles from "./bismillah-block.module.css";
 
 interface BismillahBlockProps {
-  arabic: string;
+  arabic?: string;
   translation?: string;
   explanation?: string;
   lang?: "urdu" | "english" | "hindi";

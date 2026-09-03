@@ -17,26 +17,6 @@
   opacity: 0.6;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.dividerLine {
-  flex: 0 1 120px;
-  height: 1px;
-  background: var(--gold-bright);
-  opacity: 0.4;
-}
-
-.dividerGlyph {
-  color: var(--gold);
-  font-size: var(--text-sm);
-  line-height: 1;
-}
 
 .translation {
   color: var(--text-tertiary);

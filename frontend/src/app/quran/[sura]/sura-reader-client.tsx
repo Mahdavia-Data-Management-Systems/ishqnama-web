@@ -157,7 +157,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
                   key={0}
                   arabic={verse.arabic}
                   translation={verse.segments?.map((s) => s.text).filter(Boolean).join(" ")}
-                  explanation={verse.segments?.map((s) => s.explanation).filter(Boolean).join(" ")}
+                  explanation={showTafseer ? verse.segments?.map((s) => s.explanation).filter(Boolean).join(" ") : undefined}
                   lang={lang}
                   fontScale={fontScale}
                 />
@@ -246,7 +246,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
         return (
           <div className={styles.versePopup}>
             <div className={styles.popupHeader}>
-              <span className={styles.popupRef}>{suraNumber}:{verse.number}</span>
+              <span className={styles.popupRef}>{verse.number === 0 ? suraNumber : `${suraNumber}:${verse.number}`}</span>
               <div className={styles.popupActions}>
                 <IconButton
                   icon={bookmarkedVerses.has(verse.number) ? "bookmarkFilled" : "bookmark"}
