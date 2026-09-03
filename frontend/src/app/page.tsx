@@ -17,7 +17,7 @@ import styles from "./page.module.css";
 export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
-  const previewSuras = [1, 36, 67, 18, 55, 112].map((n) => suras[n - 1]);
+  const previewSuras = [1, 36, 18, 55, 67, 112, 48, 56, 97].map((n) => suras[n - 1]);
   const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
   const [dialogOpen, setDialogOpen] = useState(false);
 
