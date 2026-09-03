@@ -11,6 +11,14 @@ import { apiFetchWithOptionalAuth } from "@/lib/api-client";
 import type { JuzDto } from "@/types/api";
 import styles from "./page.module.css";
 
+/** Strip macrons, dots-below, and other combining diacritics for search. */
+function stripDiacritics(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")  // combining diacritical marks
+    .replace(/[\u02BB\u02BC\u02BD\u02BE\u02BF\u2018\u2019\u02C0]/g, ""); // ʻ ʼ ʽ ʾ ʿ ' ' ˀ
+}
+
 const viewOptions = [
   { label: "SURA", value: "sura" },
   { label: "JUZ", value: "juz" },
@@ -33,10 +41,10 @@ export default function QuranIndexPage() {
 
   const filteredSuras = useMemo(() => {
     if (!search.trim()) return suras;
-    const q = search.toLowerCase();
+    const q = stripDiacritics(search.toLowerCase());
     return suras.filter(
       (s) =>
-        s.name.toLowerCase().includes(q) ||
+        stripDiacritics(s.name.toLowerCase()).includes(q) ||
         s.arabicName.includes(search) ||
         s.urduName.includes(search) ||
         String(s.number).includes(q)
@@ -45,10 +53,10 @@ export default function QuranIndexPage() {
 
   const filteredJuz = useMemo(() => {
     if (!search.trim()) return juzData;
-    const q = search.toLowerCase();
+    const q = stripDiacritics(search.toLowerCase());
     return juzData.filter(
       (j) =>
-        j.transliteratedName.toLowerCase().includes(q) ||
+        stripDiacritics(j.transliteratedName.toLowerCase()).includes(q) ||
         j.arabicName.includes(search) ||
         String(j.juzNumber).includes(q)
     );
