@@ -72,7 +72,7 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerVerse, setPickerVerse] = useState<number>(0);
+  const pickerVerseRef = useRef<number>(0);
   const popupExplanationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   if (!sura) {
@@ -129,14 +129,14 @@ export default function SuraReaderClient({ suraNumber }: { suraNumber: number })
     if (!hasCustomBookmarks) {
       savePosition("nazra", suraNumber, verseNum);
     } else {
-      setPickerVerse(verseNum);
+      pickerVerseRef.current = verseNum;
       setPickerOpen(true);
     }
   }, [isAuthenticated, hasCustomBookmarks, savePosition, suraNumber]);
 
   const handlePickerSelect = useCallback((slug: string) => {
-    savePosition(slug, suraNumber, pickerVerse);
-  }, [savePosition, suraNumber, pickerVerse]);
+    savePosition(slug, suraNumber, pickerVerseRef.current);
+  }, [savePosition, suraNumber]);
 
   return (
     <main className={`${styles.main} ornament-mihrab`}>

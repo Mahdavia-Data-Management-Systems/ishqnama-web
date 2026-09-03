@@ -86,6 +86,10 @@ public sealed class UserDataFunctions(UserDataService userDataService)
         {
             return Results.BadRequest(new { error = ex.Message });
         }
+        catch (KeyNotFoundException)
+        {
+            return Results.NotFound(new { error = $"Bookmark '{slug}' not found." });
+        }
     }
 
     [Function("DeleteUserBookmark")]

@@ -109,13 +109,20 @@ public sealed partial class CosmosUserDataRepository(
     public async Task UpdateBookmarkPositionAsync(string userId, string slug, int chapterNumber, int verseNumber)
     {
         var pk = new PartitionKey(userId);
-        var response = await _container.ReadItemAsync<UserBookmark>(
-            $"bookmark_{slug}", pk);
-        var doc = response.Resource;
-        doc.ChapterNumber = chapterNumber;
-        doc.VerseNumber = verseNumber;
-        doc.UpdatedAt = DateTimeOffset.UtcNow;
-        await _container.ReplaceItemAsync(doc, doc.Id, pk);
+        try
+        {
+            var response = await _container.ReadItemAsync<UserBookmark>(
+                $"bookmark_{slug}", pk);
+            var doc = response.Resource;
+            doc.ChapterNumber = chapterNumber;
+            doc.VerseNumber = verseNumber;
+            doc.UpdatedAt = DateTimeOffset.UtcNow;
+            await _container.ReplaceItemAsync(doc, doc.Id, pk);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            throw new KeyNotFoundException($"Bookmark '{slug}' not found.");
+        }
     }
 
     public async Task DeleteBookmarkAsync(string userId, string slug)
