@@ -17,8 +17,8 @@ export default function BottomNav() {
   const pathname = usePathname();
   const isAuthenticated = useIsAuthenticated();
 
-  // Hide on sura reader pages — ReaderToolbar occupies the bottom there
-  if (/^\/quran\/\d+\//.test(pathname)) {
+  // Hide on reader pages — ReaderToolbar occupies the bottom there
+  if (pathname.startsWith("/quran/") && pathname !== "/quran/") {
     return null;
   }
 
