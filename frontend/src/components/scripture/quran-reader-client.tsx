@@ -355,6 +355,7 @@ export default function QuranReaderClient({
                                 rankInJuz={ri?.rankInJuz}
                                 verseCount={ri?.verseCount}
                                 lang={lang}
+                                fontScale={fontScale}
                               />
                             );
                           })()}

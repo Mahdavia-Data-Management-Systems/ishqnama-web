@@ -12,7 +12,7 @@
 .positioned {
   position: absolute;
   left: calc(-1 * var(--space-6) + 0.3em);
-  bottom: 0.6em;
+  bottom: 0.9em;
   font-size: 0.75em;
 }
 
@@ -32,7 +32,16 @@
   line-height: 1;
 }
 
-/* verseCount: centered on top of ع — size independent of .ain's font-size */
+/* Shared font styles for all number labels */
+.num {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* verseCount: centered on top of ع */
 .overlay {
   position: absolute;
   inset: 0;
@@ -40,10 +49,6 @@
   align-items: center;
   justify-content: center;
   transform: translateY(1.5em);
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  font-weight: 600;
-  color: var(--gold);
   pointer-events: none;
 }
 
@@ -53,11 +58,6 @@
   top: 0;
   left: 50%;
   transform: translate(-50%, 210%);
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  line-height: 1;
-  opacity: 0.8;
-  white-space: nowrap;
 }
 
 /* rankInJuz: below ع */
@@ -66,9 +66,4 @@
   bottom: 0;
   left: 50%;
   transform: translate(-50%, 30%);
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  line-height: 1;
-  opacity: 0.8;
-  white-space: nowrap;
 }

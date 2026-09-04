@@ -138,6 +138,7 @@ export default function AyahBlock({
             rankInJuz={rukuInfo?.rankInJuz}
             verseCount={rukuInfo?.verseCount}
             lang={activeLang}
+            fontScale={fontScale}
           />
         )}
       </div>
