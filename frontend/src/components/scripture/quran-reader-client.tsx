@@ -121,6 +121,15 @@ export default function QuranReaderClient({
     if (el) {
       requestAnimationFrame(() => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Flash highlight then fade out so the user sees which verse was scrolled to
+        el.classList.remove(styles.scrollHighlight);
+        void el.offsetWidth; // force reflow to restart animation
+        el.classList.add(styles.scrollHighlight);
+        const onEnd = () => {
+          el.classList.remove(styles.scrollHighlight);
+          el.removeEventListener("animationend", onEnd);
+        };
+        el.addEventListener("animationend", onEnd);
       });
     }
   }, [searchParams, loading, verses, firstChapter]);

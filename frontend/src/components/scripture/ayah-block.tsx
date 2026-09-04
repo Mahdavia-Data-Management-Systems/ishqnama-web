@@ -92,7 +92,7 @@ export default function AyahBlock({
   const hasExplanations = showTafseer && segments?.some((s) => s.explanation);
 
   return (
-    <div id={`verse-${number}`} className={styles.block}>
+    <div id={`verse-${chapterNumber}-${number}`} className={styles.block}>
       <div className={styles.meta}>
         <div className={styles.actions}>
           <IconButton

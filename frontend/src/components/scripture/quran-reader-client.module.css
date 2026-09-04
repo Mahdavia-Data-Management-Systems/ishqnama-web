@@ -185,6 +185,20 @@
   }
 }
 
+@keyframes scrollFlash {
+  0% {
+    background-color: color-mix(in srgb, var(--gold) 25%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.scrollHighlight {
+  animation: scrollFlash 3s ease-out forwards;
+  border-radius: var(--radius-sm);
+}
+
 .errorText {
   color: var(--text-tertiary);
   font-size: var(--text-base);
