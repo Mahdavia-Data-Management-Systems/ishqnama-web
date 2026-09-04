@@ -1,0 +1,17 @@
+.mdmsSection {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+}
+
+.mdmsLogo {
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 480px) {
+  .mdmsSection {
+    flex-direction: column;
+    align-items: center;
+  }
+}
