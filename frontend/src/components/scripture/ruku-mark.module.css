@@ -1,0 +1,24 @@
+/* Verse mode: left padding of .arabic, vertically aligned with separator number */
+.positioned {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 5px);
+  bottom: 1.4em;
+  font-family: var(--font-arabic);
+  font-size: 0.75em;
+  color: var(--gold);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Continuous mode: floated into the left padding of .continuousArabic */
+.floated {
+  float: left;
+  margin-left: calc(-1 * var(--space-6));
+  width: var(--space-6);
+  font-family: var(--font-arabic);
+  font-size: 0.75em;
+  color: var(--gold);
+  line-height: var(--leading-arabic);
+  text-align: center;
+  pointer-events: none;
+}

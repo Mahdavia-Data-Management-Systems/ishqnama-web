@@ -15,6 +15,7 @@ export interface DisplayVerse {
   chapterNumber: number;
   number: number;
   arabic: string;
+  rukuId: number;
   segments?: DisplaySegment[];
 }
 
@@ -33,6 +34,7 @@ export function toDisplayVerse(dto: VerseDto): DisplayVerse {
     chapterNumber: dto.chapterNumber,
     number: dto.verseNumber,
     arabic: dto.arabicText,
+    rukuId: dto.rukuId,
     segments: segments && segments.length > 0 ? segments : undefined,
   };
 }

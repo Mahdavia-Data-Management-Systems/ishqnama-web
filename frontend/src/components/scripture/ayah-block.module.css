@@ -20,6 +20,7 @@
 }
 
 .arabic {
+  position: relative;
   font-family: var(--font-arabic);
   line-height: var(--leading-arabic);
   color: var(--text-primary);

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
+import RukuMark from "@/components/scripture/ruku-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
@@ -106,6 +107,19 @@ export default function QuranReaderClient({
       ),
     [bookmarks],
   );
+
+  // Compute last verse of each ruku — keyed by "chapter-verse"
+  const rukuEndVerses = useMemo(() => {
+    const contentVerses = verses.filter((v) => v.number !== 0);
+    const ends = new Set<string>();
+    for (let i = 0; i < contentVerses.length; i++) {
+      const next = contentVerses[i + 1];
+      if (!next || next.rukuId !== contentVerses[i].rukuId) {
+        ends.add(`${contentVerses[i].chapterNumber}-${contentVerses[i].number}`);
+      }
+    }
+    return ends;
+  }, [verses]);
 
   const highlightQuery = searchParams.get("highlight") ?? undefined;
 
@@ -226,6 +240,8 @@ export default function QuranReaderClient({
                       activeLang={lang}
                       fontScale={fontScale}
                       isBookmarked={bookmarkedVerses.has(bookmarkKey)}
+                      isRukuEnd={rukuEndVerses.has(bookmarkKey)}
+                      rukuId={verse.rukuId}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number, verse.arabic)}
                       highlightQuery={highlightQuery}
@@ -282,32 +298,38 @@ export default function QuranReaderClient({
                     lang="ar"
                     style={{ fontSize: `${Math.max(1.625, 1.75 * ((FONT_SIZE_STEPS[fontScale] ?? 100) / 100))}rem` }}
                   >
-                    {group.verses.map((verse) => (
-                      <span
-                        key={`${verse.chapterNumber}-${verse.number}`}
-                        id={`verse-${verse.chapterNumber}-${verse.number}`}
-                        className={`${styles.verseSpan} ${
-                          selectedVerse?.chapter === verse.chapterNumber && selectedVerse.verse === verse.number
-                            ? styles.verseSelected
-                            : ""
-                        }`}
-                        onClick={() => {
-                          const cur = selectedVerse;
-                          setSelectedVerse(
-                            cur?.chapter === verse.chapterNumber && cur.verse === verse.number
-                              ? null
-                              : { chapter: verse.chapterNumber, verse: verse.number },
-                          );
-                          setHighlightedSeg(null);
-                        }}
-                      >
-                        {verse.arabic}
-                        <span className={styles.separator}>
-                          {verse.chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
-                          <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
+                    {group.verses.map((verse) => {
+                      const verseKey = `${verse.chapterNumber}-${verse.number}`;
+                      return (
+                        <span
+                          key={verseKey}
+                          id={`verse-${verseKey}`}
+                          className={`${styles.verseSpan} ${
+                            selectedVerse?.chapter === verse.chapterNumber && selectedVerse.verse === verse.number
+                              ? styles.verseSelected
+                              : ""
+                          }`}
+                          onClick={() => {
+                            const cur = selectedVerse;
+                            setSelectedVerse(
+                              cur?.chapter === verse.chapterNumber && cur.verse === verse.number
+                                ? null
+                                : { chapter: verse.chapterNumber, verse: verse.number },
+                            );
+                            setHighlightedSeg(null);
+                          }}
+                        >
+                          {verse.arabic}
+                          <span className={styles.separator}>
+                            {verse.chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
+                            <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
+                          </span>
+                          {rukuEndVerses.has(verseKey) && (
+                            <RukuMark variant="floated" rukuId={verse.rukuId} />
+                          )}
                         </span>
-                      </span>
-                    ))}
+                      );
+                    })}
                   </div>
                 </Fragment>
               );

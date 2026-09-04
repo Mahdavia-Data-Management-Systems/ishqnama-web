@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import IconButton from "@/components/ui/icon-button";
+import RukuMark from "@/components/scripture/ruku-mark";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
 import { localizeNumber } from "@/lib/translation-map";
@@ -46,6 +47,8 @@ interface AyahBlockProps {
   showTafseer?: boolean;
   activeLang: TranslationLang;
   isBookmarked?: boolean;
+  isRukuEnd?: boolean;
+  rukuId?: number;
   onToggleBookmark?: () => void;
   onShare?: () => void;
   fontScale?: number;
@@ -61,6 +64,8 @@ export default function AyahBlock({
   showTafseer = false,
   activeLang,
   isBookmarked = false,
+  isRukuEnd = false,
+  rukuId,
   onToggleBookmark,
   onShare,
   fontScale = 1,
@@ -122,6 +127,7 @@ export default function AyahBlock({
           {chapterNumber === 1 && number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
           <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>
         </span>
+        {isRukuEnd && rukuId != null && <RukuMark variant="positioned" rukuId={rukuId} />}
       </div>
 
       <hr className="hairline-gold" />
