@@ -60,7 +60,7 @@
   box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.25);
   padding: var(--space-3) var(--space-4);
   border-left: 3px solid var(--gold);
-  max-height: calc(100vh - var(--toolbar-height) - 20px);
+  max-height: calc(100dvh - var(--toolbar-height) - 20px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
