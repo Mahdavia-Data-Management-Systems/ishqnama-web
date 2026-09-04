@@ -282,7 +282,7 @@ input, textarea, select {
 .reader-container {
   max-width: var(--max-width-reader);
   margin: 0 auto;
-  padding: 0 var(--space-6);
+  padding: 0 var(--space-6) 0 var(--space-8);
 }
 
 /* ── Utility ── */
