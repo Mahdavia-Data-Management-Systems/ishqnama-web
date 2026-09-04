@@ -13,6 +13,8 @@ import BookmarkPicker from "@/components/bookmark-picker";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
+import type { RukuDto } from "@/types/api";
+import { getRukus } from "@/lib/api";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
@@ -120,6 +122,24 @@ export default function QuranReaderClient({
     }
     return ends;
   }, [verses]);
+
+  // Fetch ruku metadata for all chapters in this view
+  const [rukuMap, setRukuMap] = useState<Map<number, RukuDto>>(new Map());
+  useEffect(() => {
+    if (chapters.size === 0) return;
+    const controller = new AbortController();
+    (async () => {
+      const map = new Map<number, RukuDto>();
+      for (const ch of chapters) {
+        try {
+          const rukus = await getRukus({ chapterNum: ch }, controller.signal);
+          for (const r of rukus) map.set(r.rukuId, r);
+        } catch { /* abort or network error — graceful degrade */ }
+      }
+      if (!controller.signal.aborted) setRukuMap(map);
+    })();
+    return () => controller.abort();
+  }, [chapters]);
 
   const highlightQuery = searchParams.get("highlight") ?? undefined;
 
@@ -242,6 +262,7 @@ export default function QuranReaderClient({
                       isBookmarked={bookmarkedVerses.has(bookmarkKey)}
                       isRukuEnd={rukuEndVerses.has(bookmarkKey)}
                       rukuId={verse.rukuId}
+                      rukuInfo={rukuMap.get(verse.rukuId)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number, verse.arabic)}
                       highlightQuery={highlightQuery}
@@ -324,9 +345,19 @@ export default function QuranReaderClient({
                             {verse.chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
                             <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                           </span>
-                          {rukuEndVerses.has(verseKey) && (
-                            <RukuMark variant="floated" rukuId={verse.rukuId} />
-                          )}
+                          {rukuEndVerses.has(verseKey) && (() => {
+                            const ri = rukuMap.get(verse.rukuId);
+                            return (
+                              <RukuMark
+                                variant="floated"
+                                rukuId={verse.rukuId}
+                                rankInChapter={ri?.rankInChapter}
+                                rankInJuz={ri?.rankInJuz}
+                                verseCount={ri?.verseCount}
+                                lang={lang}
+                              />
+                            );
+                          })()}
                         </span>
                       );
                     })}

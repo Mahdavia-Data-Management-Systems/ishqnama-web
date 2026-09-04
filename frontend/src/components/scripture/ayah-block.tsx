@@ -5,6 +5,7 @@ import IconButton from "@/components/ui/icon-button";
 import RukuMark from "@/components/scripture/ruku-mark";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
+import type { RukuDto } from "@/types/api";
 import { localizeNumber } from "@/lib/translation-map";
 import styles from "./ayah-block.module.css";
 
@@ -49,6 +50,7 @@ interface AyahBlockProps {
   isBookmarked?: boolean;
   isRukuEnd?: boolean;
   rukuId?: number;
+  rukuInfo?: RukuDto;
   onToggleBookmark?: () => void;
   onShare?: () => void;
   fontScale?: number;
@@ -66,6 +68,7 @@ export default function AyahBlock({
   isBookmarked = false,
   isRukuEnd = false,
   rukuId,
+  rukuInfo,
   onToggleBookmark,
   onShare,
   fontScale = 1,
@@ -127,7 +130,16 @@ export default function AyahBlock({
           {chapterNumber === 1 && number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
           <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>
         </span>
-        {isRukuEnd && rukuId != null && <RukuMark variant="positioned" rukuId={rukuId} />}
+        {isRukuEnd && rukuId != null && (
+          <RukuMark
+            variant="positioned"
+            rukuId={rukuId}
+            rankInChapter={rukuInfo?.rankInChapter}
+            rankInJuz={rukuInfo?.rankInJuz}
+            verseCount={rukuInfo?.verseCount}
+            lang={activeLang}
+          />
+        )}
       </div>
 
       <hr className="hairline-gold" />

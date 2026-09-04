@@ -1,13 +1,19 @@
-/* Verse mode: left padding of .arabic, vertically aligned with separator number */
-.positioned {
-  position: absolute;
-  left: calc(-1 * var(--space-6) + 5px);
-  bottom: 1.4em;
+/* Shared layout: vertical stack with ain in the middle */
+.positioned,
+.floated {
+  display: inline-block;
   font-family: var(--font-arabic);
-  font-size: 0.75em;
   color: var(--gold);
   line-height: 1;
   pointer-events: none;
+}
+
+/* Verse mode: left padding of .arabic, vertically aligned with separator number */
+.positioned {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 0.3em);
+  bottom: 0.6em;
+  font-size: 0.75em;
 }
 
 /* Continuous mode: floated into the left padding of .continuousArabic */
@@ -15,10 +21,54 @@
   float: left;
   margin-left: calc(-1 * var(--space-6));
   width: var(--space-6);
-  font-family: var(--font-arabic);
   font-size: 0.75em;
-  color: var(--gold);
-  line-height: var(--leading-arabic);
   text-align: center;
+}
+
+/* The ain character with verseCount overlaid */
+.ain {
+  position: relative;
+  font-size: 1.8em;
+  line-height: 1;
+}
+
+/* verseCount: centered on top of ع — size independent of .ain's font-size */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(1.5em);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--gold);
   pointer-events: none;
+}
+
+/* rankInChapter: above ع */
+.above {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 210%);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  line-height: 1;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* rankInJuz: below ع */
+.below {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 30%);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  line-height: 1;
+  opacity: 0.8;
+  white-space: nowrap;
 }
