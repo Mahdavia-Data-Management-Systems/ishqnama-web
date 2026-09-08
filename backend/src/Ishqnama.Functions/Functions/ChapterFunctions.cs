@@ -9,7 +9,7 @@ public sealed class ChapterFunctions(ChapterService chapterService)
 {
     [Function("GetChapters")]
     public async Task<IResult> GetChapters(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "chapters")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chapters")] HttpRequest req,
         string? lang = null)
     {
         var chapters = await chapterService.GetChaptersAsync(lang);
@@ -18,7 +18,7 @@ public sealed class ChapterFunctions(ChapterService chapterService)
 
     [Function("GetChapter")]
     public async Task<IResult> GetChapter(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "chapters/{num:int}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chapters/{num:int}")] HttpRequest req,
         int num)
     {
         var chapter = await chapterService.GetChapterAsync(num);
@@ -27,7 +27,7 @@ public sealed class ChapterFunctions(ChapterService chapterService)
 
     [Function("GetChapterVerses")]
     public async Task<IResult> GetChapterVerses(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "chapters/{num:int}/verses")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chapters/{num:int}/verses")] HttpRequest req,
         int num, int? translationId = null, int page = 1, int pageSize = 50)
     {
         var result = await chapterService.GetChapterVersesAsync(num, translationId, page, pageSize);
@@ -36,7 +36,7 @@ public sealed class ChapterFunctions(ChapterService chapterService)
 
     [Function("GetVerse")]
     public async Task<IResult> GetVerse(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "chapters/{num:int}/verses/{verseNum:int}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chapters/{num:int}/verses/{verseNum:int}")] HttpRequest req,
         int num, int verseNum)
     {
         var verse = await chapterService.GetVerseAsync(num, verseNum);

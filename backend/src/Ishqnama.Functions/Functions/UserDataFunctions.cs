@@ -14,7 +14,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("GetUserSettings")]
     public async Task<IResult> GetUserSettings(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "user/settings")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/settings")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var settings = await userDataService.GetSettingsAsync(userId);
@@ -23,7 +23,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("SaveUserSettings")]
     public async Task<IResult> SaveUserSettings(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", "options", Route = "user/settings")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "user/settings")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var settings = await req.ReadFromJsonAsync<UserSettingsDto>();
@@ -37,7 +37,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("GetUserBookmarks")]
     public async Task<IResult> GetUserBookmarks(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "user/bookmarks")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/bookmarks")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var bookmarks = await userDataService.GetBookmarksAsync(userId);
@@ -46,7 +46,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("CreateUserBookmark")]
     public async Task<IResult> CreateUserBookmark(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "user/bookmarks")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user/bookmarks")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var body = await req.ReadFromJsonAsync<CreateBookmarkRequest>();
@@ -70,7 +70,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("UpdateBookmarkPosition")]
     public async Task<IResult> UpdateBookmarkPosition(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", "options", Route = "user/bookmarks/{slug}/position")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "user/bookmarks/{slug}/position")] HttpRequest req,
         string slug)
     {
         var userId = GetUserId(req.HttpContext);
@@ -94,7 +94,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("DeleteUserBookmark")]
     public async Task<IResult> DeleteUserBookmark(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", "options", Route = "user/bookmarks/{slug}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "user/bookmarks/{slug}")] HttpRequest req,
         string slug)
     {
         var userId = GetUserId(req.HttpContext);
@@ -114,7 +114,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("GetUserHistory")]
     public async Task<IResult> GetUserHistory(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "user/history")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "user/history")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var limit = int.TryParse(req.Query["limit"], out var l) ? l : 50;
@@ -124,7 +124,7 @@ public sealed class UserDataFunctions(UserDataService userDataService)
 
     [Function("AddUserHistory")]
     public async Task<IResult> AddUserHistory(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "options", Route = "user/history")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "user/history")] HttpRequest req)
     {
         var userId = GetUserId(req.HttpContext);
         var body = await req.ReadFromJsonAsync<HistoryRequest>();
