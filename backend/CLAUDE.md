@@ -12,14 +12,14 @@ Ishqnama is a .NET 9 API serving Quranic data (verses, translations, tafseer) in
 # Build
 dotnet build
 
-# Run locally (requires PostgreSQL + Azure Functions Core Tools)
+# Start databases (PostgreSQL + Cosmos DB Emulator)
+docker-compose up -d
+
+# Run locally (requires Azure Functions Core Tools)
 cd src/Ishqnama.Functions && func start
 
-# Database (pull pre-built image)
-docker run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
-
-# Full local dev (PostgreSQL + Cosmos DB emulator + func start)
-bash start-local-db.sh
+# Stop databases
+docker-compose down
 ```
 
 SDK pinned to **9.0.300** via `global.json`.

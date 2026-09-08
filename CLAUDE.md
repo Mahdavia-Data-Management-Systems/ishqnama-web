@@ -21,14 +21,8 @@ npm run lint      # ESLint via Next.js
 
 ```bash
 dotnet build                                    # Build solution
+cd backend && docker-compose up -d              # Start PostgreSQL + Cosmos DB Emulator
 cd src/Ishqnama.Functions && func start         # Run locally (needs Azure Functions Core Tools)
-bash start-local-db.sh                          # Start PostgreSQL + Cosmos DB emulator via Podman
-```
-
-### Database
-
-```bash
-docker run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
 ```
 
 ### Infrastructure (`infra/environments/{dev|prod}/`)

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: docker.io/noormahdi/ishqnama-db:dev
+    container_name: ishqnama-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cosmos:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+    container_name: ishqnama-cosmos
+    command: --protocol https
+    environment:
+      ENABLE_INIT_DATA: "true"
+    ports:
+      - "8081:8081"
+      - "1234:1234"
+      - "8080:8080"
+    volumes:
+      - cosmos-data:/data
+      - ./cosmos-init:/init:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/ready | grep -q '\"ready\": true'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres-data:
+  cosmos-data:
