@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 
@@ -6,7 +7,9 @@ namespace Ishqnama.Functions.Middleware;
 public sealed class CacheHeaderMiddleware : IFunctionsWorkerMiddleware
 {
     private static readonly string BaseVersion =
-        typeof(CacheHeaderMiddleware).Assembly.GetName().Version?.ToString() ?? "0";
+        typeof(CacheHeaderMiddleware).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? "0";
 
     private static readonly string AuthenticatedEtag = $"\"v2-{BaseVersion}-a\"";
     private static readonly string UnauthenticatedEtag = $"\"v2-{BaseVersion}-u\"";
