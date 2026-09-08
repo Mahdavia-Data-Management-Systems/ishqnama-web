@@ -10,7 +10,7 @@ public sealed class SearchFunction(SearchService searchService)
 
     [Function("Search")]
     public async Task<IResult> Search(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "search")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "search")] HttpRequest req,
         string? q = null, string? scope = null, int? translationId = null, int? page = null, int? pageSize = null)
     {
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
