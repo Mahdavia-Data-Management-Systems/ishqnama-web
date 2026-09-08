@@ -16,7 +16,7 @@ dotnet build
 cd src/Ishqnama.Functions && func start
 
 # Database (pull pre-built image)
-podman run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
+docker run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
 
 # Full local dev (PostgreSQL + Cosmos DB emulator + func start)
 bash start-local-db.sh

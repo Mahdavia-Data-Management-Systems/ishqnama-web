@@ -9,7 +9,7 @@ cd "$SCRIPT_DIR"
 ensure_container() {
     local name="$1"; shift
     local state
-    state=$(podman inspect --format '{{.State.Status}}' "$name" 2>/dev/null || echo "missing")
+    state=$(docker inspect --format '{{.State.Status}}' "$name" 2>/dev/null || echo "missing")
 
     case "$state" in
         running)
@@ -18,13 +18,13 @@ ensure_container() {
             ;;
         exited|created|stopped)
             echo "→ Starting stopped container $name"
-            podman start "$name"
+            docker start "$name"
             ;;
         *)
             echo "→ Creating container $name"
             # MSYS_NO_PATHCONV prevents Git Bash on Windows from mangling
             # Unix-style paths (e.g. /data → C:\Program Files\Git\data)
-            MSYS_NO_PATHCONV=1 podman run -d --name "$name" "$@"
+            MSYS_NO_PATHCONV=1 docker run -d --name "$name" "$@"
             ;;
     esac
 }
@@ -65,5 +65,5 @@ ensure_container ishqnama-cosmos \
 
 # ── Wait for readiness ───────────────────────────────────────────────────────
 
-wait_for "PostgreSQL" "podman exec ishqnama-db pg_isready -q" 30
+wait_for "PostgreSQL" "docker exec ishqnama-db pg_isready -q" 30
 wait_for "Cosmos DB Emulator" "curl -sf http://localhost:8080/ready | grep -q '\"ready\": true'" 120

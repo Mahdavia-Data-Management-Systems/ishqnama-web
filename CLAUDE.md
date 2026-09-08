@@ -28,7 +28,7 @@ bash start-local-db.sh                          # Start PostgreSQL + Cosmos DB e
 ### Database
 
 ```bash
-podman run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
+docker run -d --name ishqnama-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres docker.io/noormahdi/ishqnama-db:dev
 ```
 
 ### Infrastructure (`infra/environments/{dev|prod}/`)
