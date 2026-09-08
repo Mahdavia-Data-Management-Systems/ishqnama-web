@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { loginRequest } from "@/config/auth-config";
 import { useReaderSettings } from "@/context/reader-settings-context";
+import { getUserHistory } from "@/lib/user-api";
 import Icon from "@/components/ui/icon";
 import styles from "./user-menu.module.css";
 
@@ -11,6 +13,7 @@ export default function UserMenu() {
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const { openSettings } = useReaderSettings();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -62,16 +65,35 @@ export default function UserMenu() {
         <div className={styles.dropdown}>
           <div className={styles.userInfo}>
             <div className={styles.userName}>{name}</div>
-            {account?.username && (
+            {/* {account?.username && (
               <div className={styles.userEmail}>{account.username}</div>
-            )}
+            )} */}
           </div>
           <hr className={styles.divider} />
-          <button onClick={() => setOpen(false)} className={styles.menuItem}>
+          <button
+            onClick={() => {
+              setOpen(false);
+              router.push("/saved/");
+            }}
+            className={styles.menuItem}
+          >
             <Icon name="bookmark" size={18} />
             <span>Bookmarks</span>
           </button>
-          <button onClick={() => setOpen(false)} className={styles.menuItem}>
+          <button
+            onClick={async () => {
+              setOpen(false);
+              try {
+                const history = await getUserHistory();
+                if (history.length > 0) {
+                  router.push(history[0].url);
+                }
+              } catch {
+                // Failed to load history — no navigation
+              }
+            }}
+            className={styles.menuItem}
+          >
             <Icon name="clock" size={18} />
             <span>Last read</span>
           </button>
