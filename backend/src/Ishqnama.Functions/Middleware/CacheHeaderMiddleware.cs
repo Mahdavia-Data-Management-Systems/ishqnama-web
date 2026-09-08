@@ -14,8 +14,11 @@ public sealed class CacheHeaderMiddleware : IFunctionsWorkerMiddleware
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
         var httpContext = context.GetHttpContext();
+        var path = httpContext?.Request.Path;
+        var isQuranRoute = path is not null
+            && !path.Value.StartsWithSegments("/api/user");
 
-        if (httpContext is not null)
+        if (httpContext is not null && isQuranRoute)
         {
             var etag = httpContext.Items.ContainsKey("IsAuthenticated")
                 ? AuthenticatedEtag
