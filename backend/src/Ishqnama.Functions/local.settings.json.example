@@ -11,6 +11,10 @@
     "Auth__Authority": "https://mahdavisonlinedev.ciamlogin.com/74c3a531-69e8-4b19-92dc-498a4ab5aaf7/v2.0",
     "Auth__ClientId": "fe35a79a-4d68-4e7c-bfa7-6ef1c4af4f83"
   },
+   "Host": {
+    "CORS": "http://localhost:3000",
+    "CORSCredentials": true
+  },
   "ConnectionStrings": {
     "QuranDb": "Host=localhost;Port=5432;Database=ishqnama;Username=postgres;Password=postgres"
   }
