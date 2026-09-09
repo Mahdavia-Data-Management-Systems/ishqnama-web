@@ -343,7 +343,9 @@ export default function QuranReaderClient({
                             setHighlightedSeg(null);
                           }}
                         >
-                          {verse.arabic}
+                          <span className={verse.hasSajdah ? styles.sajdahUnderline : undefined}>
+                            {verse.arabic}
+                          </span>
                           <span className={styles.separator}>
                             {verse.chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
                             <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>

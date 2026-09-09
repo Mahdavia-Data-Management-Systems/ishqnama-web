@@ -25,6 +25,12 @@
   background-color: color-mix(in srgb, var(--gold) 15%, transparent);
 }
 
+/* Sajdah verses are underlined across every wrapped line */
+.sajdahUnderline {
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 0.08em;
+}
+
 .separator {
   position: relative;
   display: inline-block;

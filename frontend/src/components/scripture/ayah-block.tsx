@@ -129,7 +129,9 @@ export default function AyahBlock({
         lang="ar"
         style={{ fontSize: `${arabicSize}rem` }}
       >
-        {arabic}
+        <span className={hasSajdah ? styles.sajdahUnderline : undefined}>
+          {arabic}
+        </span>
         <span className={styles.separator}>
           {chapterNumber === 1 && number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
           <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>

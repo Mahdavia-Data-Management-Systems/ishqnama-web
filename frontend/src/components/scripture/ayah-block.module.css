@@ -30,6 +30,12 @@
   word-spacing: 0.08em;
 }
 
+/* Sajdah verses are underlined across every wrapped line */
+.sajdahUnderline {
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 0.08em;
+}
+
 .separator {
   position: relative;
   display: inline-block;
