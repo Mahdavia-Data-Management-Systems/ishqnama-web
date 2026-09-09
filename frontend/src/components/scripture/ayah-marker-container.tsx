@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Children, type ReactNode } from "react";
 import styles from "./ayah-marker-container.module.css";
 
 interface AyahMarkerContainerProps {
@@ -7,7 +7,10 @@ interface AyahMarkerContainerProps {
 }
 
 export default function AyahMarkerContainer({ variant, children }: AyahMarkerContainerProps) {
-  if (!children) return null;
+  // Skip the wrapper entirely when no marker applies, so the floated
+  // variant never reserves gutter space on an unmarked verse
+  const marks = Children.toArray(children);
+  if (marks.length === 0) return null;
 
-  return <span className={styles[variant]}>{children}</span>;
+  return <span className={styles[variant]}>{marks}</span>;
 }

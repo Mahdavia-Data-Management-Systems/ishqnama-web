@@ -7,6 +7,7 @@ import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import RukuMark from "@/components/scripture/ruku-mark";
+import SajdahMark from "@/components/scripture/sajdah-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
@@ -262,6 +263,7 @@ export default function QuranReaderClient({
                       fontScale={fontScale}
                       isBookmarked={bookmarkedVerses.has(bookmarkKey)}
                       isRukuEnd={rukuEndVerses.has(bookmarkKey)}
+                      hasSajdah={verse.hasSajdah}
                       rukuId={verse.rukuId}
                       rukuInfo={rukuMap.get(verse.rukuId)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
@@ -347,6 +349,7 @@ export default function QuranReaderClient({
                             <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                           </span>
                           <AyahMarkerContainer variant="floated">
+                            {verse.hasSajdah && <SajdahMark />}
                             {rukuEndVerses.has(verseKey) && (() => {
                               const ri = rukuMap.get(verse.rukuId);
                               return (

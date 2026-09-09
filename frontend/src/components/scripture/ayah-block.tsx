@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import IconButton from "@/components/ui/icon-button";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import RukuMark from "@/components/scripture/ruku-mark";
+import SajdahMark from "@/components/scripture/sajdah-mark";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
 import type { RukuDto } from "@/types/api";
@@ -50,6 +51,7 @@ interface AyahBlockProps {
   activeLang: TranslationLang;
   isBookmarked?: boolean;
   isRukuEnd?: boolean;
+  hasSajdah?: boolean;
   rukuId?: number;
   rukuInfo?: RukuDto;
   onToggleBookmark?: () => void;
@@ -68,6 +70,7 @@ export default function AyahBlock({
   activeLang,
   isBookmarked = false,
   isRukuEnd = false,
+  hasSajdah = false,
   rukuId,
   rukuInfo,
   onToggleBookmark,
@@ -132,6 +135,7 @@ export default function AyahBlock({
           <span className={styles.separatorNumber}>{localizeNumber(number, activeLang)}</span>
         </span>
         <AyahMarkerContainer variant="positioned">
+          {hasSajdah && <SajdahMark />}
           {isRukuEnd && rukuId != null && (
             <RukuMark
               rukuId={rukuId}

@@ -16,6 +16,7 @@ export interface DisplayVerse {
   number: number;
   arabic: string;
   rukuId: number;
+  hasSajdah: boolean;
   segments?: DisplaySegment[];
 }
 
@@ -35,6 +36,7 @@ export function toDisplayVerse(dto: VerseDto): DisplayVerse {
     number: dto.verseNumber,
     arabic: dto.arabicText,
     rukuId: dto.rukuId,
+    hasSajdah: dto.hasSajdah,
     segments: segments && segments.length > 0 ? segments : undefined,
   };
 }

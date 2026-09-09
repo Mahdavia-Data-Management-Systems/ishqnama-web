@@ -1,0 +1,12 @@
+/* Typography for the sajdah mark; positioning lives in AyahMarkerContainer */
+.wrapper {
+  font-size: 0.75em;
+  font-family: var(--font-arabic);
+  color: var(--gold);
+  line-height: 1;
+}
+
+.symbol {
+  font-size: 1.3em;
+  line-height: 1;
+}
