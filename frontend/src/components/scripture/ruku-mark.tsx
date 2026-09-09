@@ -17,7 +17,7 @@ export default function RukuMark({ variant, rukuId, rankInChapter, rankInJuz, ve
   const numSize = `${Math.max(0.55, 0.55 * ((FONT_SIZE_STEPS[fontScale] ?? 100) / 100))}rem`;
 
   return (
-    <span className={styles[variant]}>
+    <span className={`${styles[variant]} ${styles.wrapper}`}>
       <span className={styles.ain}>
         {rankInChapter != null && <span className={`${styles.num} ${styles.above}`} style={{ fontSize: numSize }}>{localizeNumber(rankInChapter, lang)}</span>}
         ع
