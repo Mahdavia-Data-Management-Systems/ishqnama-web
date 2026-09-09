@@ -10,14 +10,20 @@ export default function AboutPage() {
         <div className={styles.body}>
           <h2>About Ishqnama</h2>
           <p>
-            Ishqnama is a Quranic data platform providing the complete text of
-            the Holy Quran alongside Urdu, Hindi, and English translations,
-            together with tafseer and scholarly commentary.
+            Hazrath Imamuna Syed Muhammad Jaunpuri Mahdi Ma'ood <sup>ahs</sup> said: 
+            <strong>Quran ishqnama ast</strong> (Quran is a love letter)
           </p>
           <p>
-            Our mission is to make the Quran accessible to readers across
-            languages and traditions, with a focus on clarity, accuracy, and a
-            reading experience worthy of the text.
+            Ishqnama is a Quranic data platform providing the complete text of
+            the Holy Quran alongside Urdu, Hindi, and English tarjuma and tafseer from
+            Tafseer ul Quran, Noor e Imaan, translated by Hazrath Peer-o-Murshid Syed Meeranji 
+            Abid Khundmiri Sahib - Exclusively for Mahdavia Community!
+          </p>
+          <p>
+            Our mission is to make the authentic Mahdavia translation and 
+            interpretation of the Quran widely available and accessible to 
+            readers across languages and traditions, with focus on clarity, 
+            accuracy, and a reading experience worthy of the text.
           </p>
 
           <h2>About Noor e Imaan</h2>

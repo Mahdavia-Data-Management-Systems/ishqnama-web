@@ -19,10 +19,10 @@ export default function TermsPage() {
           </p>
           <h2>Accuracy</h2>
           <p>
-            We strive for accuracy in all translations and explanations. However,
-            no translation can fully convey the meaning of the original Arabic
-            text. For authoritative interpretation, please consult qualified
-            scholars.
+            We strive for accuracy in all translations and explanations. 
+            Development & publishing team of Ishqnama software endeavor to maintain 
+            the data integrity of tarjuma and tafseer. We encourage users to kindly 
+            report any descrepancies from the 'Noor e Imaan' book by contacting us.
           </p>
           <h2>Changes</h2>
           <p>
