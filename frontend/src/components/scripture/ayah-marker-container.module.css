@@ -4,14 +4,16 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   pointer-events: none;
 }
 
-/* Verse mode: left padding of .arabic, vertically aligned with separator number */
+/* Verse mode: left padding of .arabic, centred on the verse's height */
 .positioned {
   position: absolute;
   left: calc(-1 * var(--space-6));
-  bottom: 0.9em;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* Continuous mode: floated into the left padding of .continuousArabic */
