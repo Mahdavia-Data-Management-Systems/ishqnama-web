@@ -1,0 +1,21 @@
+/* Shared layout: wraps an ayah marker (e.g. ruku mark) in the verse gutter */
+.positioned,
+.floated {
+  display: inline-block;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Verse mode: left padding of .arabic, vertically aligned with separator number */
+.positioned {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 0.3em);
+  bottom: 0.9em;
+}
+
+/* Continuous mode: floated into the left padding of .continuousArabic */
+.floated {
+  float: left;
+  margin-left: calc(-1 * var(--space-6));
+  width: var(--space-6);
+}

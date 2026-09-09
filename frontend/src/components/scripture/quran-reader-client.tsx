@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
+import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import RukuMark from "@/components/scripture/ruku-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
@@ -345,20 +346,21 @@ export default function QuranReaderClient({
                             {verse.chapterNumber === 1 && verse.number === 6 ? "\u00A0" : <>{" "}&#1757;{" "}</>}
                             <span className={styles.separatorNumber}>{localizeNumber(verse.number, lang)}</span>
                           </span>
-                          {rukuEndVerses.has(verseKey) && (() => {
-                            const ri = rukuMap.get(verse.rukuId);
-                            return (
-                              <RukuMark
-                                variant="floated"
-                                rukuId={verse.rukuId}
-                                rankInChapter={ri?.rankInChapter}
-                                rankInJuz={ri?.rankInJuz}
-                                verseCount={ri?.verseCount}
-                                lang={lang}
-                                fontScale={fontScale}
-                              />
-                            );
-                          })()}
+                          <AyahMarkerContainer variant="floated">
+                            {rukuEndVerses.has(verseKey) && (() => {
+                              const ri = rukuMap.get(verse.rukuId);
+                              return (
+                                <RukuMark
+                                  rukuId={verse.rukuId}
+                                  rankInChapter={ri?.rankInChapter}
+                                  rankInJuz={ri?.rankInJuz}
+                                  verseCount={ri?.verseCount}
+                                  lang={lang}
+                                  fontScale={fontScale}
+                                />
+                              );
+                            })()}
+                          </AyahMarkerContainer>
                         </span>
                       );
                     })}

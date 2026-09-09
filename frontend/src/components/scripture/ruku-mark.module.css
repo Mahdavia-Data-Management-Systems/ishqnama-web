@@ -1,27 +1,6 @@
-/* Shared layout: vertical stack with ain in the middle */
-.positioned,
-.floated {
-  display: inline-block;  
-  pointer-events: none;
-}
-
-/* Verse mode: left padding of .arabic, vertically aligned with separator number */
-.positioned {
-  position: absolute;
-  left: calc(-1 * var(--space-6) + 0.3em);
-  bottom: 0.9em;
-}
-
-/* Continuous mode: floated into the left padding of .continuousArabic */
-.floated {
-  float: left;
-  margin-left: calc(-1 * var(--space-6));
-  width: var(--space-6);  
-}
-
+/* Typography for the ruku mark; positioning lives in AyahMarkerContainer */
 .wrapper {
   font-size: 0.75em;
-  text-align: center;
   font-family: var(--font-arabic);
   color: var(--gold);
   line-height: 1;
