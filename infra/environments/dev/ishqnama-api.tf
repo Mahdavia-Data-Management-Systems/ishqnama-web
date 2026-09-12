@@ -7,7 +7,7 @@ module "functions" {
   storage_account_name = "stishqnamadev"
   tags                 = local.tags
 
-  connection_string = "Host=${module.aca.container_app_fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
+  connection_string = "Host=${module.db.fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
 
   cors_allowed_origins = [
     "https://dev.ishqnama.com",

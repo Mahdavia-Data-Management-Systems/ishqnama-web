@@ -15,5 +15,5 @@ output "function_app_name" {
 
 output "db_fqdn" {
   description = "FQDN of the database Container App"
-  value       = module.aca.container_app_fqdn
+  value       = module.db.fqdn
 }
