@@ -1,0 +1,23 @@
+# Build outputs
+**/bin/
+**/obj/
+publish/
+
+# IDE / OS
+.vs/
+.vscode/
+**/*.user
+**/*.suo
+Thumbs.db
+.DS_Store
+
+# Local-only configuration and data
+**/local.settings.json
+data/
+
+# Not needed inside the image
+docker-compose.yml
+cosmos-init/
+tools/
+plans/
+*.md

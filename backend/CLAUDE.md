@@ -158,4 +158,11 @@ Note: `<AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoft
 
 **Functions:** Azure Functions Consumption plan with zip deploy. CORS handled by `CorsMiddleware`. Response compression handled by the Azure Functions platform automatically.
 
-**API:** not deployed yet — see `plans/ishqnama-api-project-plan.md` and `plans/dotnet-api-container-apps-plan.md` (Container Apps, scale-to-zero). Brotli/Gzip compression and CORS are handled in-app because Container Apps provides neither.
+**API:** container image built from `src/Ishqnama.Api/Dockerfile` (build context `backend/`, `.dockerignore` alongside): SDK 9.0 build stage runs `dotnet publish` (self-contained, trimmed, linux-x64), runtime stage is `runtime-deps:9.0-noble-chiseled`, non-root, port 8080. `build-backend.yml` pushes it to Docker Hub: for non-prod environments as `noormahdi/ishqnama-api:<version>` and `:<environment>`, where `<version>` is a patch-bumped semantic version derived from `api-v*.*.*` git tags (same scheme as the ishqnama-db repo; the job also pushes the new git tag); for `prod` only as `:latest`, with no version or git tag. Terraform deploys it to Container Apps (`module.api` in `infra/environments/dev/ishqnama-api.tf`, scale-to-zero); the frontend still points at Functions — see `plans/dotnet-api-container-apps-plan.md`. Brotli/Gzip compression and CORS are handled in-app because Container Apps provides neither.
+
+Local image check:
+
+```bash
+docker build -f src/Ishqnama.Api/Dockerfile -t ishqnama-api:local .
+docker run --rm -p 8080:8080 -e "ConnectionStrings__QuranDb=Host=host.docker.internal;Port=5432;Database=ishqnama;Username=postgres;Password=postgres" ishqnama-api:local
+```
