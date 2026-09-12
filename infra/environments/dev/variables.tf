@@ -37,6 +37,12 @@ variable "cloudflare_account_id" {
   type        = string
 }
 
+variable "api_image_tag" {
+  description = "Tag of the docker.io/noormahdi/ishqnama-api image deployed to the API Container App"
+  type        = string
+  default     = "dev"
+}
+
 variable "entra_api_client_id" {
   description = "Entra ID app registration client ID for the backend API"
   type        = string
