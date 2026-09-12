@@ -12,6 +12,34 @@ permissions:
   contents: read
 
 jobs:
+  # Decides which deploy jobs a push needs. A manual run (workflow_dispatch) deploys everything.
+  # Each filter also includes the reusable workflow it drives, so a workflow fix gets exercised.
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      cloudflare: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.cloudflare == 'true' }}
+      infra: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.infra == 'true' }}
+      backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' }}
+      frontend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.frontend == 'true' }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cloudflare:
+              - "infra/environments/cloudflare/**"
+              - ".github/workflows/deploy-cloudflare-zone.yml"
+            infra:
+              - "infra/**"
+              - ".github/workflows/deploy-infra.yml"
+            backend:
+              - "backend/**"
+              - ".github/workflows/build-backend.yml"
+            frontend:
+              - "frontend/**"
+              - ".github/workflows/deploy-frontend.yml"
+
   build:
     name: Build Backend
     permissions:
@@ -23,21 +51,37 @@ jobs:
 
   setup-zone:
     name: Setup ishqnama.com
+    needs: changes
+    if: needs.changes.outputs.cloudflare == 'true'
     uses: ./.github/workflows/deploy-cloudflare-zone.yml
     secrets: inherit
 
+  # Runs for infra changes, and for backend changes because Terraform rolling the Container App to
+  # the new image tag is what deploys the API. A skipped setup-zone must not skip this job, hence
+  # the explicit result checks instead of the default "all needs succeeded" rule.
   infra-dev:
     name: Deploy Infrastructure (Dev)
-    needs: [setup-zone, build]
+    needs: [changes, setup-zone, build]
+    if: >-
+      ${{ !cancelled()
+      && (needs.changes.outputs.infra == 'true' || needs.changes.outputs.backend == 'true')
+      && needs.build.result == 'success'
+      && contains(fromJSON('["success", "skipped"]'), needs.setup-zone.result) }}
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev
       api_image_tag: ${{ needs.build.outputs.api_image_version }}
     secrets: inherit
 
+  # Runs for frontend changes, and whenever infra-dev actually ran because the frontend bakes the
+  # SWA app settings (API URL, Entra config) into its build.
   deploy-frontend-dev:
     name: Deploy Frontend (Dev)
-    needs: infra-dev
+    needs: [changes, infra-dev]
+    if: >-
+      ${{ !cancelled()
+      && (needs.infra-dev.result == 'success'
+      || (needs.infra-dev.result == 'skipped' && needs.changes.outputs.frontend == 'true')) }}
     uses: ./.github/workflows/deploy-frontend.yml
     with:
       environment: dev
