@@ -7,6 +7,11 @@ on:
         description: "Target environment (dev, prod)"
         required: true
         type: string
+      api_image_tag:
+        description: "Tag of noormahdi/ishqnama-api to deploy (the api_image_version output of build-backend.yml). Falls back to 'latest' for prod and 'dev' otherwise"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   id-token: write
@@ -32,6 +37,9 @@ jobs:
       TF_VAR_docker_hub_password: ${{ secrets.DOCKERHUB_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      # A new version on every push changes the image reference, so Terraform rolls a new
+      # Container App revision. Ignored by environments that do not declare the variable.
+      TF_VAR_api_image_tag: ${{ inputs.api_image_tag || (inputs.environment == 'prod' && 'latest' || 'dev') }}
 
     steps:
       - uses: actions/checkout@v4

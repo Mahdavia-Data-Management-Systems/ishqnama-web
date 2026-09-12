@@ -216,7 +216,9 @@ public sealed partial class CosmosUserDataRepository(
         var now = DateTimeOffset.UtcNow;
         var doc = new UserHistoryEntry
         {
-            Id = $"history_{now.ToUnixTimeMilliseconds()}",
+            // Ticks (100 ns) rather than milliseconds: two entries written in the same millisecond
+            // produced the same id and collided on the emulator's upsert.
+            Id = $"history_{now.UtcTicks}",
             UserId = userId,
             Type = "history",
             Title = title,

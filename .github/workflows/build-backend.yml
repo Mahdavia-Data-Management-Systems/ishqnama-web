@@ -1,0 +1,135 @@
+name: Build Backend
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Deployment environment; scopes the Docker Hub credentials and names the :<environment> image tag"
+        required: true
+        type: string
+    outputs:
+      api_image_version:
+        description: "Semantic version tag pushed for the API image (e.g. 0.1.4). Empty for prod, which only pushes :latest"
+        value: ${{ jobs.publish-api-image.outputs.version }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+  publish-api-image:
+    name: Build and Push API Image
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: write # create and push the api-v* release tag
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so all api-v* tags are visible
+
+      # Semantic version derived from git tags, as in ishqnama-db: bump the patch of the latest
+      # api-v*.*.* tag (0.1.0 when none exists). The prefix keeps API releases distinct from any
+      # other tags in this monorepo. Re-running on an already-tagged commit reuses that version
+      # instead of failing, so a workflow re-run is idempotent.
+      # Skipped for prod: prod pushes only :latest and creates no version or git tag.
+      - name: Compute next version
+        id: version
+        if: inputs.environment != 'prod'
+        run: |
+          set -euo pipefail
+          if EXISTING=$(git describe --exact-match --match 'api-v*.*.*' HEAD 2>/dev/null); then
+            NEW_VERSION="${EXISTING#api-v}"
+            echo "HEAD already tagged as ${EXISTING}; reusing version ${NEW_VERSION}"
+            echo "create_tag=false" >> "$GITHUB_OUTPUT"
+          else
+            LATEST_TAG=$(git tag -l 'api-v*.*.*' | sort -V | tail -n1)
+            if [ -z "$LATEST_TAG" ]; then
+              NEW_VERSION="0.1.0"
+            else
+              VERSION="${LATEST_TAG#api-v}"
+              MAJOR="${VERSION%%.*}"
+              MINOR_PATCH="${VERSION#*.}"
+              MINOR="${MINOR_PATCH%%.*}"
+              PATCH="${MINOR_PATCH#*.}"
+              NEW_PATCH=$((PATCH + 1))
+              NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+            fi
+            echo "Next version: ${NEW_VERSION}"
+            echo "create_tag=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=api-v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      # prod  -> :latest only
+      # other -> :<version> and :<environment>
+      - name: Resolve image tags
+        id: tags
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api
+          ENVIRONMENT: ${{ inputs.environment }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          {
+            echo "tags<<EOF"
+            if [ "$ENVIRONMENT" = "prod" ]; then
+              echo "${IMAGE}:latest"
+            else
+              echo "${IMAGE}:${VERSION}"
+              echo "${IMAGE}:${ENVIRONMENT}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/src/Ishqnama.Api/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.version || 'latest' }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create and push git tag
+        if: inputs.environment != 'prod' && steps.version.outputs.create_tag == 'true'
+        run: |
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
