@@ -7,36 +7,9 @@ terraform {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "this" {
-  name                = "${var.environment_name}-logs"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  sku                 = "PerGB2018"
-  retention_in_days   = 30
-  tags                = var.tags
-}
-
-resource "azurerm_container_app_environment" "this" {
-  name                       = var.environment_name
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
-  infrastructure_subnet_id   = var.infrastructure_subnet_id
-  public_network_access      = var.public_network_access
-  tags                       = var.tags
-
-  dynamic "workload_profile" {
-    for_each = var.infrastructure_subnet_id != null ? var.workload_profiles : []
-    content {
-      name                  = workload_profile.value.name
-      workload_profile_type = workload_profile.value.workload_profile_type
-    }
-  }
-}
-
 resource "azurerm_container_app" "this" {
   name                         = var.container_app_name
-  container_app_environment_id = azurerm_container_app_environment.this.id
+  container_app_environment_id = var.container_app_environment_id
   resource_group_name          = var.resource_group_name
   revision_mode                = var.revision_mode
   tags                         = var.tags
@@ -148,10 +121,11 @@ resource "azurerm_container_app" "this" {
   dynamic "ingress" {
     for_each = var.ingress != null ? [var.ingress] : []
     content {
-      external_enabled = ingress.value.external
-      target_port      = ingress.value.target_port
-      transport        = ingress.value.transport
-      exposed_port     = ingress.value.exposed_port
+      external_enabled           = ingress.value.external
+      target_port                = ingress.value.target_port
+      transport                  = ingress.value.transport
+      exposed_port               = ingress.value.exposed_port
+      allow_insecure_connections = ingress.value.allow_insecure
 
       traffic_weight {
         latest_revision = true

@@ -3,13 +3,8 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "location" {
-  description = "Azure region for all resources"
-  type        = string
-}
-
-variable "environment_name" {
-  description = "Name of the Container Apps environment"
+variable "container_app_environment_id" {
+  description = "ID of the Container Apps environment to deploy into (output 'id' of the aca-environment module)"
   type        = string
 }
 
@@ -101,7 +96,7 @@ variable "ingress" {
 }
 
 variable "min_replicas" {
-  description = "Minimum number of replicas"
+  description = "Minimum number of replicas (0 enables scale-to-zero)"
   type        = number
   default     = 0
 }
@@ -121,37 +116,6 @@ variable "revision_mode" {
     condition     = contains(["Single", "Multiple"], var.revision_mode)
     error_message = "revision_mode must be 'Single' or 'Multiple'."
   }
-}
-
-variable "public_network_access" {
-  description = "Whether the ACA environment is accessible from public networks"
-  type        = string
-  default     = "Enabled"
-
-  validation {
-    condition     = contains(["Enabled", "Disabled"], var.public_network_access)
-    error_message = "public_network_access must be 'Enabled' or 'Disabled'."
-  }
-}
-
-variable "infrastructure_subnet_id" {
-  description = "Subnet ID for the ACA environment (required for TCP ingress / workload profiles)"
-  type        = string
-  default     = null
-}
-
-variable "workload_profiles" {
-  description = "Workload profiles for the ACA environment"
-  type = list(object({
-    name                  = string
-    workload_profile_type = string
-  }))
-  default = [
-    {
-      name                  = "Consumption"
-      workload_profile_type = "Consumption"
-    }
-  ]
 }
 
 variable "tags" {

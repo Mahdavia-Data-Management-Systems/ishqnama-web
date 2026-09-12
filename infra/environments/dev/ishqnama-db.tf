@@ -32,14 +32,24 @@ resource "azurerm_subnet" "aca" {
   }
 }
 
-module "aca" {
-  source = "../../modules/azure/aca"
+# VNet-integrated Container Apps environment. Needed today because Postgres exposes TCP 5432.
+module "aca_environment" {
+  source = "../../modules/azure/aca-environment"
 
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
   environment_name         = "ishqnama-db-dev"
-  container_app_name       = "ishqnama-db-dev"
   infrastructure_subnet_id = azurerm_subnet.aca.id
+
+  tags = local.tags
+}
+
+module "db" {
+  source = "../../modules/azure/aca-app"
+
+  resource_group_name          = azurerm_resource_group.this.name
+  container_app_environment_id = module.aca_environment.id
+  container_app_name           = "ishqnama-db-dev"
 
   container_registry = {
     server   = "docker.io"
