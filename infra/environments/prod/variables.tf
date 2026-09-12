@@ -58,13 +58,13 @@ variable "db_image_tag" {
 variable "entra_spa_client_id" {
   description = "Entra ID app registration client ID for the frontend SPA (its redirect URIs must include the prod hostnames)"
   type        = string
-  default     = "127f0236-2b16-4f7a-9394-9a27a5fc20d2"
+  default     = "10611171-721d-4ba1-9c52-bac985c88118"
 }
 
 variable "entra_api_client_id" {
   description = "Entra ID app registration client ID for the backend API"
   type        = string
-  default     = "fe35a79a-4d68-4e7c-bfa7-6ef1c4af4f83"
+  default     = "3f71cc25-a9eb-4fc3-89eb-a5e634bfe68b"
 }
 
 locals {
