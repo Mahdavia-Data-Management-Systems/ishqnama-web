@@ -23,6 +23,10 @@ jobs:
       backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' }}
       frontend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.frontend == 'true' }}
     steps:
+      # paths-filter diffs push events with local git, so the repo must be checked out. The action
+      # deepens the history itself as far as it needs to reach the previous commit.
+      - uses: actions/checkout@v4
+
       - uses: dorny/paths-filter@v3
         id: filter
         with:
