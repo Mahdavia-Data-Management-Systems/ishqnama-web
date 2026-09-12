@@ -10,6 +10,10 @@ locals {
   # Same connection string for both hosts. Becomes a plain SQLite file path once the Quran data is
   # embedded in the image (see plans/dotnet-api-container-apps-plan.md, PR 1).
   quran_db_connection_string = "Host=${module.db.fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
+
+  # The Minimal API talks to the Postgres sidecar in its own replica. Containers in a replica share
+  # a network namespace, so the sidecar is reachable on localhost without any ingress.
+  api_sidecar_db_connection_string = "Host=localhost;Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -43,6 +47,9 @@ module "functions" {
 # ---------------------------------------------------------------------------------------------
 # Minimal API on Container Apps (Ishqnama.Api). Consumption-only environment, no VNet, scales to
 # zero so it stays inside the ACA free grant. Not yet referenced by the frontend.
+#
+# The Quran Postgres database runs as a sidecar in the same replica as the API, so it scales to
+# zero with it and needs no TCP ingress or VNet (unlike module.db in ishqnama-db.tf).
 # ---------------------------------------------------------------------------------------------
 
 module "api_environment" {
@@ -62,7 +69,13 @@ module "api" {
   container_app_environment_id = module.api_environment.id
   container_app_name           = "ca-ishqnama-api-dev"
 
-  # Public image — no registry credentials needed
+  # The API image is public, but the db sidecar image is pulled with Docker Hub credentials like module.db
+  container_registry = {
+    server   = "docker.io"
+    username = var.docker_hub_username
+    password = var.docker_hub_password
+  }
+
   containers = [
     {
       name   = "ishqnama-api"
@@ -87,11 +100,29 @@ module "api" {
         { type = "Readiness", transport = "HTTP", port = 8080, path = "/health/ready", interval_seconds = 10, timeout = 3, failure_threshold = 3 },
         { type = "Liveness", transport = "HTTP", port = 8080, path = "/health/live", interval_seconds = 30, timeout = 3, failure_threshold = 3 }
       ]
+    },
+    # Postgres sidecar — same image and settings as module.db, minus the ingress
+    {
+      name   = "ishqnama-db"
+      image  = "docker.io/noormahdi/ishqnama-db:dev"
+      cpu    = 0.25
+      memory = "0.5Gi"
+      env = [
+        { name = "POSTGRES_DB", value = "ishqnama" },
+        { name = "POSTGRES_USER", value = "postgres" },
+        { name = "POSTGRES_PASSWORD", secret_name = "postgres-password" }
+      ]
+      probes = [
+        # Hold the replica back until Postgres accepts connections so the API's first request doesn't fail
+        { type = "Startup", transport = "TCP", port = 5432, interval_seconds = 5, timeout = 3, failure_threshold = 12 },
+        { type = "Liveness", transport = "TCP", port = 5432, interval_seconds = 30, timeout = 3, failure_threshold = 3 }
+      ]
     }
   ]
 
   secrets = [
-    { name = "quran-db-connection", value = local.quran_db_connection_string },
+    { name = "quran-db-connection", value = local.api_sidecar_db_connection_string },
+    { name = "postgres-password", value = random_password.postgres.result },
     { name = "cosmosdb-key", value = module.cosmosdb.primary_key }
   ]
 
