@@ -69,7 +69,7 @@ See `backend/CLAUDE.md` for full details.
 
 ### Infrastructure
 
-Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar; plus the older standalone PostgreSQL app), Functions (legacy backend), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is derived from the API Container App's hostname in `infra/environments/dev/ishqnama-api.tf` (`local.api_url`). Two environments: dev and prod. Azure auth via OIDC federated identity.
+Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar, scale-to-zero), Functions (legacy backend, no longer has a database), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is derived from the API Container App's hostname in `infra/environments/dev/ishqnama-api.tf` (`local.api_url`). Two environments: dev and prod. Azure auth via OIDC federated identity.
 
 ## CI/CD
 

@@ -13,17 +13,20 @@ locals {
 
   api_auth_authority = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}/v2.0"
 
-  # Same connection string for both hosts. Becomes a plain SQLite file path once the Quran data is
-  # embedded in the image (see plans/dotnet-api-container-apps-plan.md, PR 1).
-  quran_db_connection_string = "Host=${module.db.fqdn};Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
-
   # The Minimal API talks to the Postgres sidecar in its own replica. Containers in a replica share
   # a network namespace, so the sidecar is reachable on localhost without any ingress.
   api_sidecar_db_connection_string = "Host=localhost;Port=5432;Database=ishqnama;Username=postgres;Password=${random_password.postgres.result}"
 }
 
+# Password for the Postgres sidecar, injected as a Container App secret
+resource "random_password" "postgres" {
+  length  = 32
+  special = false
+}
+
 # ---------------------------------------------------------------------------------------------
-# Azure Functions host (no longer referenced by the frontend; kept until decommissioned)
+# Azure Functions host (no longer referenced by the frontend; kept until decommissioned). The
+# standalone Postgres app it used to query has been removed, so its Quran endpoints no longer work.
 # ---------------------------------------------------------------------------------------------
 
 module "functions" {
@@ -35,7 +38,8 @@ module "functions" {
   storage_account_name = "stishqnamadev"
   tags                 = local.tags
 
-  connection_string = local.quran_db_connection_string
+  # Required by the module. Points at localhost, which is unreachable from Functions — see above.
+  connection_string = local.api_sidecar_db_connection_string
 
   cors_allowed_origins = local.api_cors_allowed_origins
 
@@ -55,7 +59,8 @@ module "functions" {
 # zero so it stays inside the ACA free grant. This is the backend the frontend calls.
 #
 # The Quran Postgres database runs as a sidecar in the same replica as the API, so it scales to
-# zero with it and needs no TCP ingress or VNet (unlike module.db in ishqnama-db.tf).
+# zero with it and needs no TCP ingress or VNet, which is what let the always-on standalone
+# Postgres app and its VNet-integrated environment be removed.
 # ---------------------------------------------------------------------------------------------
 
 module "api_environment" {
@@ -75,7 +80,7 @@ module "api" {
   container_app_environment_id = module.api_environment.id
   container_app_name           = local.api_container_app_name
 
-  # The API image is public, but the db sidecar image is pulled with Docker Hub credentials like module.db
+  # The API image is public, but the db sidecar image is private and needs Docker Hub credentials
   container_registry = {
     server   = "docker.io"
     username = var.docker_hub_username
@@ -107,7 +112,7 @@ module "api" {
         { type = "Liveness", transport = "HTTP", port = 8080, path = "/health/live", interval_seconds = 30, timeout = 3, failure_threshold = 3 }
       ]
     },
-    # Postgres sidecar — same image and settings as module.db, minus the ingress
+    # Postgres sidecar — the Quran database, served over localhost to the API container
     {
       name   = "ishqnama-db"
       image  = "docker.io/noormahdi/ishqnama-db:dev"

@@ -13,11 +13,6 @@ output "function_app_name" {
   value       = module.functions.name
 }
 
-output "db_fqdn" {
-  description = "FQDN of the database Container App"
-  value       = module.db.fqdn
-}
-
 output "api_fqdn" {
   description = "FQDN of the API Container App"
   value       = module.api.fqdn
