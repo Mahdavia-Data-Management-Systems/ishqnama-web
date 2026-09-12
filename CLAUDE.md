@@ -74,7 +74,7 @@ Terraform modules deploy to Azure: Static Web App (frontend), Functions (backend
 ## CI/CD
 
 GitHub Actions workflows in `.github/workflows/`:
-- **`ci.yml`** — Main pipeline: build backend → deploy infra → deploy frontend → deploy backend (dev)
+- **`ci.yml`** — Main pipeline: build backend (+ push API image) → deploy infra → deploy frontend → deploy backend (dev). The image version from `build-backend.yml` is passed to `deploy-infra.yml` as `api_image_tag`, so every push changes the Container App's image reference and Terraform rolls a new revision (re-pushing a fixed tag would not)
 - **`build-backend.yml`** / **`deploy-frontend.yml`** / **`deploy-backend.yml`** / **`deploy-infra.yml`** — Reusable callable workflows. `build-backend.yml` runs two parallel jobs: a Release build of the backend solution, and build + push of the `noormahdi/ishqnama-api` Docker image. For non-prod environments the image is tagged with a patch-bumped semantic version from `api-v*.*.*` git tags plus `:<environment>`, the git tag is created (callers need `contents: write`), and the version is exposed as the `api_image_version` output. For `prod` it pushes only `:latest`, with no version or git tag. `deploy-backend.yml` zip-deploys the Functions app
 - **`prod-release.yml`** — Manual trigger for production deployment
 - **`destroy-infra.yml`** — Manual trigger to tear down infrastructure

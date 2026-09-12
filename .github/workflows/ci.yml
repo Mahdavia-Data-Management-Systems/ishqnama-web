@@ -28,10 +28,11 @@ jobs:
 
   infra-dev:
     name: Deploy Infrastructure (Dev)
-    needs: setup-zone
+    needs: [setup-zone, build]
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev
+      api_image_tag: ${{ needs.build.outputs.api_image_version }}
     secrets: inherit
 
   deploy-frontend-dev:
