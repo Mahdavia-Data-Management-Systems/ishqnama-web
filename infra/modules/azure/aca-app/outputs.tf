@@ -24,8 +24,9 @@ output "latest_revision_name" {
 }
 
 output "custom_domain_verification_id" {
-  description = "Verification ID for binding a custom domain (asuid TXT record value)"
+  description = "Verification ID for binding a custom domain (asuid TXT record value). Sensitive in the provider schema, so root outputs exposing it must be marked sensitive too"
   value       = azurerm_container_app.this.custom_domain_verification_id
+  sensitive   = true
 }
 
 output "identity_principal_id" {

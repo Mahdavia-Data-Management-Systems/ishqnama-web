@@ -151,7 +151,9 @@ deploys the frontend. Record the outputs of the apply
 
 - `swa_default_hostname`
 - `api_fqdn`
-- `api_custom_domain_verification_id`
+- `api_custom_domain_verification_id` (marked sensitive, so it is hidden in the apply log; read it
+  with `terraform output -raw api_custom_domain_verification_id` from `environments/prod`, or with
+  `az containerapp show -n ca-ishqnama-api-prod -g rg-ishqnama-prod --query properties.customDomainVerificationId -o tsv`)
 
 ## 8. Custom domains (after the first apply)
 

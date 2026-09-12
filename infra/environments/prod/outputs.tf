@@ -19,6 +19,7 @@ output "api_url" {
 }
 
 output "api_custom_domain_verification_id" {
-  description = "Value of the asuid.api TXT record required before binding api.ishqnama.com to the Container App"
+  description = "Value of the asuid.api TXT record required before binding api.ishqnama.com to the Container App. The provider marks it sensitive; read it with terraform output -raw"
   value       = module.api.custom_domain_verification_id
+  sensitive   = true
 }
