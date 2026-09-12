@@ -5,6 +5,12 @@ locals {
     "http://localhost:3000"
   ]
 
+  # Built from the environment's default domain rather than module.api.url: the SWA app settings
+  # need this URL, and the API's CORS list needs the SWA hostname, so reading module.api's output
+  # from the SWA would be a cycle. External Container App FQDNs are always <app name>.<default domain>.
+  api_container_app_name = "ca-ishqnama-api-dev"
+  api_url                = "https://${local.api_container_app_name}.${module.api_environment.default_domain}"
+
   api_auth_authority = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}/v2.0"
 
   # Same connection string for both hosts. Becomes a plain SQLite file path once the Quran data is
@@ -17,7 +23,7 @@ locals {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Azure Functions host (current production path for the frontend)
+# Azure Functions host (no longer referenced by the frontend; kept until decommissioned)
 # ---------------------------------------------------------------------------------------------
 
 module "functions" {
@@ -46,7 +52,7 @@ module "functions" {
 
 # ---------------------------------------------------------------------------------------------
 # Minimal API on Container Apps (Ishqnama.Api). Consumption-only environment, no VNet, scales to
-# zero so it stays inside the ACA free grant. Not yet referenced by the frontend.
+# zero so it stays inside the ACA free grant. This is the backend the frontend calls.
 #
 # The Quran Postgres database runs as a sidecar in the same replica as the API, so it scales to
 # zero with it and needs no TCP ingress or VNet (unlike module.db in ishqnama-db.tf).
@@ -67,7 +73,7 @@ module "api" {
 
   resource_group_name          = azurerm_resource_group.this.name
   container_app_environment_id = module.api_environment.id
-  container_app_name           = "ca-ishqnama-api-dev"
+  container_app_name           = local.api_container_app_name
 
   # The API image is public, but the db sidecar image is pulled with Docker Hub credentials like module.db
   container_registry = {

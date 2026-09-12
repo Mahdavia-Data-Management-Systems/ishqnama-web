@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ishqnama is a Quranic data web app (verses, translations, tafseer) with a monorepo structure: **frontend** (Next.js SPA), **backend** (.NET 9 API — Azure Functions today, plus a Minimal API project for Container Apps), and **infra** (Terraform). The backend CLAUDE.md has detailed backend guidance — see `backend/CLAUDE.md`.
+Ishqnama is a Quranic data web app (verses, translations, tafseer) with a monorepo structure: **frontend** (Next.js SPA), **backend** (.NET 9 API — the Minimal API on Container Apps is what the frontend calls; the Azure Functions host is still deployed but no longer referenced), and **infra** (Terraform). The backend CLAUDE.md has detailed backend guidance — see `backend/CLAUDE.md`.
 
 ## Build & Run Commands
 
@@ -37,7 +37,7 @@ terraform apply                     # Deploy
 
 ```
 frontend/          Next.js 15 + React 19, static export, Azure Static Web App
-backend/           .NET 9 Azure Functions, Clean Architecture, PostgreSQL (read-only) + Cosmos DB (user data)
+backend/           .NET 9 Minimal API (+ legacy Functions host), Clean Architecture, PostgreSQL (read-only) + Cosmos DB (user data)
 infra/             Terraform modules: azure/ (swa, functions, keyvault, aca, cosmosdb)
 ```
 
@@ -69,7 +69,7 @@ See `backend/CLAUDE.md` for full details.
 
 ### Infrastructure
 
-Terraform modules deploy to Azure: Static Web App (frontend), Functions (backend), Container Apps (PostgreSQL), Key Vault (secrets), Cosmos DB (user data, free tier). Two environments: dev and prod. Azure auth via OIDC federated identity.
+Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar; plus the older standalone PostgreSQL app), Functions (legacy backend), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is derived from the API Container App's hostname in `infra/environments/dev/ishqnama-api.tf` (`local.api_url`). Two environments: dev and prod. Azure auth via OIDC federated identity.
 
 ## CI/CD
 
