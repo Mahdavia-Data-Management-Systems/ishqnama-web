@@ -70,7 +70,7 @@ See `backend/CLAUDE.md` for full details.
 
 ### Infrastructure
 
-Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar, scale-to-zero), Functions (legacy backend, no longer has a database), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is derived from the API Container App's hostname in `infra/environments/dev/ishqnama-api.tf` (`local.api_url`). Two environments: dev and prod. Azure auth via OIDC federated identity.
+Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar, scale-to-zero), Functions (legacy backend, no longer has a database), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is `https://api.dev.ishqnama.com/api`, from `local.api_url` in `infra/environments/dev/ishqnama-api.tf`. That custom domain (Cloudflare DNS-only CNAME to the Container App FQDN, `asuid` TXT record, and Azure managed certificate) was added by hand in the portal and is not in Terraform. Container Apps has no path routing: the hostname selects the app and the path passes through, so the `/api` prefix is simply the `MapGroup("/api")` in the API's `Program.cs`. Two environments: dev and prod. Azure auth via OIDC federated identity.
 
 ## CI/CD
 

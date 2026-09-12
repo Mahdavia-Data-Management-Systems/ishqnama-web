@@ -5,11 +5,12 @@ locals {
     "http://localhost:3000"
   ]
 
-  # Built from the environment's default domain rather than module.api.url: the SWA app settings
-  # need this URL, and the API's CORS list needs the SWA hostname, so reading module.api's output
-  # from the SWA would be a cycle. External Container App FQDNs are always <app name>.<default domain>.
+  # The frontend calls the API through this custom domain. The hostname, its Cloudflare CNAME to
+  # the Container App's FQDN and the Azure managed certificate were added by hand and are not
+  # managed here. Container Apps has no path routing, so the /api prefix the SWA appends is just
+  # the MapGroup("/api") in the API's Program.cs.
   api_container_app_name = "ca-ishqnama-api-dev"
-  api_url                = "https://${local.api_container_app_name}.${module.api_environment.default_domain}"
+  api_url                = "https://api.dev.ishqnama.com"
 
   api_auth_authority = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}/v2.0"
 
