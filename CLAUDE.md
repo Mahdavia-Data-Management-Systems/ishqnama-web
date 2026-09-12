@@ -53,6 +53,7 @@ infra/             Terraform modules: azure/ (swa, functions, keyvault, aca, cos
   - Reader settings synced via debounced save in `src/context/reader-settings-context.tsx`
   - Bookmarks synced per-sura in `src/app/quran/[sura]/sura-reader-client.tsx`
   - Saved page (`src/app/saved/page.tsx`) displays bookmarks, favorites, and history
+- **API keep-alive**: `src/components/api-keep-alive.tsx` (mounted in the root layout) pings `GET /api/healthz` on load and every 2 minutes while the tab is visible, pausing when hidden, so the scale-to-zero Container App stays warm while someone is reading. `/api/healthz` is the only route safe to ping: it is anonymous, skips the database, and is excluded from the long-lived `Cache-Control` header every other `/api` route carries
 - **Public pages**: `/`, `/about`, `/contact`, `/terms`, `/privacy`
 - **Protected pages**: `/quran/*` — guarded by `<ProtectedRoute>` in `src/app/quran/layout.tsx`
 - **SPA routing**: `public/staticwebapp.config.json` configures Azure SWA fallback to `index.html`

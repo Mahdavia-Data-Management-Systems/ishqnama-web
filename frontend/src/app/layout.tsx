@@ -8,6 +8,7 @@ import AppBar from "@/components/navigation/app-bar";
 import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
+import ApiKeepAlive from "@/components/api-keep-alive";
 
 const ebGaramond = EB_Garamond({
   subsets: ["latin"],
@@ -63,6 +64,7 @@ export default function RootLayout({
       className={`${ebGaramond.variable} ${sourceSans.variable} ${notoSerif.variable} ${notoSerifDevanagari.variable}`}
     >
       <body>
+        <ApiKeepAlive />
         <AuthProvider>
           <ReaderSettingsProvider>
             <BookmarksProvider>
