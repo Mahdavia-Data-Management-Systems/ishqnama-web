@@ -8,11 +8,6 @@ output "key_vault_name" {
   value       = module.keyvault.name
 }
 
-output "function_app_name" {
-  description = "Name of the Function App"
-  value       = module.functions.name
-}
-
 output "api_fqdn" {
   description = "FQDN of the API Container App"
   value       = module.api.fqdn

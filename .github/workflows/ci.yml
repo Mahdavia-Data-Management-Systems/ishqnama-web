@@ -41,10 +41,3 @@ jobs:
     uses: ./.github/workflows/deploy-frontend.yml
     with:
       environment: dev
-
-  deploy-backend-dev:
-    name: Deploy Backend (Dev)
-    needs: [build, infra-dev]
-    uses: ./.github/workflows/deploy-backend.yml
-    with:
-      environment: dev

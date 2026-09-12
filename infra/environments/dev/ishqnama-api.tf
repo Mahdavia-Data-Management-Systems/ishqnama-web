@@ -26,36 +26,6 @@ resource "random_password" "postgres" {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Azure Functions host (no longer referenced by the frontend; kept until decommissioned). The
-# standalone Postgres app it used to query has been removed, so its Quran endpoints no longer work.
-# ---------------------------------------------------------------------------------------------
-
-module "functions" {
-  source = "../../modules/azure/functions"
-
-  name                 = local.functions_name
-  resource_group_name  = azurerm_resource_group.this.name
-  location             = azurerm_resource_group.this.location
-  storage_account_name = "stishqnamadev"
-  tags                 = local.tags
-
-  # Required by the module. Points at localhost, which is unreachable from Functions — see above.
-  connection_string = local.api_sidecar_db_connection_string
-
-  cors_allowed_origins = local.api_cors_allowed_origins
-
-  app_settings = {
-    "CosmosDb__Endpoint"      = module.cosmosdb.endpoint
-    "CosmosDb__Key"           = module.cosmosdb.primary_key
-    "CosmosDb__DatabaseName"  = module.cosmosdb.database_name
-    "CosmosDb__ContainerName" = module.cosmosdb.container_name
-    "Auth__ClientId"          = var.entra_api_client_id
-    "Auth__TenantId"          = data.tfe_outputs.mdms-core.values.tenant_id
-    "Auth__Authority"         = local.api_auth_authority
-  }
-}
-
-# ---------------------------------------------------------------------------------------------
 # Minimal API on Container Apps (Ishqnama.Api). Consumption-only environment, no VNet, scales to
 # zero so it stays inside the ACA free grant. This is the backend the frontend calls.
 #
@@ -104,7 +74,7 @@ module "api" {
         { name = "CosmosDb__ContainerName", value = module.cosmosdb.container_name },
         { name = "Auth__ClientId", value = var.entra_api_client_id },
         { name = "Auth__Authority", value = local.api_auth_authority },
-        # Container Apps has no platform CORS (unlike Functions), so the app must own it
+        # Container Apps has no platform CORS, so the app must own it
         { name = "Cors__AllowedOrigins", value = join(",", local.api_cors_allowed_origins) }
       ]
       probes = [

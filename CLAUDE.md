@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ishqnama is a Quranic data web app (verses, translations, tafseer) with a monorepo structure: **frontend** (Next.js SPA), **backend** (.NET 9 API — the Minimal API on Container Apps is what the frontend calls; the Azure Functions host is still deployed but no longer referenced), and **infra** (Terraform). The backend CLAUDE.md has detailed backend guidance — see `backend/CLAUDE.md`.
+Ishqnama is a Quranic data web app (verses, translations, tafseer) with a monorepo structure: **frontend** (Next.js SPA), **backend** (.NET 9 API — the Minimal API on Container Apps is what the frontend calls; the Azure Functions host still builds but is no longer deployed), and **infra** (Terraform). The backend CLAUDE.md has detailed backend guidance — see `backend/CLAUDE.md`.
 
 ## Build & Run Commands
 
@@ -37,8 +37,8 @@ terraform apply                     # Deploy
 
 ```
 frontend/          Next.js 15 + React 19, static export, Azure Static Web App
-backend/           .NET 9 Minimal API (+ legacy Functions host), Clean Architecture, PostgreSQL (read-only) + Cosmos DB (user data)
-infra/             Terraform modules: azure/ (swa, functions, keyvault, aca, cosmosdb)
+backend/           .NET 9 Minimal API (+ legacy Functions host, not deployed), Clean Architecture, PostgreSQL (read-only) + Cosmos DB (user data)
+infra/             Terraform modules: azure/ (swa, keyvault, aca-environment, aca-app, cosmosdb)
 ```
 
 ### Frontend
@@ -70,13 +70,13 @@ See `backend/CLAUDE.md` for full details.
 
 ### Infrastructure
 
-Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar, scale-to-zero), Functions (legacy backend, no longer has a database), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is `https://api.dev.ishqnama.com/api`, from `local.api_url` in `infra/environments/dev/ishqnama-api.tf`. That custom domain (Cloudflare DNS-only CNAME to the Container App FQDN, `asuid` TXT record, and Azure managed certificate) was added by hand in the portal and is not in Terraform. Container Apps has no path routing: the hostname selects the app and the path passes through, so the `/api` prefix is simply the `MapGroup("/api")` in the API's `Program.cs`. Two environments: dev and prod. Azure auth via OIDC federated identity.
+Terraform modules deploy to Azure: Static Web App (frontend), Container Apps (API with a PostgreSQL sidecar, scale-to-zero), Key Vault (secrets), Cosmos DB (user data, free tier). The SWA's `NEXT_PUBLIC_API_URL` is `https://api.dev.ishqnama.com/api`, from `local.api_url` in `infra/environments/dev/ishqnama-api.tf`. That custom domain (Cloudflare DNS-only CNAME to the Container App FQDN, `asuid` TXT record, and Azure managed certificate) was added by hand in the portal and is not in Terraform. Container Apps has no path routing: the hostname selects the app and the path passes through, so the `/api` prefix is simply the `MapGroup("/api")` in the API's `Program.cs`. Two environments: dev and prod. Azure auth via OIDC federated identity.
 
 ## CI/CD
 
 GitHub Actions workflows in `.github/workflows/`:
-- **`ci.yml`** — Main pipeline: build backend (+ push API image) → deploy infra → deploy frontend → deploy backend (dev). The image version from `build-backend.yml` is passed to `deploy-infra.yml` as `api_image_tag`, so every push changes the Container App's image reference and Terraform rolls a new revision (re-pushing a fixed tag would not)
-- **`build-backend.yml`** / **`deploy-frontend.yml`** / **`deploy-backend.yml`** / **`deploy-infra.yml`** — Reusable callable workflows. `build-backend.yml` runs two parallel jobs: a Release build of the backend solution, and build + push of the `noormahdi/ishqnama-api` Docker image. For non-prod environments the image is tagged with a patch-bumped semantic version from `api-v*.*.*` git tags plus `:<environment>`, the git tag is created (callers need `contents: write`), and the version is exposed as the `api_image_version` output. For `prod` it pushes only `:latest`, with no version or git tag. `deploy-backend.yml` zip-deploys the Functions app
+- **`ci.yml`** — Main pipeline: build backend (+ push API image) → deploy infra → deploy frontend (dev). The image version from `build-backend.yml` is passed to `deploy-infra.yml` as `api_image_tag`, so every push changes the Container App's image reference and Terraform rolls a new revision (re-pushing a fixed tag would not)
+- **`build-backend.yml`** / **`deploy-frontend.yml`** / **`deploy-infra.yml`** — Reusable callable workflows. `build-backend.yml` runs two parallel jobs: a Release build of the backend solution, and build + push of the `noormahdi/ishqnama-api` Docker image. For non-prod environments the image is tagged with a patch-bumped semantic version from `api-v*.*.*` git tags plus `:<environment>`, the git tag is created (callers need `contents: write`), and the version is exposed as the `api_image_version` output. For `prod` it pushes only `:latest`, with no version or git tag. The Functions host in `backend/src/Ishqnama.Functions` is built as part of the solution but has no deployment target any more
 - **`prod-release.yml`** — Manual trigger for production deployment
 - **`destroy-infra.yml`** — Manual trigger to tear down infrastructure
 
