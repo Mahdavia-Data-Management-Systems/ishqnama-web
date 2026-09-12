@@ -5,14 +5,11 @@ locals {
     "http://localhost:3000"
   ]
 
-  # The API is reached through a custom domain bound to the Container App. It is a plain string
-  # rather than module.api.url on purpose: the SWA app settings need this URL, and the API's CORS
-  # list needs the SWA hostname, so reading module.api's output from the SWA would be a cycle.
-  # The Container App keeps its default <app name>.<default domain> FQDN too, which is what the
-  # custom domain's CNAME points at.
+  # Built from the environment's default domain rather than module.api.url: the SWA app settings
+  # need this URL, and the API's CORS list needs the SWA hostname, so reading module.api's output
+  # from the SWA would be a cycle. External Container App FQDNs are always <app name>.<default domain>.
   api_container_app_name = "ca-ishqnama-api-dev"
-  api_custom_domain      = "api.dev.ishqnama.com"
-  api_url                = "https://${local.api_custom_domain}"
+  api_url                = "https://${local.api_container_app_name}.${module.api_environment.default_domain}"
 
   api_auth_authority = "https://${split(".", data.tfe_outputs.mdms-core.values.tenant_domain)[0]}.ciamlogin.com/${data.tfe_outputs.mdms-core.values.tenant_id}/v2.0"
 
@@ -150,50 +147,4 @@ module "api" {
   max_replicas = 1
 
   tags = local.tags
-}
-
-# ---------------------------------------------------------------------------------------------
-# Custom domain for the API. Container Apps has no path routing: the hostname selects the app and
-# the request path is passed through untouched, so https://api.dev.ishqnama.com/api/chapters
-# reaches the API at /api/chapters, the prefix Program.cs maps its endpoints under.
-#
-# Both DNS records are DNS-only (not proxied through Cloudflare). Azure validates the CNAME by
-# resolving it to the app's own FQDN and terminates TLS itself with a free managed certificate;
-# a proxied record would resolve to Cloudflare instead and fail both.
-#
-# The azurerm provider cannot create the managed certificate, so this resource only adds the
-# hostname (binding disabled). deploy-infra.yml then runs `az containerapp hostname bind` once
-# to issue the certificate and enable the binding, and ignore_changes stops Terraform from
-# reverting that on the next apply.
-# ---------------------------------------------------------------------------------------------
-
-# Ownership check: Azure looks for asuid.<hostname> TXT = the app's verification id
-resource "cloudflare_record" "api_asuid" {
-  zone_id = data.cloudflare_zone.ishqnama.id
-  name    = "asuid.api.dev"
-  type    = "TXT"
-  content = module.api.custom_domain_verification_id
-  ttl     = 1
-  proxied = false
-}
-
-resource "cloudflare_record" "api" {
-  zone_id = data.cloudflare_zone.ishqnama.id
-  name    = "api.dev"
-  type    = "CNAME"
-  content = module.api.fqdn
-  ttl     = 1
-  proxied = false
-}
-
-resource "azurerm_container_app_custom_domain" "api" {
-  name             = local.api_custom_domain
-  container_app_id = module.api.id
-
-  lifecycle {
-    # Set out of band by `az containerapp hostname bind` (managed certificate); see above
-    ignore_changes = [certificate_binding_type, container_app_environment_certificate_id]
-  }
-
-  depends_on = [cloudflare_record.api_asuid, cloudflare_record.api]
 }
