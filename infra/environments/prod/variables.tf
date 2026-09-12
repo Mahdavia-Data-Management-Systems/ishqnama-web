@@ -44,7 +44,7 @@ variable "mdms_core_workspace" {
 }
 
 variable "api_image_tag" {
-  description = "Tag of the docker.io/noormahdi/ishqnama-api image deployed to the API Container App. build-backend.yml pushes prod builds as :latest only"
+  description = "Tag of the docker.io/noormahdi/ishqnama-api image deployed to the API Container App. prod-release.yml passes the CI-built version it promotes; latest is only a fallback for manual runs"
   type        = string
   default     = "latest"
 }

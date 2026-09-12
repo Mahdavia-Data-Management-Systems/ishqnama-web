@@ -1,20 +1,95 @@
 name: Prod Release
 
+# Promotes an API image that CI already built and deployed to dev, then deploys the prod
+# infrastructure and frontend. Nothing is rebuilt for prod: the image that ran in dev is the image
+# that runs in prod. The chosen version is passed to Terraform as the Container App image tag, so
+# every release changes the image reference and rolls a new revision (a re-pushed :latest would
+# not, because Container Apps never re-pulls an unchanged reference).
 on:
   workflow_dispatch:
+    inputs:
+      api_image_version:
+        description: "Version of noormahdi/ishqnama-api to release, as built by CI for dev (an api-v* git tag without the prefix, e.g. 0.1.5). Leave empty to release the newest"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   id-token: write
   contents: read
 
+# One release at a time; a second run waits instead of racing the first on Terraform state
+concurrency:
+  group: prod-release
+  cancel-in-progress: false
+
 jobs:
+  resolve-api-version:
+    name: Resolve API Version
+    runs-on: ubuntu-latest
+    environment: prod
+    outputs:
+      api_image_version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so all api-v* tags are visible
+
+      # The version must match an api-v* git tag: those are the only images CI has built and
+      # deployed to dev. With no input, the newest tag is released.
+      - name: Resolve version
+        id: version
+        env:
+          REQUESTED: ${{ inputs.api_image_version }}
+        run: |
+          set -euo pipefail
+          if [ -z "$REQUESTED" ]; then
+            LATEST_TAG=$(git tag -l 'api-v*.*.*' | sort -V | tail -n1)
+            if [ -z "$LATEST_TAG" ]; then
+              echo "::error::No api-v*.*.* tag exists yet; run the CI pipeline on main first"
+              exit 1
+            fi
+            VERSION="${LATEST_TAG#api-v}"
+            echo "No version given; releasing the newest, ${VERSION}"
+          else
+            VERSION="${REQUESTED#api-v}"
+            if ! git rev-parse -q --verify "refs/tags/api-v${VERSION}" >/dev/null; then
+              echo "::error::No git tag api-v${VERSION}; only versions built by CI can be released"
+              exit 1
+            fi
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "### Releasing ishqnama-api ${VERSION} to prod" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Fails early if the git tag exists but its image was never pushed, and then marks the
+      # promoted image as :latest without rebuilding it (a manifest-only retag).
+      - name: Verify image and tag it as latest
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_USERNAME }}/ishqnama-api
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          docker buildx imagetools inspect "${IMAGE}:${VERSION}" >/dev/null
+          docker buildx imagetools create --tag "${IMAGE}:latest" "${IMAGE}:${VERSION}"
+
   infra-prod:
     name: Deploy Infrastructure (Prod)
+    needs: resolve-api-version
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: prod
+      api_image_tag: ${{ needs.resolve-api-version.outputs.api_image_version }}
     secrets: inherit
 
+  # Always runs after infra because the frontend bakes the SWA app settings (API URL, Entra
+  # config) into its build
   deploy-frontend-prod:
     name: Deploy Frontend (Prod)
     needs: infra-prod
