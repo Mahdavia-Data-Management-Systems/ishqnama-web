@@ -9,6 +9,10 @@ namespace Ishqnama.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>The Cosmos DB emulator's published, non-secret master key.</summary>
+    private const string EmulatorKey =
+        "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
         services.AddDbContext<QuranDbContext>(options =>
@@ -33,7 +37,10 @@ public static class DependencyInjection
                 }
             };
 
-            if (endpoint.Contains("localhost:8081", StringComparison.OrdinalIgnoreCase))
+            // The emulator serves a self-signed certificate. Match it by its well-known key as well
+            // as by host, so it is still recognised when reached over a container network
+            // (https://cosmos:8081 from docker-compose) rather than from the host.
+            if (key == EmulatorKey || endpoint.Contains("localhost:8081", StringComparison.OrdinalIgnoreCase))
             {
                 options.HttpClientFactory = () =>
                 {
