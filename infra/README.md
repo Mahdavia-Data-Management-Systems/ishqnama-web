@@ -133,11 +133,13 @@ starts, which is what makes `prod-release.yml` park on "Review pending" before i
 it now declares `environment: cloudflare`. Any new workflow that applies Terraform, pushes an
 image or deploys the SWA must declare an environment, or it inherits none of the above.
 
-**Actions allowlist and SHA pinning.** Only GitHub-owned actions plus `docker/*`, `Azure/*`,
-`hashicorp/setup-terraform@*` and `dorny/paths-filter@*` may run, and every `uses:` in
-`.github/workflows/` is pinned to a commit SHA with the version in a trailing comment. A tag is
-mutable: whoever controls it could otherwise move it onto code that exfiltrates the OIDC token or
-the SWA deployment token. `.github/dependabot.yml` keeps the pins current.
+**Actions allowlist.** Only GitHub-owned actions plus `docker/*`, `Azure/*`,
+`hashicorp/setup-terraform@*` and `dorny/paths-filter@*` may run, so a workflow cannot pull in an
+arbitrary third-party action. Actions are referenced by major version tag rather than by commit
+SHA, which leaves a residual risk: a tag is mutable, so whoever controls one could move it onto
+code that reads the OIDC token or the SWA deployment token. Enabling **Require actions to be
+pinned to a full-length commit SHA** (Settings, Actions, General) would close that, at the cost of
+pinning every `uses:` and relying on `.github/dependabot.yml` to keep the pins current.
 
 ```bash
 gh api -X PUT repos/$R/actions/permissions -F enabled=true -f allowed_actions=selected

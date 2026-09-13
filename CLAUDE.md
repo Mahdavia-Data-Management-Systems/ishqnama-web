@@ -84,4 +84,4 @@ GitHub Actions workflows in `.github/workflows/`:
 
 Push to `main` triggers the full dev deployment pipeline.
 
-The repository is public, so deployments are fenced off with GitHub settings rather than code: the `dev`, `prod` and `cloudflare` environments accept deployments from `main` only (which, given the `...:environment:<env>` federated credential subject, is what binds Azure access to `main`), `prod` requires a review, every action is pinned to a commit SHA against an allowlist, and `api-v*` tags are protected from deletion and force-moves. All of it is documented in `infra/README.md` under **Repository protection**.
+The repository is public, so deployments are fenced off with GitHub settings rather than code: the `dev`, `prod` and `cloudflare` environments accept deployments from `main` only (which, given the `...:environment:<env>` federated credential subject, is what binds Azure access to `main`), `prod` requires a review, workflows may only use actions on an allowlist, and `api-v*` tags are protected from deletion and force-moves. All of it is documented in `infra/README.md` under **Repository protection**.

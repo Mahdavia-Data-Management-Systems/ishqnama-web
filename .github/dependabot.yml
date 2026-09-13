@@ -1,6 +1,5 @@
-# Actions are pinned to commit SHAs so a compromised tag cannot be moved under us. That trades a
-# supply-chain risk for a staleness one, so Dependabot keeps the pins current and rewrites both the
-# SHA and the version comment.
+# Actions are referenced by major version tag, so they pick up patch and minor releases on their
+# own. Dependabot raises a pull request for the major bumps, which are the ones that need reading.
 version: 2
 updates:
   - package-ecosystem: github-actions
