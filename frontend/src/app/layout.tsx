@@ -9,6 +9,7 @@ import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import ApiKeepAlive from "@/components/api-keep-alive";
+import { pwaManifestScript } from "@/lib/pwa-manifest";
 
 const ebGaramond = EB_Garamond({
   subsets: ["latin"],
@@ -63,6 +64,12 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${ebGaramond.variable} ${sourceSans.variable} ${notoSerif.variable} ${notoSerifDevanagari.variable}`}
     >
+      <head>
+        {/* Names the installed PWA after the environment host (e.g. "Ishqnama - Dev"). Must
+            run before the browser reads the manifest, so it is inlined in the head rather
+            than mounted as a component. See src/lib/pwa-manifest.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: pwaManifestScript() }} />
+      </head>
       <body>
         <ApiKeepAlive />
         <AuthProvider>
