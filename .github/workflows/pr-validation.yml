@@ -34,8 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      # No lint step: the repo has no ESLint config, so `npm run lint` (`next lint`) drops into an
+      # interactive setup prompt and exits 1. Add the step here once ESLint is configured.
 
       # Deploys read NEXT_PUBLIC_* from the Static Web App's settings, which are out of reach here.
       # The static export builds without them (every read in src/config/auth-config.ts defaults),
