@@ -33,6 +33,33 @@ services:
       timeout: 5s
       retries: 20
 
+  # Rebuild after changing anything under src/: compose reuses the existing image otherwise.
+  api:
+    build:
+      context: .
+      dockerfile: src/Ishqnama.Api/Dockerfile
+    image: ishqnama-api:local
+    container_name: ishqnama-api
+    ports:
+      # 8080 is taken by the emulator and 5080 by `dotnet run`, so the container image and a
+      # locally run API can be up at the same time.
+      - "5081:8080"
+    environment:
+      # Mirrors src/Ishqnama.Api/appsettings.Development.json, with container hostnames.
+      ConnectionStrings__QuranDb: "Host=postgres;Port=5432;Database=ishqnama;Username=postgres;Password=postgres"
+      CosmosDb__Endpoint: "https://cosmos:8081"
+      CosmosDb__Key: "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+      CosmosDb__DatabaseName: "ishqnama-userdata"
+      CosmosDb__ContainerName: "user-data"
+      Auth__Authority: "https://mahdavisonlinedev.ciamlogin.com/74c3a531-69e8-4b19-92dc-498a4ab5aaf7/v2.0"
+      Auth__ClientId: "fe35a79a-4d68-4e7c-bfa7-6ef1c4af4f83"
+      Cors__AllowedOrigins: "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cosmos:
+        condition: service_healthy
+
 volumes:
   postgres-data:
   cosmos-data:

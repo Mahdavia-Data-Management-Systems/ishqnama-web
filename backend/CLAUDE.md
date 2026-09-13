@@ -12,8 +12,9 @@ Ishqnama is a .NET 9 API serving Quranic data (verses, translations, tafseer) in
 # Build
 dotnet build
 
-# Start databases (PostgreSQL + Cosmos DB Emulator)
-docker-compose up -d
+# Start databases (PostgreSQL + Cosmos DB Emulator) and the API container image
+# --build is what picks up src/ changes; without it compose reuses the existing image
+docker-compose up -d --build
 
 # Run the Functions host locally (requires Azure Functions Core Tools) — http://localhost:7071/api
 cd src/Ishqnama.Functions && func start
@@ -22,7 +23,10 @@ cd src/Ishqnama.Functions && func start
 # Development-only extras: Scalar UI at /scalar, OpenAPI document at /openapi/v1.json
 dotnet run --project src/Ishqnama.Api
 
-# Stop databases
+# The same API from the compose image is already on http://localhost:5081/api, so the two can
+# run side by side
+
+# Stop everything
 docker-compose down
 ```
 
@@ -160,9 +164,18 @@ Note: `<AzureCosmosDisableNewtonsoftJsonCheck>true</AzureCosmosDisableNewtonsoft
 
 **API:** container image built from `src/Ishqnama.Api/Dockerfile` (build context `backend/`, `.dockerignore` alongside): SDK 9.0 build stage runs `dotnet publish` (self-contained, trimmed, linux-x64), runtime stage is `runtime-deps:9.0-noble-chiseled`, non-root, port 8080. `build-backend.yml` pushes it to Docker Hub: for non-prod environments as `noormahdi/ishqnama-api:<version>` and `:<environment>`, where `<version>` is a patch-bumped semantic version derived from `api-v*.*.*` git tags (same scheme as the ishqnama-db repo; the job also pushes the new git tag); for `prod` only as `:latest`, with no version or git tag. Terraform deploys it to Container Apps (`module.api` in `infra/environments/dev/ishqnama-api.tf`, scale-to-zero), pinned to that version via the `api_image_tag` variable that `ci.yml` feeds from the build output — Container Apps never re-pulls a re-pushed tag, so the reference must change for a new revision; the frontend calls this API; the Functions host is still deployed but unreferenced — see `plans/dotnet-api-container-apps-plan.md`. Brotli/Gzip compression and CORS are handled in-app because Container Apps provides neither.
 
-Local image check:
+Local image check — the `api` service in `docker-compose.yml` builds this Dockerfile and runs it
+against the compose databases (`Host=postgres`, `https://cosmos:8081`) on host port 5081, leaving
+8080 to the emulator and 5080 to `dotnet run`:
 
 ```bash
-docker build -f src/Ishqnama.Api/Dockerfile -t ishqnama-api:local .
-docker run --rm -p 8080:8080 -e "ConnectionStrings__QuranDb=Host=host.docker.internal;Port=5432;Database=ishqnama;Username=postgres;Password=postgres" ishqnama-api:local
+docker-compose up -d --build
+curl http://localhost:5081/api/healthz
 ```
+
+Compose does not notice source changes, so pass `--build` after editing anything under `src/` or the
+container keeps serving the previously built image.
+
+Reaching the Cosmos emulator over the compose network is why `AddUserDataInfrastructure` recognises
+it by its published key as well as by a `localhost:8081` endpoint — that is the trigger for
+accepting its self-signed certificate and forcing Gateway mode.
