@@ -1,0 +1,4 @@
+# Everything that can deploy or cost money needs the owner's review. The main ruleset enforces this
+# through "require code owner review"; it only binds contributors who cannot bypass the ruleset.
+/.github/  @noormahdi
+/infra/    @noormahdi

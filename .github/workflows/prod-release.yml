@@ -32,7 +32,7 @@ jobs:
       api_image_version: ${{ steps.version.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0 # full history so all api-v* tags are visible
 
@@ -63,7 +63,7 @@ jobs:
           echo "### Releasing ishqnama-api ${VERSION} to prod" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}

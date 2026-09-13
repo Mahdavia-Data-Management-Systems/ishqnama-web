@@ -42,10 +42,10 @@ jobs:
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
 
       - name: Terraform Init
         run: terraform init
@@ -62,6 +62,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Confirmation failed
+        env:
+          # A free-text dispatch input must never be interpolated into a shell script: GitHub expands
+          # it before bash sees it, so a crafted value would execute. Pass it through env and quote.
+          CONFIRM: ${{ inputs.confirm }}
         run: |
-          echo "::error::Confirmation failed. You entered '${{ inputs.confirm }}' but expected 'DESTROY'."
+          echo "::error::Confirmation failed. You entered '$CONFIRM' but expected 'DESTROY'."
           exit 1

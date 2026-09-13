@@ -97,9 +97,78 @@ Create the GitHub environment `prod` (repository Settings, Environments) and add
 | Secret   | `CLOUDFLARE_API_TOKEN`  | Cloudflare token with `Zone:Read` on `ishqnama.com` |
 | Secret   | `TF_API_TOKEN`          | Terraform Cloud token (see step 4)                  |
 
-Variables map to `TF_VAR_*` in `deploy-infra.yml` and `destroy-infra.yml`. Adding a required
-reviewer to the `prod` environment is a cheap safeguard, since the workflows apply with
-`-auto-approve`.
+Variables map to `TF_VAR_*` in `deploy-infra.yml` and `destroy-infra.yml`. The workflows apply
+with `-auto-approve`, so what keeps an unintended change away from Azure is the environment's
+own protection — a required reviewer and a deployment branch policy. See **Repository
+protection** below.
+
+## Repository protection
+
+The repository is public and every deploy job applies with `-auto-approve`, so the settings below
+are what stop an unintended change from reaching Azure and costing money. None of them live in
+Terraform; they are GitHub settings, recorded here so they can be recreated. `$R` is
+`Mahdavia-Data-Management-Systems/ishqnama-web`.
+
+**Deployment branch policies — the control that matters most.** Each environment (`dev`, `prod`,
+`cloudflare`) allows deployments from `main` only. Because the federated credential subject is
+`...:environment:<env>` (step 2), an environment restricted to `main` means no other ref can mint
+an Azure token, read an environment variable, or even start the job — the run is blocked before
+its first step. Recreate with:
+
+```bash
+gh api -X PUT repos/$R/environments/<env> --input - <<'JSON'
+{"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}
+JSON
+gh api -X POST repos/$R/environments/<env>/deployment-branch-policies -f name=main -f type=branch
+```
+
+A `PUT` on an environment replaces its protection rules, so re-send `"reviewers"` in the same call
+for `prod` or the required reviewer is silently wiped.
+
+**Required reviewer on `prod`.** `prod` additionally requires a review before any deployment job
+starts, which is what makes `prod-release.yml` park on "Review pending" before it applies.
+`prevent_self_review` stays `false`: the sole maintainer is also the only reviewer.
+
+**Every apply runs inside an environment.** `deploy-cloudflare-zone.yml` used to be the exception;
+it now declares `environment: cloudflare`. Any new workflow that applies Terraform, pushes an
+image or deploys the SWA must declare an environment, or it inherits none of the above.
+
+**Actions allowlist and SHA pinning.** Only GitHub-owned actions plus `docker/*`, `Azure/*`,
+`hashicorp/setup-terraform@*` and `dorny/paths-filter@*` may run, and every `uses:` in
+`.github/workflows/` is pinned to a commit SHA with the version in a trailing comment. A tag is
+mutable: whoever controls it could otherwise move it onto code that exfiltrates the OIDC token or
+the SWA deployment token. `.github/dependabot.yml` keeps the pins current.
+
+```bash
+gh api -X PUT repos/$R/actions/permissions -F enabled=true -f allowed_actions=selected
+gh api -X PUT repos/$R/actions/permissions/selected-actions --input - <<'JSON'
+{"github_owned_allowed":true,"verified_allowed":false,
+ "patterns_allowed":["docker/*","Azure/*","hashicorp/setup-terraform@*","dorny/paths-filter@*"]}
+JSON
+```
+
+**Fork pull requests.** `pr-validation.yml` is the only workflow a fork can trigger. It is
+deliberately inert: `pull_request` (never `pull_request_target`), `contents: read`, no environment
+and no secrets, so a fork PR cannot deploy. As a second layer, approval is required for all
+external contributors:
+
+```bash
+gh api -X PUT repos/$R/actions/permissions/fork-pr-contributor-approval \
+  -f approval_policy=all_external_contributors
+```
+
+**Rulesets.** "No pushing on main" requires a pull request with one approval and code-owner review
+(`.github/CODEOWNERS` assigns `/.github/` and `/infra/`), and blocks deletion and force-push. The
+sole maintainer is a bypass actor because GitHub will not accept a PR author's own approval; the
+deployment branch policies above still apply to whatever is merged. "Protect api-v tags" blocks
+deletion and force-moves of `api-v*` tags, since `ci.yml` resolves the newest such tag to decide
+which image the Container App runs — a moved tag would silently change what gets deployed. Tag
+creation stays open because `build-backend.yml` pushes those tags.
+
+**Secret scope.** `TF_API_TOKEN`, `DOCKERHUB_TOKEN` and `CLOUDFLARE_API_TOKEN` are currently
+**organization** secrets, so any job in this repository can read them whether or not it declares an
+environment. Re-creating them as environment secrets on `dev`, `prod` and `cloudflare` would put
+them behind the branch policies as well; it needs org-admin rights.
 
 ## 4. Terraform Cloud
 
@@ -201,6 +270,13 @@ Contributor role assignment in step 2 and re-run after a couple of minutes.
 **`AADSTS70021: No matching federated identity record found`** during Azure login
 The federated credential subject does not match. It must name the GitHub environment
 (`...:environment:prod`), not the branch, because every deploy job runs inside an environment.
+A branch-scoped credential never matches, even on `main`: GitHub mints the token with an
+`environment:` subject the moment a job declares one.
+
+**A deploy job is "Waiting" or blocked before its first step**
+The environment allows deployments from `main` only. This is working as intended — a run on any
+other ref cannot reach Azure. Merge to `main`, or add the ref to the environment's deployment
+branch policy if it genuinely needs to deploy.
 
 **Resource provider still registering** on the first apply
 Run the registration loop in step 1 and wait for `--wait` to return, then re-run the workflow.
