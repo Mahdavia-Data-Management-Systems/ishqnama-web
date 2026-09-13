@@ -46,12 +46,45 @@ jobs:
 
   build:
     name: Build Backend
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     permissions:
       contents: write # the API image job pushes an api-v* tag
     uses: ./.github/workflows/build-backend.yml
     with:
       environment: dev
     secrets: inherit
+
+  # An infra-only push skips the build but still applies Terraform, which needs an image tag. This
+  # resolves the version currently running in dev (the newest api-v* tag, as prod-release.yml does)
+  # so the Container App keeps its exact image reference instead of flipping to the moving :dev tag.
+  api-version:
+    name: Resolve Current API Version
+    runs-on: ubuntu-latest
+    needs: [changes, build]
+    if: >-
+      ${{ !cancelled()
+      && needs.build.result == 'skipped'
+      && needs.changes.outputs.infra == 'true' }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so all api-v* tags are visible
+
+      - name: Resolve newest API version
+        id: version
+        run: |
+          set -euo pipefail
+          LATEST_TAG=$(git tag -l 'api-v*.*.*' | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "::error::No api-v*.*.* tag exists yet; push a backend change or run the workflow manually to build one"
+            exit 1
+          fi
+          VERSION="${LATEST_TAG#api-v}"
+          echo "Deploying the current API version, ${VERSION}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
   setup-zone:
     name: Setup ishqnama.com
@@ -61,20 +94,22 @@ jobs:
     secrets: inherit
 
   # Runs for infra changes, and for backend changes because Terraform rolling the Container App to
-  # the new image tag is what deploys the API. A skipped setup-zone must not skip this job, hence
-  # the explicit result checks instead of the default "all needs succeeded" rule.
+  # the new image tag is what deploys the API. Exactly one of build and api-version produces the
+  # tag: build when the backend changed, api-version otherwise. A skipped need must not skip this
+  # job, hence the explicit result checks instead of the default "all needs succeeded" rule.
   infra-dev:
     name: Deploy Infrastructure (Dev)
-    needs: [changes, setup-zone, build]
+    needs: [changes, setup-zone, build, api-version]
     if: >-
       ${{ !cancelled()
       && (needs.changes.outputs.infra == 'true' || needs.changes.outputs.backend == 'true')
-      && needs.build.result == 'success'
+      && contains(fromJSON('["success", "skipped"]'), needs.build.result)
+      && contains(fromJSON('["success", "skipped"]'), needs.api-version.result)
       && contains(fromJSON('["success", "skipped"]'), needs.setup-zone.result) }}
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: dev
-      api_image_tag: ${{ needs.build.outputs.api_image_version }}
+      api_image_tag: ${{ needs.build.outputs.api_image_version || needs.api-version.outputs.version }}
     secrets: inherit
 
   # Runs for frontend changes, and whenever infra-dev actually ran because the frontend bakes the
