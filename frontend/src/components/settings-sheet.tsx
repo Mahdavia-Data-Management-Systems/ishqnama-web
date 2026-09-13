@@ -120,7 +120,7 @@ export default function SettingsSheet({
           </div>
 
           <p className={styles.hint}>
-            Saved to your account when signed in, to this device otherwise.
+            Saved to your account when signed in.
           </p>
         </div>
       </div>

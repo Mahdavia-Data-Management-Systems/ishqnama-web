@@ -13,9 +13,10 @@ export default function PrivacyPage() {
           </p>
           <h2>Authentication</h2>
           <p>
-            When you sign in with Microsoft Entra ID, we receive your name and
-            email address to identify your account. We do not store your
-            password.
+            When you sign in with 
+            <a href="https://mahdavisonline.com" target="_blank" rel="noopener noreferrer">MahdavisOnline</a>, 
+            we receive your name and email address to identify your account. 
+            We do not store your password.
           </p>
           <h2>Reading data</h2>
           <p>
