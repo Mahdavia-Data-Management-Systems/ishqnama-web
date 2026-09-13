@@ -11,6 +11,12 @@ permissions:
   id-token: write
   contents: read
 
+# Two pushes in quick succession would otherwise race two terraform applies against the same
+# Terraform Cloud workspace. Queue instead of cancelling: a half-finished apply must still finish.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
 jobs:
   # Decides which deploy jobs a push needs. A manual run (workflow_dispatch) deploys everything.
   # Each filter also includes the reusable workflow it drives, so a workflow fix gets exercised.

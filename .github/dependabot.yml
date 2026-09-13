@@ -1,0 +1,10 @@
+# Actions are referenced by major version tag, so they pick up patch and minor releases on their
+# own. Dependabot raises a pull request for the major bumps, which are the ones that need reading.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
