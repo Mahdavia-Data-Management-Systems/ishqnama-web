@@ -1,0 +1,95 @@
+/* Full-width fixed layer starting exactly at the seam under the app bar, so
+   the ribbon hangs from the chrome with no gap. overflow: hidden lets the
+   ribbon unfurl from behind the bar; the bottom padding leaves room for the
+   drop shadow. The layer takes no pointer events, only the ribbon does. */
+.layer {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  z-index: 105; /* above the sticky header (100), below the rail (110) */
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 12px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* clip-path would clip a box-shadow on the ribbon itself, so the shadow sits
+   on a wrapper and follows the swallowtail through drop-shadow. */
+.shadow {
+  max-width: 100%;
+  filter: drop-shadow(0 2px 3px rgba(0, 68, 70, 0.18));
+  transform: translateY(-100%);
+  transition:
+    transform var(--duration-slow) var(--ease-out),
+    opacity var(--duration-normal) var(--ease-out);
+}
+
+.shadow[data-state="entered"] {
+  transform: translateY(0);
+}
+
+.shadow[data-state="leaving"] {
+  opacity: 0;
+  transform: translateY(0);
+}
+
+/* The ribbon: gold-wash paper, swallowtail bottom edge, display face. */
+.ribbon {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  padding: var(--space-3) var(--space-5) calc(var(--space-3) + 10px);
+  background: var(--gold-wash);
+  color: var(--teal-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  text-align: center;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 10px), 0 100%);
+}
+
+.ribbon[data-variant="unreachable"] {
+  color: var(--gold-label);
+}
+
+.text {
+  min-width: 0;
+  max-width: 34ch;
+}
+
+.retry {
+  min-height: 44px;
+  margin: calc(-1 * var(--space-2)) 0 calc(-1 * var(--space-3));
+  padding: 0 var(--space-2);
+  background: none;
+  border: none;
+  color: var(--teal-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.retry:hover {
+  color: var(--teal-accent);
+}
+
+.retry:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 480px) {
+  .ribbon {
+    width: 100%;
+  }
+}
