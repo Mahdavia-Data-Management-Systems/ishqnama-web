@@ -52,8 +52,8 @@ what the reader is getting. The book is spelled "Noor e Imaan", matching the hom
 
 | State | Where | Text |
 |---|---|---|
-| warming | pill under the app bar | Preparing Noor e Imaan text, this usually takes under a minute |
-| unreachable | pill under the app bar | Still preparing. Please check your internet connection. (button: Try again) |
+| warming | ribbon under the app bar | Preparing Noor e Imaan text, this usually takes under a minute |
+| unreachable | ribbon under the app bar | Still preparing. Please check your internet connection. (button: Try again) |
 | warming | sura/ruku/juz placeholder | Preparing Noor e Imaan text, this usually takes under a minute |
 | unreachable | sura/ruku/juz placeholder | Still preparing. Please check your internet connection. (existing Try again button) |
 | warming | bookmark shelf caption | Your bookmarks will appear shortly |
@@ -96,7 +96,7 @@ API:
   is not run; callers check the current state first. This lets contexts register a flush without
   holding React state.
 - `requestProbe()`: invokes a probe function registered by the keep-alive component via
-  `setProbe(fn)`. The pill's Try again button calls it. If no probe is registered it is a no-op.
+  `setProbe(fn)`. The ribbon's Try again button calls it. If no probe is registered it is a no-op.
 - `getApiReadiness()` and `useApiReadiness()`.
 
 The store knows nothing about bookmarks, settings or rendering, and decides no timing beyond the
@@ -118,7 +118,7 @@ The ping becomes the probe. Schedule is unchanged (on load, on tab becoming visi
   waiting for the 2-minute interval, so a recovering API is noticed quickly. The interval timer
   keeps running; the retry is an extra one-shot timer cleared on success or unmount.
 - The component registers its `ping` with `setProbe` on mount and unregisters on unmount, so the
-  pill's Try again button can trigger it.
+  ribbon's Try again button can trigger it.
 
 The ping is already counted by `beginRequest()`, so the loading rail keeps being driven by the
 pending-request counter. The keep-alive is not mounted on the MSAL redirect bridge route, as today,
@@ -135,7 +135,7 @@ using the existing tokens. Under `prefers-reduced-motion: reduce` it is a steady
 Visibility rules (`SHOW_DELAY_MS`, `MIN_VISIBLE_MS`, `LINGER_MS`, `FADE_MS`) are unchanged; only the
 rhythm changes. It stays `position: fixed`, `pointer-events: none` and `aria-hidden`.
 
-### Pill: `frontend/src/components/api-warmup-notice.tsx` and CSS module (new)
+### Ribbon: `frontend/src/components/api-warmup-notice.tsx` and CSS module (new)
 
 Mounted in `frontend/src/components/app-shell.tsx` next to `GlobalLoadingIndicator`, outside
 `AuthProvider`, so it works before MSAL initialises and for anonymous readers. Not rendered on the
@@ -143,21 +143,23 @@ redirect bridge route (the existing early return in `AppShell` covers this).
 
 - Renders nothing in `unknown` and `ready`. While fading out after `ready` it keeps the last
   message for the fade duration, then unmounts.
-- In `warming`: a pill centred horizontally, `position: fixed`, top at `--header-height` plus
-  `--space-2`. Background `--gold-wash`, text `--teal-primary`, font `--font-body` at `--text-sm`,
-  `--radius-pill`, `--shadow-card`, padding `--space-2` by `--space-4`. A 6 px dot on the left in
-  `--gold` breathes on the same 2.4 s cycle as the rail. Enters by fading in and sliding down 4 px
-  over `--duration-normal` with `--ease-out`; leaves by fading out.
-- In `unreachable`: the dot stops animating and turns `--gold-label`; the copy changes and a
-  "Try again" text button (teal, underlined on hover, min 44 px tap target) calls `requestProbe()`.
+- In `warming`: a bookmark ribbon hanging from the seam under the app bar, centred, `position:
+  fixed` at `--header-height` with no gap so it reads as part of the chrome. Gold-wash paper
+  (`--gold-wash`), text `--teal-primary` in the display face (`--font-display`, `--text-md`,
+  weight 500), a swallowtail bottom edge cut with `clip-path`, and a drop shadow on a wrapper so
+  the shadow follows the notch. It unfurls once from behind the bar over `--duration-slow` with
+  `--ease-out` and leaves by fading out. No dot and no looping animation: the breathing rail
+  directly above it carries the "still working" rhythm, so the two read as one composed object.
+- In `unreachable`: the text turns `--gold-label`; the copy changes and a "Try again" text button
+  (body face, teal, underlined, min 44 px tap target) sits on its own line under the text and
+  calls `requestProbe()`.
 - Accessibility: `role="status"`, `aria-live="polite"`, so a screen reader announces each message
   once. Not dismissible: it goes away by itself.
-- Phone width: spans the viewport minus 16 px gutters each side, text wraps to two lines, the
-  button drops onto its own line under the text.
-- Under `prefers-reduced-motion: reduce` the dot is static and the enter/leave transitions are
-  instant (the global tokens already zero the durations).
+- Phone width: spans the viewport minus 16 px gutters each side, text wraps to two lines.
+- Under `prefers-reduced-motion: reduce` the global tokens zero the durations, so the ribbon
+  appears and disappears without sliding.
 
-No earlier feedback is shown: the 3 s grace period means a warm API never shows the pill, and a
+No earlier feedback is shown: the 3 s grace period means a warm API never shows the ribbon, and a
 single slow data request never triggers it, because only the probe drives the state.
 
 ## 3. Reader settings
@@ -198,8 +200,8 @@ therefore never shows a status line, even while its sub-second GET is in flight.
 ### `frontend/src/components/settings-sheet.tsx` and CSS module (changed)
 
 New optional prop `syncStatus`. When non-null the sheet renders one quiet line directly under the
-title: a 6 px dot (breathing in `warming` and `loading`, static `--gold-label` in `unreachable`)
-followed by the text from the copy table, in `--text-sm` and `--text-secondary`. Absent in `ready`
+title: plain text from the copy table, in `--text-sm` and `--text-secondary`, with no dot or
+animation. Absent in `ready`
 and `unknown`, so a warm API shows nothing new. The sheet remains a presentational component; the
 context decides the status.
 
@@ -220,9 +222,12 @@ context decides the status.
 
 ### Skeleton: `frontend/src/components/bookmark-tile-skeleton.tsx` and CSS module (new)
 
-Same footprint, radius and shadow as `BookmarkTile`, filled with a slow left-to-right shimmer in
-`--ornament-gold` over `--surface-card`, `aria-hidden`. Static fill under reduced motion. A
-variant prop `variant="row"` matches the history list row height for the Saved page.
+Same footprint and radius as `BookmarkTile`, drawn as a blank page from the volume: paper
+background (`--surface-page`), the site's gold girih lattice from `ornaments.css` at
+`--ornament-gold`, and a faint 40 px circle outline where the bookmark's icon will sit.
+`aria-hidden`. No shimmer and no animation, so reduced motion needs no special case; the loading
+rail carries the motion. A variant prop `variant="row"` matches the history list row height for
+the Saved page.
 
 ### Home page `frontend/src/app/page.tsx` and Saved page `frontend/src/app/saved/page.tsx` (changed)
 
@@ -237,10 +242,11 @@ variant prop `variant="row"` matches the history list row height for the Saved p
 
 ### Create dialog `frontend/src/components/create-bookmark-dialog.tsx` and CSS module (changed)
 
-- Reads `useApiReadiness()`. While `warming` or `unreachable`, a helper line with a breathing dot
-  appears above the footer before the user presses Create, with the copy from the table.
+- Reads `useApiReadiness()`. While `warming` or `unreachable`, a plain helper line appears above
+  the footer before the user presses Create, with the copy from the table.
 - Create stays enabled. While saving and the state is `warming` or `unreachable`, the button reads
-  "Creating, please wait" and shows a breathing dot. In `ready` it reads "Creating..." as today.
+  "Creating, please wait". In `ready` it reads "Creating..." as today. No dots anywhere in the
+  dialog; the loading rail carries the motion.
 - The close button and overlay click are never disabled. Closing mid-save leaves the POST running
   in the context.
 - Error handling: 409 keeps "A bookmark with this name already exists."; an abort from the 90 s
@@ -263,7 +269,7 @@ unchanged: their requests queue at the ingress and resolve when the API wakes.
 - **Sign-out during warming**: both contexts gate on `isAuthenticated` and unregister their
   `onReady` callbacks, so nothing flushes for a signed-out user.
 - **Routine ping fails while `ready`**: the state becomes `unreachable` and the 15 s retry applies.
-  The pill appears, which is correct: the API is not answering.
+  The ribbon appears, which is correct: the API is not answering.
 - **Probe succeeds while data requests still hang**: not expected, since the ingress serves all
   routes from the same replica. If it happens, the existing inline loaders cover it.
 - **Redirect bridge route**: nothing here is mounted there.
@@ -287,7 +293,7 @@ Unit tests, under `frontend/src/**/__tests__/`:
   appends.
 
 Manual verification against a local delay proxy that holds every response for 50 s, with
-`NEXT_PUBLIC_API_URL` pointed at it: home page (pill, rail rhythm, skeletons, caption, then tiles),
+`NEXT_PUBLIC_API_URL` pointed at it: home page (ribbon, rail rhythm, skeletons, caption, then tiles),
 settings sheet (status line, change during warming, one PUT after ready, saved values preserved),
 create dialog (helper line, button state, close mid-save, timeout copy), a sura page as an
 anonymous reader, the unreachable path with the proxy stopped, and the reduced-motion variant.
