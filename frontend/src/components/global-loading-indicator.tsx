@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useApiReadiness } from "@/lib/api-readiness";
 import { usePendingRequestCount } from "@/lib/pending-requests";
 import styles from "./global-loading-indicator.module.css";
 
@@ -16,7 +17,10 @@ import styles from "./global-loading-indicator.module.css";
  *  - after the last request settles it lingers LINGER_MS before fading, which
  *    bridges the reader's chained calls (verse pages, then rukus);
  *  - a request that starts during the linger or the fade brings it straight
- *    back without a fresh delay.
+ *    back without a fresh delay;
+ *  - while the readiness store says the API is warming or unreachable the
+ *    rail carries data-mode="warming" and breathes slowly instead of gleaming,
+ *    so a long wait does not look like an ordinary fetch.
  */
 
 const SHOW_DELAY_MS = 10;
@@ -29,6 +33,8 @@ type Phase = "hidden" | "visible" | "fading";
 
 export default function GlobalLoadingIndicator() {
   const pending = usePendingRequestCount() > 0;
+  const readiness = useApiReadiness();
+  const warming = readiness === "warming" || readiness === "unreachable";
   const [phase, setPhase] = useState<Phase>("hidden");
   const shownAtRef = useRef(0);
 
@@ -60,7 +66,12 @@ export default function GlobalLoadingIndicator() {
   }, [pending, phase]);
 
   return (
-    <div className={styles.rail} data-state={phase} aria-hidden="true">
+    <div
+      className={styles.rail}
+      data-state={phase}
+      data-mode={warming ? "warming" : undefined}
+      aria-hidden="true"
+    >
       <span className={styles.gleam} />
       <span className={styles.still} />
     </div>

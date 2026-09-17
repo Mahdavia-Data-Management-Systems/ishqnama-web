@@ -85,6 +85,29 @@
   }
 }
 
+/* Warming: the probe has been pending for seconds, so a cold start is under
+   way. A travelling gleam would over-promise progress; the rail breathes
+   slowly instead. This is the only looping motion in the cold-start UI; the
+   ribbon hanging from the seam below it is still. */
+.rail[data-mode="warming"] .gleam {
+  display: none;
+}
+
+.rail[data-mode="warming"] .still {
+  display: block;
+}
+
+.rail[data-mode="warming"]:not([data-state="hidden"]) .still {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail[data-mode="warming"]:not([data-state="hidden"]) .still {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 @keyframes breathe {
   0%,
   100% {
