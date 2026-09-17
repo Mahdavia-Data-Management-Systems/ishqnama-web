@@ -33,6 +33,21 @@
   color: var(--text-primary);
 }
 
+.headingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* One quiet line under the title while a change cannot be saved yet. Plain
+   text: the loading rail carries the motion, this only carries the words. */
+.syncStatus {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
 .closeButton {
   display: flex;
   align-items: center;
