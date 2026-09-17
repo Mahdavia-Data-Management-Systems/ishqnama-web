@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useApiReadiness } from "@/lib/api-readiness";
+import { useAppBarBottom } from "@/lib/app-bar-offset";
 import { usePendingRequestCount } from "@/lib/pending-requests";
 import styles from "./global-loading-indicator.module.css";
 
@@ -36,6 +37,10 @@ export default function GlobalLoadingIndicator() {
   const readiness = useApiReadiness();
   const warming = readiness === "warming" || readiness === "unreachable";
   const [phase, setPhase] = useState<Phase>("hidden");
+  // The app bar scrolls away on long pages (see lib/app-bar-offset.ts); the rail
+  // stays on its seam while it is visible and clamps at the viewport top after.
+  const barBottom = useAppBarBottom(phase !== "hidden");
+  const top = phase !== "hidden" && barBottom !== null ? `${Math.max(0, barBottom - 2)}px` : undefined;
   const shownAtRef = useRef(0);
 
   useEffect(() => {
@@ -70,6 +75,7 @@ export default function GlobalLoadingIndicator() {
       className={styles.rail}
       data-state={phase}
       data-mode={warming ? "warming" : undefined}
+      style={{ top }}
       aria-hidden="true"
     >
       <span className={styles.gleam} />
