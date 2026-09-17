@@ -160,3 +160,12 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Shown above the footer while the API is still starting, before and during a
+   save. Plain text; the loading rail carries the motion. */
+.helper {
+  margin: 0;
+  padding: 0 var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

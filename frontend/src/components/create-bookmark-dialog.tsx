@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { bookmarkIcons } from "@/config/bookmark-icons";
+import {
+  CREATE_BOOKMARK_HELPER,
+  CREATE_BOOKMARK_TIMEOUT_ERROR,
+  CREATE_BOOKMARK_WAITING_LABEL,
+} from "@/config/readiness-copy";
 import { ApiError } from "@/lib/api-client";
+import { useApiReadiness } from "@/lib/api-readiness";
 import styles from "./create-bookmark-dialog.module.css";
 
 interface CreateBookmarkDialogProps {
@@ -17,6 +23,8 @@ export default function CreateBookmarkDialog({ isOpen, onClose, onCreate }: Crea
   const [selectedIcon, setSelectedIcon] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const readiness = useApiReadiness();
+  const waiting = readiness === "warming" || readiness === "unreachable";
 
   useEffect(() => {
     if (isOpen) {
@@ -45,6 +53,8 @@ export default function CreateBookmarkDialog({ isOpen, onClose, onCreate }: Crea
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError("A bookmark with this name already exists.");
+      } else if ((err as { name?: string } | null)?.name === "AbortError") {
+        setError(CREATE_BOOKMARK_TIMEOUT_ERROR);
       } else {
         setError("Failed to create bookmark. Please try again.");
       }
@@ -96,9 +106,11 @@ export default function CreateBookmarkDialog({ isOpen, onClose, onCreate }: Crea
           </div>
         </div>
 
+        {waiting && <p className={styles.helper}>{CREATE_BOOKMARK_HELPER}</p>}
+
         <div className={styles.footer}>
           <button className={styles.createBtn} disabled={!canCreate} onClick={handleCreate}>
-            {saving ? "Creating..." : "Create"}
+            {saving ? (waiting ? CREATE_BOOKMARK_WAITING_LABEL : "Creating...") : "Create"}
           </button>
         </div>
       </div>
