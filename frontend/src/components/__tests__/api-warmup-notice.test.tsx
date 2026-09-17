@@ -50,6 +50,44 @@ describe("ApiWarmupNotice", () => {
     expect(probe).toHaveBeenCalledTimes(1);
   });
 
+  it("follows the app bar's bottom edge and clamps at the viewport top", () => {
+    const bar = document.createElement("header");
+    bar.setAttribute("data-app-bar", "");
+    let bottom = 60;
+    bar.getBoundingClientRect = () => ({ bottom }) as DOMRect;
+    document.body.appendChild(bar);
+    // A real frame callback runs later, not inside the requestAnimationFrame call.
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation(
+      (cb) => setTimeout(() => cb(0), 0) as unknown as number,
+    );
+
+    render(<ApiWarmupNotice />);
+    const layer = screen.getByRole("status");
+    expect(layer.style.top).toBe("");
+
+    act(() => {
+      markProbeStarted();
+      vi.advanceTimersByTime(GRACE_MS);
+    });
+    expect(layer.style.top).toBe("60px");
+
+    bottom = 24;
+    act(() => {
+      window.dispatchEvent(new Event("scroll"));
+      vi.advanceTimersByTime(0);
+    });
+    expect(layer.style.top).toBe("24px");
+
+    bottom = -40;
+    act(() => {
+      window.dispatchEvent(new Event("scroll"));
+      vi.advanceTimersByTime(0);
+    });
+    expect(layer.style.top).toBe("0px");
+
+    bar.remove();
+  });
+
   it("clears the message shortly after the API becomes ready", () => {
     render(<ApiWarmupNotice />);
     act(() => {

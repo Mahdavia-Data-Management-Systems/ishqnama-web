@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   TRY_AGAIN_LABEL,
   UNREACHABLE_MESSAGE,
@@ -22,6 +22,11 @@ import styles from "./api-warmup-notice.module.css";
  * motion is a single unfurl from under the bar; the breathing loading rail
  * directly above it carries the "still working" rhythm.
  *
+ * The app bar is sticky only within the body box, so on a long page it
+ * scrolls away after the first viewport height. While the ribbon is shown it
+ * tracks the bar's real bottom edge and clamps at the viewport top, so it
+ * hangs from the top edge of the screen once the bar has gone.
+ *
  * The wrapper is always rendered as a polite live region so a screen reader
  * announces each message once when it appears.
  */
@@ -38,6 +43,35 @@ export default function ApiWarmupNotice() {
 
   const [shown, setShown] = useState<Shown | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const layerRef = useRef<HTMLDivElement>(null);
+
+  // Follow the app bar's bottom edge while shown; clamp at the viewport top.
+  useEffect(() => {
+    if (!shown) return;
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const layer = layerRef.current;
+      if (!layer) return;
+      const bar = document.querySelector<HTMLElement>("[data-app-bar]");
+      const bottom = bar ? bar.getBoundingClientRect().bottom : 0;
+      layer.style.top = `${Math.max(0, Math.round(bottom))}px`;
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) cancelAnimationFrame(frame);
+      if (layerRef.current) layerRef.current.style.top = "";
+    };
+  }, [shown]);
 
   useEffect(() => {
     if (target) {
@@ -57,7 +91,7 @@ export default function ApiWarmupNotice() {
   const state = !shown ? "hidden" : leaving ? "leaving" : "entered";
 
   return (
-    <div className={styles.layer} role="status" aria-live="polite">
+    <div ref={layerRef} className={styles.layer} role="status" aria-live="polite">
       {shown && (
         <div className={styles.shadow} data-state={state}>
           <div className={styles.ribbon} data-variant={shown}>

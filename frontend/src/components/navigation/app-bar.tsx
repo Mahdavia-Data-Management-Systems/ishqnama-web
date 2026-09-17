@@ -18,7 +18,7 @@ export default function AppBar() {
   const isAuthenticated = useIsAuthenticated();
 
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-app-bar>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
