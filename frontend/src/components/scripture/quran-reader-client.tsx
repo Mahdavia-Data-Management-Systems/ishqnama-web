@@ -12,8 +12,10 @@ import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
+import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
+import { useApiReadiness } from "@/lib/api-readiness";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
 import type { RukuDto } from "@/types/api";
 import { getRukus } from "@/lib/api";
@@ -50,6 +52,13 @@ export default function QuranReaderClient({
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
   } = useReaderSettings();
   const { bookmarks, savePosition, hasCustomBookmarks } = useBookmarks();
+  const readiness = useApiReadiness();
+  const placeholderText =
+    readiness === "warming"
+      ? WARMING_MESSAGE
+      : readiness === "unreachable"
+        ? UNREACHABLE_MESSAGE
+        : "Loading verses...";
 
   // Derive chapter info from verses
   const chapters = useMemo(
@@ -207,7 +216,7 @@ export default function QuranReaderClient({
         {loading ? (
           <div className={styles.placeholder}>
             <div className={styles.spinner} />
-            <p className={styles.placeholderText}>Loading verses...</p>
+            <p className={styles.placeholderText}>{placeholderText}</p>
           </div>
         ) : error ? (
           <div className={styles.placeholder}>
