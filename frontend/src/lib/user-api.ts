@@ -25,10 +25,11 @@ export function getUserBookmarks(signal?: AbortSignal): Promise<UserBookmarkDto[
   return authenticatedApiFetch<UserBookmarkDto[]>("/user/bookmarks", { signal });
 }
 
-export function createBookmark(title: string, icon: string): Promise<UserBookmarkDto> {
+export function createBookmark(title: string, icon: string, signal?: AbortSignal): Promise<UserBookmarkDto> {
   return authenticatedApiFetch<UserBookmarkDto>("/user/bookmarks", {
     method: "POST",
     body: { title, icon },
+    signal,
   });
 }
 

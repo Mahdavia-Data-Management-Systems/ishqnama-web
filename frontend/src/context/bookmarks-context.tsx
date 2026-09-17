@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { useIsAuthenticated } from "@azure/msal-react";
+import { onReady } from "@/lib/api-readiness";
 import {
   getUserBookmarks,
   createBookmark as apiCreateBookmark,
@@ -10,9 +11,26 @@ import {
 } from "@/lib/user-api";
 import type { UserBookmarkDto } from "@/types/user";
 
+/**
+ * Bookmarks for the signed-in reader.
+ *
+ * The initial GET has no timeout: during an API cold start the ingress queues
+ * it and it resolves by itself when the replica is up. Only a GET that fails
+ * outright marks the list "failed" and registers a refetch for the next ready
+ * transition (see lib/api-readiness.ts). Position saves and deletes are
+ * optimistic; a hanging request lands when the API is up and a real failure
+ * refetches the list. Creating a bookmark needs the server to mint the slug,
+ * so it waits, with a long timeout so a hung request eventually reports back.
+ */
+
+export type BookmarksStatus = "idle" | "loading" | "loaded" | "failed";
+
+/** Long enough to outlive a ~50 s cold start; the dialog shows a friendly message if it fires. */
+const CREATE_TIMEOUT_MS = 90_000;
+
 interface BookmarksContextValue {
   bookmarks: UserBookmarkDto[];
-  loading: boolean;
+  status: BookmarksStatus;
   savePosition: (slug: string, chapterNumber: number, verseNumber: number) => void;
   addBookmark: (title: string, icon: string) => Promise<UserBookmarkDto>;
   removeBookmark: (slug: string) => void;
@@ -33,25 +51,59 @@ export function useBookmarks() {
 export default function BookmarksProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useIsAuthenticated();
   const [bookmarks, setBookmarks] = useState<UserBookmarkDto[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<BookmarksStatus>("idle");
 
-  const fetchBookmarks = useCallback((signal?: AbortSignal) => {
-    if (!isAuthenticated) return;
-    setLoading(true);
-    getUserBookmarks(signal)
-      .then(setBookmarks)
-      .catch(() => { /* keep existing */ })
-      .finally(() => setLoading(false));
-  }, [isAuthenticated]);
+  /** Resolves true on success, false on failure (including abort). */
+  const fetchBookmarks = useCallback(
+    (signal?: AbortSignal): Promise<boolean> => {
+      if (!isAuthenticated) return Promise.resolve(false);
+      setStatus("loading");
+      return getUserBookmarks(signal)
+        .then((list) => {
+          setBookmarks(list);
+          setStatus("loaded");
+          return true;
+        })
+        .catch(() => {
+          // An abort means we are unmounting or reloading; leave the status alone.
+          if (!signal?.aborted) setStatus("failed");
+          return false;
+        });
+    },
+    [isAuthenticated],
+  );
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setBookmarks([]);
+      setStatus("idle");
+      return;
+    }
+
     const controller = new AbortController();
-    fetchBookmarks(controller.signal);
-    return () => controller.abort();
-  }, [fetchBookmarks]);
+    let unregister: (() => void) | null = null;
+    let cancelled = false;
+
+    const load = () => {
+      void fetchBookmarks(controller.signal).then((ok) => {
+        if (cancelled || ok) return;
+        unregister = onReady(() => {
+          unregister = null;
+          load();
+        });
+      });
+    };
+    load();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      unregister?.();
+    };
+  }, [fetchBookmarks, isAuthenticated]);
 
   const refresh = useCallback(() => {
-    fetchBookmarks();
+    void fetchBookmarks();
   }, [fetchBookmarks]);
 
   const savePosition = useCallback(
@@ -66,7 +118,7 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
       );
       updateBookmarkPosition(slug, chapterNumber, verseNumber).catch(() => {
         // Revert on failure — refresh from server
-        fetchBookmarks();
+        void fetchBookmarks();
       });
     },
     [fetchBookmarks],
@@ -74,9 +126,15 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
 
   const addBookmark = useCallback(
     async (title: string, icon: string): Promise<UserBookmarkDto> => {
-      const created = await apiCreateBookmark(title, icon);
-      setBookmarks((prev) => [...prev, created]);
-      return created;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), CREATE_TIMEOUT_MS);
+      try {
+        const created = await apiCreateBookmark(title, icon, controller.signal);
+        setBookmarks((prev) => [...prev, created]);
+        return created;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     },
     [],
   );
@@ -86,7 +144,7 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
       // Optimistic remove
       setBookmarks((prev) => prev.filter((b) => b.slug !== slug));
       apiDeleteBookmark(slug).catch(() => {
-        fetchBookmarks();
+        void fetchBookmarks();
       });
     },
     [fetchBookmarks],
@@ -96,7 +154,7 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
 
   return (
     <BookmarksContext.Provider
-      value={{ bookmarks, loading, savePosition, addBookmark, removeBookmark, refresh, hasCustomBookmarks }}
+      value={{ bookmarks, status, savePosition, addBookmark, removeBookmark, refresh, hasCustomBookmarks }}
     >
       {children}
     </BookmarksContext.Provider>
