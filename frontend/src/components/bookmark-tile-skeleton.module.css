@@ -1,0 +1,44 @@
+/* Same footprint as BookmarkTile and a history row, on paper instead of card
+   white, so the real item reads as "printed" when it replaces the ghost. */
+.tile,
+.row {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-page);
+  border: 1px solid rgba(0, 68, 70, 0.08);
+  border-radius: var(--radius-md);
+}
+
+/* The girih lattice from ornaments.css, kept at ornament strength. */
+.tile::before,
+.row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, var(--ornament-gold) 0px, var(--ornament-gold) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(60deg, var(--ornament-gold) 0px, var(--ornament-gold) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(120deg, var(--ornament-gold) 0px, var(--ornament-gold) 1px, transparent 1px, transparent 28px);
+}
+
+/* Icon circle + title + position line + padding in BookmarkTile add up to about this. */
+.tile {
+  min-height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row {
+  height: 56px;
+}
+
+/* Where the bookmark's icon circle will sit. */
+.mark {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(190, 170, 48, 0.35);
+}

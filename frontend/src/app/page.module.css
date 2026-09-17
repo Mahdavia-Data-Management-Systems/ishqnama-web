@@ -82,6 +82,12 @@
   gap: var(--space-4);
 }
 
+.shelfCaption {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
 .suraList {
   display: flex;
   flex-direction: column;

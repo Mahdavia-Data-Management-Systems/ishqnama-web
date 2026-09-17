@@ -10,7 +10,10 @@ import SuraListItem from "@/components/scripture/sura-list-item";
 import BookmarkTile from "@/components/bookmark-tile";
 import AddBookmarkTile from "@/components/add-bookmark-tile";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
+import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
+import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
+import { useApiReadiness } from "@/lib/api-readiness";
 import { suras } from "@/data/suras";
 import styles from "./page.module.css";
 
@@ -18,8 +21,18 @@ export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
   const previewSuras = [1, 36, 18, 55, 67, 112, 48, 56, 97].map((n) => suras[n - 1]);
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
+  const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const showSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
+  const shelfCaption = !showSkeletons
+    ? null
+    : readiness === "warming"
+      ? BOOKMARKS_WARMING_MESSAGE
+      : readiness === "unreachable"
+        ? BOOKMARKS_UNREACHABLE_MESSAGE
+        : null;
 
   const nazra = bookmarks.find((b) => b.isDefault);
   const customBookmarks = bookmarks.filter((b) => !b.isDefault);
@@ -67,11 +80,18 @@ export default function Home() {
               action={{ label: "View all", onClick: () => router.push("/saved/") }}
             />
             <div className={styles.bookmarkGrid}>
+              {showSkeletons && (
+                <>
+                  <BookmarkTileSkeleton />
+                  <BookmarkTileSkeleton />
+                </>
+              )}
               {customBookmarks.map((b) => (
                 <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
               ))}
               <AddBookmarkTile onClick={() => setDialogOpen(true)} />
             </div>
+            {shelfCaption && <p className={styles.shelfCaption}>{shelfCaption}</p>}
             <CreateBookmarkDialog
               isOpen={dialogOpen}
               onClose={() => setDialogOpen(false)}

@@ -9,7 +9,10 @@ import EmptyState from "@/components/empty-state";
 import BookmarkTile from "@/components/bookmark-tile";
 import AddBookmarkTile from "@/components/add-bookmark-tile";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
+import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
+import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
+import { useApiReadiness } from "@/lib/api-readiness";
 import { getUserHistory } from "@/lib/user-api";
 import type { UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
@@ -23,8 +26,17 @@ export default function SavedPage() {
   const [tab, setTab] = useState("bookmarks");
   const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks();
+  const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
+  const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const showBookmarkSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
+  const waitingCaption =
+    readiness === "warming"
+      ? BOOKMARKS_WARMING_MESSAGE
+      : readiness === "unreachable"
+        ? BOOKMARKS_UNREACHABLE_MESSAGE
+        : null;
 
   const [history, setHistory] = useState<UserHistoryDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,11 +93,20 @@ export default function SavedPage() {
           {tab === "bookmarks" ? (
             <>
               <div className={styles.bookmarkGrid}>
+                {showBookmarkSkeletons && (
+                  <>
+                    <BookmarkTileSkeleton />
+                    <BookmarkTileSkeleton />
+                  </>
+                )}
                 {customBookmarks.map((b) => (
                   <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
                 ))}
                 <AddBookmarkTile onClick={() => setDialogOpen(true)} />
               </div>
+              {showBookmarkSkeletons && waitingCaption && (
+                <p className={styles.waitingCaption}>{waitingCaption}</p>
+              )}
               <CreateBookmarkDialog
                 isOpen={dialogOpen}
                 onClose={() => setDialogOpen(false)}
@@ -93,7 +114,14 @@ export default function SavedPage() {
               />
             </>
           ) : loading ? (
-            <p className={styles.loadingText}>Loading...</p>
+            <>
+              <div className={styles.skeletonList}>
+                <BookmarkTileSkeleton variant="row" />
+                <BookmarkTileSkeleton variant="row" />
+                <BookmarkTileSkeleton variant="row" />
+              </div>
+              {waitingCaption && <p className={styles.waitingCaption}>{waitingCaption}</p>}
+            </>
           ) : !hasItems ? (
             <EmptyState
               icon={config.icon}
