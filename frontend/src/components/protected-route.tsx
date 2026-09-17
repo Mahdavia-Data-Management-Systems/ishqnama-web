@@ -7,6 +7,7 @@ import {
 } from "@azure/msal-react";
 import { InteractionType } from "@azure/msal-browser";
 import { loginRequest } from "@/config/auth-config";
+import EmptyState from "@/components/empty-state";
 
 function Loading() {
   return (
@@ -38,32 +39,33 @@ function Loading() {
   );
 }
 
-function ErrorComponent({ error }: MsalAuthenticationResult) {
+/**
+ * Shown when MsalAuthenticationTemplate could neither find a valid token nor
+ * fall back to a login on its own. It only falls back automatically for
+ * InteractionRequiredAuthError; anything else (a silent-renewal timeout, a
+ * network failure, a blocked iframe) is parked here, so give the reader a way
+ * to start a fresh interactive sign-in instead of a dead end.
+ */
+function ErrorComponent({ error, login }: MsalAuthenticationResult) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "50vh",
-        gap: "var(--space-3)",
-        padding: "0 var(--space-6)",
-        textAlign: "center",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "var(--text-xl)",
-          color: "var(--text-primary)",
+    <div style={{ minHeight: "50vh", display: "flex", alignItems: "center" }}>
+      <EmptyState
+        icon="logIn"
+        title="Unable to sign in"
+        body={
+          error?.message
+            ? `Your session could not be renewed silently (${error.errorCode || "unknown error"}). Sign in again to continue.`
+            : "An unexpected error occurred. Sign in again to continue."
+        }
+        action={{
+          label: "Sign in again",
+          onClick: () => {
+            login(InteractionType.Redirect, loginRequest).catch(() => {
+              // Failures surface through MsalAuthenticationTemplate's error state
+            });
+          },
         }}
-      >
-        Unable to sign in
-      </p>
-      <p style={{ color: "var(--text-tertiary)", fontSize: "var(--text-base)" }}>
-        {error?.message ?? "An unexpected error occurred. Please try again."}
-      </p>
+      />
     </div>
   );
 }

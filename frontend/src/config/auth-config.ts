@@ -1,4 +1,5 @@
 import { Configuration, LogLevel } from "@azure/msal-browser";
+import { AUTH_REDIRECT_PATH } from "@/lib/auth-redirect";
 
 export const msalConfig: Configuration = {
   auth: {
@@ -7,7 +8,9 @@ export const msalConfig: Configuration = {
     knownAuthorities: process.env.NEXT_PUBLIC_ENTRA_AUTHORITY 
     ? [new URL(process.env.NEXT_PUBLIC_ENTRA_AUTHORITY).hostname] 
     : [],
-    redirectUri: process.env.NEXT_PUBLIC_ENTRA_REDIRECT_URI ?? "/",
+    // Must point at the redirect bridge page; MSAL resolves a relative value
+    // against the current origin. See src/lib/auth-redirect.ts.
+    redirectUri: process.env.NEXT_PUBLIC_ENTRA_REDIRECT_URI ?? AUTH_REDIRECT_PATH,
     postLogoutRedirectUri: "/",
   },
   cache: {

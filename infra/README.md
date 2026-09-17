@@ -201,13 +201,28 @@ itself and only uses Terraform Cloud as a backend.
 
 ## 6. Entra External ID (CIAM) app registrations
 
-Prod defaults to the same SPA (`entra_spa_client_id`) and API (`entra_api_client_id`) app
-registrations as dev. On the **SPA** registration add the prod redirect URIs under
-Authentication, Single-page application:
+Every redirect URI on the **SPA** registration (Authentication, Single-page application) must point
+at the frontend's MSAL redirect bridge page, `<origin>/redirect/`, trailing slash included: Entra
+matches redirect URIs exactly, and the static export serves that route as `redirect/index.html`.
+Without the bridge page the login redirect still works, but silent token renewal times out once
+the 24-hour SPA refresh token has expired (see the **Auth** section of the root `CLAUDE.md`).
 
-- `https://ishqnama.com`
-- `https://www.ishqnama.com`
-- `https://<swa-default-hostname>` (from the `swa_default_hostname` output, useful before DNS is live)
+For dev the registered URIs are:
+
+- `http://localhost:3000/redirect/`
+- `https://dev.ishqnama.com/redirect/`
+- `https://<swa-default-hostname>/redirect/`
+
+Prod defaults to the same SPA (`entra_spa_client_id`) and API (`entra_api_client_id`) app
+registrations as dev. On the **SPA** registration add the prod redirect URIs:
+
+- `https://ishqnama.com/redirect/`
+- `https://www.ishqnama.com/redirect/`
+- `https://preview.ishqnama.com/redirect/`
+- `https://<swa-default-hostname>/redirect/` (from the `swa_default_hostname` output, useful before DNS is live)
+
+Remove the bare-origin URIs (`https://ishqnama.com` and friends) once the bridge is deployed;
+they are no longer used.
 
 Nothing changes on the API registration. If you create separate prod registrations instead, set
 the two variables and grant the new SPA the `access_as_user` scope of the new API.
