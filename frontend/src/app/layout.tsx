@@ -9,6 +9,7 @@ import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import ApiKeepAlive from "@/components/api-keep-alive";
+import GlobalLoadingIndicator from "@/components/global-loading-indicator";
 import { pwaManifestScript } from "@/lib/pwa-manifest";
 
 const ebGaramond = EB_Garamond({
@@ -72,6 +73,7 @@ export default function RootLayout({
       </head>
       <body>
         <ApiKeepAlive />
+        <GlobalLoadingIndicator />
         <AuthProvider>
           <ReaderSettingsProvider>
             <BookmarksProvider>

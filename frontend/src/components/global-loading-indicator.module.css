@@ -1,0 +1,96 @@
+/* A 2px gold rail laid over the last pixels of the sticky app bar, so it sits
+   exactly on the seam between the teal chrome and the paper page. Fixed and
+   pointer-events: none, so it can never shift layout or intercept a tap. */
+.rail {
+  position: fixed;
+  top: calc(var(--header-height) - 2px);
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 110; /* just above the sticky header (100) */
+  pointer-events: none;
+  overflow: hidden;
+  background: rgba(190, 170, 48, 0.3); /* --gold, faint on the teal chrome */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    visibility 0s linear var(--duration-normal);
+}
+
+.rail[data-state="visible"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.rail[data-state="fading"] {
+  opacity: 0;
+  visibility: visible;
+}
+
+/* The gleam: a soft bright-gold highlight that travels right to left, the
+   reading direction of the scripture on the page. Indeterminate by design;
+   it never pretends to know how far along a cold start is. */
+.gleam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 28%;
+  min-width: 96px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--gold-bright) 40%,
+    var(--gold-bright) 60%,
+    transparent
+  );
+  will-change: transform;
+}
+
+.rail:not([data-state="hidden"]) .gleam {
+  animation: glide 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes glide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100vw - 100%));
+  }
+}
+
+/* Reduced motion: no travelling highlight. The rail becomes a still bright
+   line that breathes slowly in opacity, which is enough to read as activity. */
+.still {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: var(--gold-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gleam {
+    display: none;
+  }
+
+  .still {
+    display: block;
+  }
+
+  .rail:not([data-state="hidden"]) .still {
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}

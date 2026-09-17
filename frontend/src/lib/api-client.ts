@@ -1,6 +1,7 @@
 import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { msalInstance } from "@/components/auth-provider";
 import { apiScope } from "@/config/auth-config";
+import { beginRequest } from "@/lib/pending-requests";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -43,19 +44,26 @@ export async function apiFetch<T>(
     }
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers: {
-      Accept: "application/json",
-      ...fetchOptions.headers,
-    },
-  });
+  // Counted from the network call to the parsed body so the global loading
+  // indicator covers the whole wait; the finally releases it on error or abort.
+  const endRequest = beginRequest();
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers: {
+        Accept: "application/json",
+        ...fetchOptions.headers,
+      },
+    });
 
-  if (!response.ok) {
-    throw new ApiError(response.status, response.statusText);
+    if (!response.ok) {
+      throw new ApiError(response.status, response.statusText);
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    endRequest();
   }
-
-  return response.json() as Promise<T>;
 }
 
 /**
@@ -150,16 +158,21 @@ export async function authenticatedApiFetch<T>(
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  const endRequest = beginRequest();
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    throw new ApiError(response.status, response.statusText);
+    if (!response.ok) {
+      throw new ApiError(response.status, response.statusText);
+    }
+
+    const text = await response.text();
+    return text ? (JSON.parse(text) as T) : (undefined as T);
+  } finally {
+    endRequest();
   }
-
-  const text = await response.text();
-  return text ? (JSON.parse(text) as T) : (undefined as T);
 }
