@@ -10,24 +10,15 @@ describe("buildShareUrl", () => {
     );
   });
 
-  it("links a verse from its juz using the chapter-verse form, since verse numbers repeat across a juz", () => {
-    expect(buildShareUrl(origin, { kind: "juz", juz: 3, chapter: 2, verse: 255 })).toBe(
-      "https://www.ishqnama.com/quran/juz/3/?verse=2-255",
-    );
-  });
-
-  it("links a verse from its ruku within the juz", () => {
+  it("links the ruku itself, with no verse query, when shared from its ruku", () => {
     expect(buildShareUrl(origin, { kind: "ruku", juz: 3, rankInJuz: 1, chapter: 2, verse: 255 })).toBe(
-      "https://www.ishqnama.com/quran/juz/3/ruku/1/?verse=255",
+      "https://www.ishqnama.com/quran/juz/3/ruku/1/",
     );
   });
 
   it("drops the verse query for the bismillah", () => {
     expect(buildShareUrl(origin, { kind: "chapter", chapter: 2, verse: 0 })).toBe(
       "https://www.ishqnama.com/quran/2/",
-    );
-    expect(buildShareUrl(origin, { kind: "juz", juz: 1, chapter: 2, verse: 0 })).toBe(
-      "https://www.ishqnama.com/quran/juz/1/",
     );
   });
 });
@@ -43,12 +34,6 @@ describe("buildShareText", () => {
     );
     expect(text).not.toMatch(/[؀-ۿ]/);
     expect(text).not.toMatch(/https?:/);
-  });
-
-  it("names the juz after the reference when shared from the juz", () => {
-    expect(
-      buildShareText({ target: { kind: "juz", juz: 3, chapter: 2, verse: 255 }, translation: "Body" }),
-    ).toBe("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3\nBody\n");
   });
 
   it("names the juz and ruku after the reference when shared from the ruku", () => {

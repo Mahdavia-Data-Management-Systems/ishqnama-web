@@ -33,34 +33,32 @@ describe("ShareVerseSheet", () => {
     vi.useRealTimers();
   });
 
-  it("names the verse and offers the three places it can be opened from", () => {
+  it("names the verse and offers the two places it can be opened from", () => {
     renderSheet();
-    expect(screen.getByRole("dialog", { name: "Share verse" })).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Share" })).toBeTruthy();
     expect(screen.getByText("al-Baqarah 2:255")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /From its chapter/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /From its juz/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /From its ruku/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /This ayah/ })).toBeTruthy();
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /This ruku/ })).toBeTruthy();
   });
 
   it("describes where each option opens", () => {
     renderSheet();
-    expect(screen.getByRole("button", { name: /From its chapter/ }).textContent).toContain("al-Baqarah, verse 255");
-    expect(screen.getByRole("button", { name: /From its juz/ }).textContent).toContain("Juz 3");
-    expect(screen.getByRole("button", { name: /From its ruku/ }).textContent).toContain("Ruku 1 of juz 3");
+    expect(screen.getByRole("button", { name: /This ayah/ }).textContent).toContain("al-Baqarah, verse 255");
+    expect(screen.getByRole("button", { name: /This ruku/ }).textContent).toContain("Ruku 1 of juz 3");
   });
 
-  it("keeps the juz and ruku options waiting until the verse's ruku is known", () => {
+  it("keeps the ruku option waiting until the verse's ruku is known", () => {
     renderSheet({ ruku: undefined });
-    expect((screen.getByRole("button", { name: /From its chapter/ }) as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByRole("button", { name: /From its juz/ }) as HTMLButtonElement).disabled).toBe(true);
-    expect((screen.getByRole("button", { name: /From its ruku/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: /This ayah/ }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole("button", { name: /This ruku/ }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("shares the chapter link with the translation and no Arabic, then closes", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     setNavigator(share, undefined);
     const { onClose } = renderSheet();
-    fireEvent.click(screen.getByRole("button", { name: /From its chapter/ }));
+    fireEvent.click(screen.getByRole("button", { name: /This ayah/ }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     const payload = share.mock.calls[0][0];
     expect(payload.url).toBe(`${window.location.origin}/quran/2/?verse=255`);
@@ -71,23 +69,13 @@ describe("ShareVerseSheet", () => {
     expect(payload.text).not.toContain(payload.url);
   });
 
-  it("shares the juz link in chapter-verse form", async () => {
-    const share = vi.fn().mockResolvedValue(undefined);
-    setNavigator(share, undefined);
-    renderSheet();
-    fireEvent.click(screen.getByRole("button", { name: /From its juz/ }));
-    await waitFor(() => expect(share).toHaveBeenCalled());
-    expect(share.mock.calls[0][0].url).toBe(`${window.location.origin}/quran/juz/3/?verse=2-255`);
-    expect(share.mock.calls[0][0].text.startsWith("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3\n")).toBe(true);
-  });
-
   it("shares the ruku link", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     setNavigator(share, undefined);
     renderSheet();
-    fireEvent.click(screen.getByRole("button", { name: /From its ruku/ }));
+    fireEvent.click(screen.getByRole("button", { name: /This ruku/ }));
     await waitFor(() => expect(share).toHaveBeenCalled());
-    expect(share.mock.calls[0][0].url).toBe(`${window.location.origin}/quran/juz/3/ruku/1/?verse=255`);
+    expect(share.mock.calls[0][0].url).toBe(`${window.location.origin}/quran/juz/3/ruku/1/`);
     expect(share.mock.calls[0][0].text.startsWith("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3, Ruku 1\n")).toBe(true);
   });
 
@@ -97,7 +85,7 @@ describe("ShareVerseSheet", () => {
     setNavigator(undefined, { writeText });
     const { onClose } = renderSheet();
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /From its chapter/ }));
+      fireEvent.click(screen.getByRole("button", { name: /This ayah/ }));
     });
     expect(writeText).toHaveBeenCalledTimes(1);
     const copied: string = writeText.mock.calls[0][0];
@@ -112,7 +100,7 @@ describe("ShareVerseSheet", () => {
     setNavigator(vi.fn().mockRejectedValue(new DOMException("cancel", "AbortError")), undefined);
     const { onClose } = renderSheet();
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /From its chapter/ }));
+      fireEvent.click(screen.getByRole("button", { name: /This ayah/ }));
     });
     expect(onClose).not.toHaveBeenCalled();
   });

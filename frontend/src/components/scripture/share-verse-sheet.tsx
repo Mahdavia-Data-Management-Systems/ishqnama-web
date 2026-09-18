@@ -87,7 +87,6 @@ export default function ShareVerseSheet({
   const targetFor = (place: Place): ShareTarget | null => {
     if (place === "chapter") return { kind: "chapter", chapter, verse };
     if (!ruku) return null;
-    if (place === "juz") return { kind: "juz", juz: ruku.juzNumber, chapter, verse };
     return { kind: "ruku", juz: ruku.juzNumber, rankInJuz: ruku.rankInJuz, chapter, verse };
   };
 
@@ -119,7 +118,7 @@ export default function ShareVerseSheet({
   const options: { place: Place; title: string; hint: string; ready: boolean; mark: ReactNode }[] = [
     {
       place: "chapter",
-      title: "From its chapter",
+      title: "This ayah",
       ready: true,
       hint: hintFor("chapter", true, `${chapterName(chapter)}, ${verseLabel}`),
       mark: (
@@ -129,15 +128,8 @@ export default function ShareVerseSheet({
       ),
     },
     {
-      place: "juz",
-      title: "From its juz",
-      ready: ruku != null,
-      hint: hintFor("juz", ruku != null, ruku ? `Juz ${ruku.juzNumber}, ${verseLabel}` : ""),
-      mark: <span className={styles.folioMark}>{ruku?.juzNumber ?? "—"}</span>,
-    },
-    {
       place: "ruku",
-      title: "From its ruku",
+      title: "This ruku",
       ready: ruku != null,
       hint: hintFor("ruku", ruku != null, ruku ? `Ruku ${ruku.rankInJuz} of juz ${ruku.juzNumber}` : ""),
       mark: ruku ? (
@@ -163,7 +155,7 @@ export default function ShareVerseSheet({
       >
         <div className={styles.header}>
           <div>
-            <h2 id={headingId} className={styles.heading}>Share verse</h2>
+            <h2 id={headingId} className={styles.heading}>Share</h2>
             <p className={styles.reference}>{reference}</p>
           </div>
           <button type="button" onClick={onClose} className={styles.closeButton} aria-label="Close">

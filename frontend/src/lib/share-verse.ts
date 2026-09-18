@@ -1,13 +1,14 @@
 import { suras } from "@/data/suras";
 
 /**
- * Where a shared verse link opens: the verse's chapter, its juz, or its ruku
- * within the juz. Each is a page the reader already serves; the `?verse=`
- * query scrolls to and flashes the verse once the page has loaded.
+ * Where a shared verse link opens: the verse's chapter or its ruku within the
+ * juz. Each is a page the reader already serves. The chapter link carries a
+ * `?verse=` query that scrolls to and flashes the verse once the page has
+ * loaded; the ruku link opens the ruku itself, from its first verse, since a
+ * ruku is short enough to be shared as a passage.
  */
 export type ShareTarget =
   | { kind: "chapter"; chapter: number; verse: number }
-  | { kind: "juz"; juz: number; chapter: number; verse: number }
   | { kind: "ruku"; juz: number; rankInJuz: number; chapter: number; verse: number };
 
 export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
@@ -25,25 +26,14 @@ export function verseReference(chapter: number, verse: number): string {
 }
 
 export function buildShareUrl(origin: string, target: ShareTarget): string {
-  let path: string;
-  let verseParam: string;
   switch (target.kind) {
-    case "chapter":
-      path = `/quran/${target.chapter}/`;
-      verseParam = `${target.verse}`;
-      break;
-    case "juz":
-      path = `/quran/juz/${target.juz}/`;
-      // A juz spans chapters, so verse numbers repeat; the reader accepts "chapter-verse" here.
-      verseParam = `${target.chapter}-${target.verse}`;
-      break;
+    case "chapter": {
+      const query = target.verse > 0 ? `?verse=${target.verse}` : "";
+      return `${origin}/quran/${target.chapter}/${query}`;
+    }
     case "ruku":
-      path = `/quran/juz/${target.juz}/ruku/${target.rankInJuz}/`;
-      verseParam = `${target.verse}`;
-      break;
+      return `${origin}/quran/juz/${target.juz}/ruku/${target.rankInJuz}/`;
   }
-  const query = target.verse > 0 ? `?verse=${verseParam}` : "";
-  return `${origin}${path}${query}`;
 }
 
 interface ShareTextInput {
@@ -53,12 +43,11 @@ interface ShareTextInput {
 
 /**
  * The first line of the message: the book, the verse reference and, when the link
- * opens from the juz or the ruku, that place too, e.g.
+ * opens from the ruku, that place too, e.g.
  * "Noor-e-Imaan | al-Baqarah 2:255 | Juz 3, Ruku 1".
  */
 export function shareHeading(target: ShareTarget): string {
   const parts = [BOOK_NAME, verseReference(target.chapter, target.verse)];
-  if (target.kind === "juz") parts.push(`Juz ${target.juz}`);
   if (target.kind === "ruku") parts.push(`Juz ${target.juz}, Ruku ${target.rankInJuz}`);
   return parts.join(" | ");
 }
