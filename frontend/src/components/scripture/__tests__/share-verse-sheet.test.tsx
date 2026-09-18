@@ -67,6 +67,7 @@ describe("ShareVerseSheet", () => {
     expect(payload.title).toBe("al-Baqarah 2:255");
     expect(payload.text).toContain("Allah, there is no god but He.");
     expect(payload.text).not.toMatch(/[\u0600-\u06FF]/);
+    expect(payload.text).not.toContain(payload.url);
   });
 
   it("shares the juz link in chapter-verse form", async () => {
@@ -95,7 +96,9 @@ describe("ShareVerseSheet", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /From its chapter/ }));
     });
-    expect(writeText).toHaveBeenCalled();
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const copied: string = writeText.mock.calls[0][0];
+    expect(copied.split(`${window.location.origin}/quran/2/?verse=255`).length - 1).toBe(1);
     expect(screen.getByText(/Copied/)).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(2000); });

@@ -97,7 +97,7 @@ export default function ShareVerseSheet({
     setBusy(place);
     setOutcome(null);
     const url = buildShareUrl(window.location.origin, target);
-    const text = buildShareText({ chapter, verse, translation, url });
+    const text = buildShareText({ chapter, verse, translation });
     const result = await shareVerse({ title: reference, text, url });
     setBusy(null);
     if (result === "shared") {

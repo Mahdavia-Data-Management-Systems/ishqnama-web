@@ -48,15 +48,18 @@ interface ShareTextInput {
   chapter: number;
   verse: number;
   translation: string | undefined;
-  url: string;
 }
 
-/** The shared message: reference, translation (never the Arabic), then the link. */
-export function buildShareText({ chapter, verse, translation, url }: ShareTextInput): string {
+/**
+ * The shared message: reference, then the translation (never the Arabic). The link
+ * is deliberately not part of it: the system share carries it in `url`, and share
+ * targets append that to the text themselves, so including it here printed it twice.
+ */
+export function buildShareText({ chapter, verse, translation }: ShareTextInput): string {
   const lines = [verseReference(chapter, verse)];
   const body = translation?.trim();
   if (body) lines.push(body);
-  return `${lines.join("\n")}\n\n${url}`;
+  return lines.join("\n");
 }
 
 interface SharePayload {
@@ -67,7 +70,7 @@ interface SharePayload {
 
 /**
  * Hands the verse to the system share sheet where the browser has one, otherwise
- * copies the text (which already ends with the link) to the clipboard.
+ * copies the text with the link appended to the clipboard.
  */
 export async function shareVerse(payload: SharePayload): Promise<ShareOutcome> {
   if (typeof navigator.share === "function") {
@@ -81,7 +84,7 @@ export async function shareVerse(payload: SharePayload): Promise<ShareOutcome> {
   }
   if (navigator.clipboard?.writeText) {
     try {
-      await navigator.clipboard.writeText(payload.text);
+      await navigator.clipboard.writeText(`${payload.text}\n\n${payload.url}`);
       return "copied";
     } catch {
       return "failed";
