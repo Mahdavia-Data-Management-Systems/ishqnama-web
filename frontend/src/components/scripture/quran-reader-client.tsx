@@ -12,6 +12,7 @@ import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
+import ShareVerseSheet from "@/components/scripture/share-verse-sheet";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
@@ -179,21 +180,16 @@ export default function QuranReaderClient({
     }
   }, [searchParams, loading, verses, firstChapter]);
 
-  const handleShare = async (chapterNum: number, verseNum: number, arabicText: string) => {
-    const sura = suras.find((s) => s.number === chapterNum);
-    const label = sura?.name ?? `Chapter ${chapterNum}`;
-    const ref = isMultiChapter ? `${chapterNum}:${verseNum}` : `${verseNum}`;
-    const text = `${label} ${ref} — ${arabicText}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-      } catch {
-        /* user cancelled */
-      }
-    } else {
-      await navigator.clipboard.writeText(text);
-    }
-  };
+  // Share sheet: the reader picks whether the link opens from the chapter, juz or ruku
+  const [shareTarget, setShareTarget] = useState<{ chapter: number; verse: number } | null>(null);
+  const handleShare = useCallback((chapterNum: number, verseNum: number) => {
+    setShareTarget({ chapter: chapterNum, verse: verseNum });
+  }, []);
+  const closeShare = useCallback(() => setShareTarget(null), []);
+  const sharedVerse = shareTarget
+    ? verses.find((v) => v.chapterNumber === shareTarget.chapter && v.number === shareTarget.verse)
+    : undefined;
+  const sharedTranslation = sharedVerse?.segments?.map((seg) => seg.text).filter(Boolean).join(" ");
 
   const handleBookmarkVerse = useCallback((chapterNum: number, verseNum: number) => {
     if (!isAuthenticated) return;
@@ -276,7 +272,7 @@ export default function QuranReaderClient({
                       rukuId={verse.rukuId}
                       rukuInfo={rukuMap.get(verse.rukuId)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
-                      onShare={() => handleShare(verse.chapterNumber, verse.number, verse.arabic)}
+                      onShare={() => handleShare(verse.chapterNumber, verse.number)}
                       highlightQuery={highlightQuery}
                     />
                   )}
@@ -426,7 +422,7 @@ export default function QuranReaderClient({
                   icon="share"
                   label="Share verse"
                   size="sm"
-                  onClick={() => handleShare(selectedVerse.chapter, verse.number, verse.arabic)}
+                  onClick={() => handleShare(selectedVerse.chapter, verse.number)}
                 />
                 <IconButton
                   icon="close"
@@ -500,6 +496,17 @@ export default function QuranReaderClient({
           </div>
         );
       })()}
+
+      {shareTarget && (
+        <ShareVerseSheet
+          isOpen
+          onClose={closeShare}
+          chapter={shareTarget.chapter}
+          verse={shareTarget.verse}
+          translation={sharedTranslation}
+          ruku={sharedVerse ? rukuMap.get(sharedVerse.rukuId) : undefined}
+        />
+      )}
 
       <BookmarkPicker
         isOpen={pickerOpen}
