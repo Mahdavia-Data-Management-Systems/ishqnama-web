@@ -7,22 +7,31 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "model:build": "node scripts/build-book-model.mjs",
+    "model:poster": "node scripts/render-book-poster.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.19.0",
     "@azure/msal-react": "^5.6.0",
     "next": "^15.3.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "three": "^0.186.0"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "@types/three": "^0.186.0",
     "jsdom": "^26.1.0",
+    "puppeteer-core": "^25.11.0",
+    "sharp": "^0.35.4",
     "typescript": "^5.8.0",
     "vitest": "^3.2.7"
   }

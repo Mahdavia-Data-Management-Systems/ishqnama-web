@@ -87,3 +87,26 @@
   border-radius: 2px;
   transition: width var(--duration-slow) var(--ease-out);
 }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.content {
+  min-width: 0;
+}
+
+.book {
+  width: 120px;
+  height: 150px;
+}
+
+@media (max-width: 639px) {
+  .book {
+    width: 84px;
+    height: 105px;
+  }
+}

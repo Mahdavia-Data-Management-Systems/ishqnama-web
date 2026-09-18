@@ -1,6 +1,14 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/_next/*", "/images/*", "/fonts/*", "/*.ico", "/*.png", "/*.svg"]
-  }
+    "exclude": ["/_next/*", "/images/*", "/fonts/*", "/models/*", "/*.ico", "/*.png", "/*.svg"]
+  },
+  "routes": [
+    {
+      "route": "/models/*",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    }
+  ]
 }

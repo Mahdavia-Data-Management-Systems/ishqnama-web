@@ -1,4 +1,5 @@
 import styles from "../static-page.module.css";
+import BookModel from "@/components/book-model/book-model";
 import aboutStyles from "./about.module.css";
 
 export default function AboutPage() {
@@ -27,6 +28,10 @@ export default function AboutPage() {
           </p>
 
           <h2>About Noor e Imaan</h2>
+          <figure className={aboutStyles.bookFigure}>
+            <BookModel variant="inspect" className={aboutStyles.book} />
+            <figcaption className={aboutStyles.bookCaption}>Drag to turn the book over, pinch to look closer</figcaption>
+          </figure>
           <p>
             Noor e Imaan is an Urdu tafseer (exegesis) of the Holy Quran that
             serves as the primary scholarly commentary available on Ishqnama. It

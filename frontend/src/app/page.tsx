@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
+import BookModel from "@/components/book-model/book-model";
 import ContinueReadingCard from "@/components/continue-reading-card";
 import SectionHeading from "@/components/navigation/section-heading";
 import SuraListItem from "@/components/scripture/sura-list-item";
@@ -14,6 +15,7 @@ import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
 import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useApiReadiness } from "@/lib/api-readiness";
+import { quranProgress } from "@/lib/quran-progress";
 import { suras } from "@/data/suras";
 import styles from "./page.module.css";
 
@@ -24,6 +26,7 @@ export default function Home() {
   const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
   const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const showSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
   const shelfCaption = !showSkeletons
@@ -52,21 +55,25 @@ export default function Home() {
               arabicName={nazraSura.arabicName}
               verseNumber={nazra.verseNumber}
               totalVerses={nazraSura.verseCount}
+              progress={quranProgress(nazra.chapterNumber, nazra.verseNumber)}
             />
           ) : (
-            <div className={`${styles.heroCard} ornament-diagonal`}>
-              <p className={styles.bismillah} dir="rtl" lang="ar">
-                بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
-              </p>
-              <h1 className={styles.heroTitle}>
-                Noor e Imaan, The Holy Quran
-              </h1>
-              <p className={styles.heroBody}>
-                Read the Holy Quran with translations & explanation in Urdu, Hindi, and English, from authentic exegesis of Mahdavia Community.
-              </p>
-              <Link href="/quran/" className={styles.heroCta}>
-                Start reading
-              </Link>
+            <div ref={heroRef} className={`${styles.heroCard} ornament-diagonal`}>
+              <div className={styles.heroText}>
+                <p className={styles.bismillah} dir="rtl" lang="ar">
+                  بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ
+                </p>
+                <h1 className={styles.heroTitle}>
+                  Noor e Imaan, The Holy Quran
+                </h1>
+                <p className={styles.heroBody}>
+                  Read the Holy Quran with translations & explanation in Urdu, Hindi, and English, from authentic exegesis of Mahdavia Community.
+                </p>
+                <Link href="/quran/" className={styles.heroCta}>
+                  Start reading
+                </Link>
+              </div>
+              <BookModel variant="hero" className={styles.heroBook} tiltTargetRef={heroRef} priority />
             </div>
           )}
         </section>

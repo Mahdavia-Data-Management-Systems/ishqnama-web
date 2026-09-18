@@ -10,11 +10,24 @@
   background: var(--gradient-splash);
   border-radius: var(--radius-lg);
   padding: var(--space-12) var(--space-8);
-  text-align: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-8);
+  text-align: left;
+}
+
+.heroText {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-4);
+}
+
+.heroBook {
+  width: 320px;
+  height: 320px;
+  justify-self: end;
 }
 
 .bismillah {
@@ -69,6 +82,24 @@
 
   .heroTitle {
     font-size: var(--text-2xl);
+  }
+}
+
+@media (max-width: 767px) {
+  .heroCard {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .heroText {
+    align-items: center;
+  }
+
+  .heroBook {
+    order: -1;
+    width: 100%;
+    height: 200px;
+    justify-self: center;
   }
 }
 
