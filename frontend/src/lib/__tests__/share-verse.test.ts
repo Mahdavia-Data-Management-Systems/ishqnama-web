@@ -17,7 +17,7 @@ describe("buildShareUrl", () => {
   });
 
   it("links a verse from its ruku within the juz", () => {
-    expect(buildShareUrl(origin, { kind: "ruku", juz: 3, rankInJuz: 1, verse: 255 })).toBe(
+    expect(buildShareUrl(origin, { kind: "ruku", juz: 3, rankInJuz: 1, chapter: 2, verse: 255 })).toBe(
       "https://www.ishqnama.com/quran/juz/3/ruku/1/?verse=255",
     );
   });
@@ -33,25 +33,43 @@ describe("buildShareUrl", () => {
 });
 
 describe("buildShareText", () => {
-  it("has the chapter name, reference and translation, and no Arabic or link", () => {
+  it("opens with the book name and reference, then the translation, with no Arabic or link", () => {
     const text = buildShareText({
-      chapter: 2,
-      verse: 255,
+      target: { kind: "chapter", chapter: 2, verse: 255 },
       translation: "Allah, there is no god but He, the Living, the Sustainer.",
     });
-    expect(text).toBe("al-Baqarah 2:255\nAllah, there is no god but He, the Living, the Sustainer.");
+    expect(text).toBe(
+      "Noor-e-Imaan | al-Baqarah 2:255\nAllah, there is no god but He, the Living, the Sustainer.\n",
+    );
     expect(text).not.toMatch(/[؀-ۿ]/);
     expect(text).not.toMatch(/https?:/);
   });
 
-  it("is just the reference when there is no translation", () => {
-    expect(buildShareText({ chapter: 112, verse: 1, translation: undefined })).toBe("al-Ikhlāṣ 112:1");
+  it("names the juz after the reference when shared from the juz", () => {
+    expect(
+      buildShareText({ target: { kind: "juz", juz: 3, chapter: 2, verse: 255 }, translation: "Body" }),
+    ).toBe("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3\nBody\n");
+  });
+
+  it("names the juz and ruku after the reference when shared from the ruku", () => {
+    expect(
+      buildShareText({
+        target: { kind: "ruku", juz: 3, rankInJuz: 1, chapter: 2, verse: 255 },
+        translation: "Body",
+      }),
+    ).toBe("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3, Ruku 1\nBody\n");
+  });
+
+  it("is just the first line when there is no translation", () => {
+    expect(
+      buildShareText({ target: { kind: "chapter", chapter: 112, verse: 1 }, translation: undefined }),
+    ).toBe("Noor-e-Imaan | al-Ikhlāṣ 112:1\n");
   });
 
   it("refers to the bismillah by chapter alone", () => {
-    expect(buildShareText({ chapter: 2, verse: 0, translation: "In the name of Allah" })).toBe(
-      "al-Baqarah 2\nIn the name of Allah",
-    );
+    expect(
+      buildShareText({ target: { kind: "chapter", chapter: 2, verse: 0 }, translation: "In the name of Allah" }),
+    ).toBe("Noor-e-Imaan | al-Baqarah 2\nIn the name of Allah\n");
   });
 });
 
@@ -82,7 +100,7 @@ describe("shareVerse", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
     Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
-    expect(await shareVerse({ title: "t", text: "body", url: "https://x/" })).toBe("copied");
+    expect(await shareVerse({ title: "t", text: "body\n", url: "https://x/" })).toBe("copied");
     expect(writeText).toHaveBeenCalledWith("body\n\nhttps://x/");
   });
 

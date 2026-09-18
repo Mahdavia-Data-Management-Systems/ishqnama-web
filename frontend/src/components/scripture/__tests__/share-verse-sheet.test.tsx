@@ -65,6 +65,7 @@ describe("ShareVerseSheet", () => {
     const payload = share.mock.calls[0][0];
     expect(payload.url).toBe(`${window.location.origin}/quran/2/?verse=255`);
     expect(payload.title).toBe("al-Baqarah 2:255");
+    expect(payload.text.startsWith("Noor-e-Imaan | al-Baqarah 2:255\n")).toBe(true);
     expect(payload.text).toContain("Allah, there is no god but He.");
     expect(payload.text).not.toMatch(/[\u0600-\u06FF]/);
     expect(payload.text).not.toContain(payload.url);
@@ -77,6 +78,7 @@ describe("ShareVerseSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: /From its juz/ }));
     await waitFor(() => expect(share).toHaveBeenCalled());
     expect(share.mock.calls[0][0].url).toBe(`${window.location.origin}/quran/juz/3/?verse=2-255`);
+    expect(share.mock.calls[0][0].text.startsWith("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3\n")).toBe(true);
   });
 
   it("shares the ruku link", async () => {
@@ -86,6 +88,7 @@ describe("ShareVerseSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: /From its ruku/ }));
     await waitFor(() => expect(share).toHaveBeenCalled());
     expect(share.mock.calls[0][0].url).toBe(`${window.location.origin}/quran/juz/3/ruku/1/?verse=255`);
+    expect(share.mock.calls[0][0].text.startsWith("Noor-e-Imaan | al-Baqarah 2:255 | Juz 3, Ruku 1\n")).toBe(true);
   });
 
   it("confirms a clipboard copy before closing", async () => {

@@ -8,9 +8,11 @@ import { suras } from "@/data/suras";
 export type ShareTarget =
   | { kind: "chapter"; chapter: number; verse: number }
   | { kind: "juz"; juz: number; chapter: number; verse: number }
-  | { kind: "ruku"; juz: number; rankInJuz: number; verse: number };
+  | { kind: "ruku"; juz: number; rankInJuz: number; chapter: number; verse: number };
 
 export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
+
+const BOOK_NAME = "Noor-e-Imaan";
 
 export function chapterName(chapter: number): string {
   return suras.find((s) => s.number === chapter)?.name ?? `Chapter ${chapter}`;
@@ -45,21 +47,33 @@ export function buildShareUrl(origin: string, target: ShareTarget): string {
 }
 
 interface ShareTextInput {
-  chapter: number;
-  verse: number;
+  target: ShareTarget;
   translation: string | undefined;
 }
 
 /**
- * The shared message: reference, then the translation (never the Arabic). The link
- * is deliberately not part of it: the system share carries it in `url`, and share
+ * The first line of the message: the book, the verse reference and, when the link
+ * opens from the juz or the ruku, that place too, e.g.
+ * "Noor-e-Imaan | al-Baqarah 2:255 | Juz 3, Ruku 1".
+ */
+export function shareHeading(target: ShareTarget): string {
+  const parts = [BOOK_NAME, verseReference(target.chapter, target.verse)];
+  if (target.kind === "juz") parts.push(`Juz ${target.juz}`);
+  if (target.kind === "ruku") parts.push(`Juz ${target.juz}, Ruku ${target.rankInJuz}`);
+  return parts.join(" | ");
+}
+
+/**
+ * The shared message: heading, then the translation (never the Arabic), ending in a
+ * newline so whatever is appended after it starts on its own line. The link is
+ * deliberately not part of it: the system share carries it in `url`, and share
  * targets append that to the text themselves, so including it here printed it twice.
  */
-export function buildShareText({ chapter, verse, translation }: ShareTextInput): string {
-  const lines = [verseReference(chapter, verse)];
+export function buildShareText({ target, translation }: ShareTextInput): string {
+  const lines = [shareHeading(target)];
   const body = translation?.trim();
   if (body) lines.push(body);
-  return lines.join("\n");
+  return `${lines.join("\n")}\n`;
 }
 
 interface SharePayload {
@@ -84,7 +98,7 @@ export async function shareVerse(payload: SharePayload): Promise<ShareOutcome> {
   }
   if (navigator.clipboard?.writeText) {
     try {
-      await navigator.clipboard.writeText(`${payload.text}\n\n${payload.url}`);
+      await navigator.clipboard.writeText(`${payload.text}\n${payload.url}`);
       return "copied";
     } catch {
       return "failed";

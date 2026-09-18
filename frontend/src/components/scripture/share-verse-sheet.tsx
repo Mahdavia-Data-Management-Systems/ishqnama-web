@@ -88,7 +88,7 @@ export default function ShareVerseSheet({
     if (place === "chapter") return { kind: "chapter", chapter, verse };
     if (!ruku) return null;
     if (place === "juz") return { kind: "juz", juz: ruku.juzNumber, chapter, verse };
-    return { kind: "ruku", juz: ruku.juzNumber, rankInJuz: ruku.rankInJuz, verse };
+    return { kind: "ruku", juz: ruku.juzNumber, rankInJuz: ruku.rankInJuz, chapter, verse };
   };
 
   const handlePick = async (place: Place) => {
@@ -97,7 +97,7 @@ export default function ShareVerseSheet({
     setBusy(place);
     setOutcome(null);
     const url = buildShareUrl(window.location.origin, target);
-    const text = buildShareText({ chapter, verse, translation });
+    const text = buildShareText({ target, translation });
     const result = await shareVerse({ title: reference, text, url });
     setBusy(null);
     if (result === "shared") {
