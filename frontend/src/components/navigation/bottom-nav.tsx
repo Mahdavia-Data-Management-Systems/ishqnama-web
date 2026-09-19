@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import Icon from "@/components/ui/icon";
+import { isReaderRoute } from "@/lib/reader-route";
 import styles from "./bottom-nav.module.css";
 
 const tabs = [
@@ -18,7 +19,7 @@ export default function BottomNav() {
   const isAuthenticated = useIsAuthenticated();
 
   // Hide on reader pages — ReaderToolbar occupies the bottom there
-  if (pathname.startsWith("/quran/") && pathname !== "/quran/") {
+  if (isReaderRoute(pathname)) {
     return null;
   }
 

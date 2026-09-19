@@ -57,7 +57,7 @@ export default function AboutPage() {
           <div className={aboutStyles.mdmsSection}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/mdms-logo.png"
+              src="/images/mdms-logo.webp"
               alt="Mahdavia Data Management System logo"
               width={120}
               height={120}
@@ -74,7 +74,6 @@ export default function AboutPage() {
                 audience using modern technology.
               </p>
               <p>
-                Visit MDMS at{" "}
                 <a
                   href="https://mahdavisonline.com"
                   target="_blank"
