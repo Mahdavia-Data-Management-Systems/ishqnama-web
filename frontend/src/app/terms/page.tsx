@@ -15,7 +15,9 @@ export default function TermsPage() {
           <p>
             The Quranic text, translations, and tafseer provided on Ishqnama are
             for personal, non-commercial use. Content may not be reproduced or
-            redistributed without attribution.
+            redistributed without attribution and anyone who uses, quotes, or
+            shares this content must mention that Tafseer e Noor e Imaan is the
+            authentic Mahdavia exegesis (tafseer) of the Mahdavia community.
           </p>
           <h2>Accuracy</h2>
           <p>
