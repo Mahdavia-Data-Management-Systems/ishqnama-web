@@ -201,6 +201,13 @@ itself and only uses Terraform Cloud as a backend.
 
 ## 6. Entra External ID (CIAM) app registrations
 
+**All app registrations are managed by hand in the Azure portal, never by Terraform.** That
+covers the SPA registration, the `Ishqnama API` registration and the CI service principal
+`sp-mdms-github`: their redirect URIs, exposed scopes, API permission grants, manifest flags and
+claims mappings are portal changes, and Terraform only receives their client IDs through
+variables (`entra_spa_client_id`, `entra_api_client_id`). Do not add `azuread` resources for them;
+record any change here instead so it can be reproduced.
+
 Every redirect URI on the **SPA** registration (Authentication, Single-page application) must point
 at the frontend's MSAL redirect bridge page, `<origin>/redirect/`, trailing slash included: Entra
 matches redirect URIs exactly, and the static export serves that route as `redirect/index.html`.
@@ -226,6 +233,28 @@ they are no longer used.
 
 Nothing changes on the API registration. If you create separate prod registrations instead, set
 the two variables and grant the new SPA the `access_as_user` scope of the new API.
+
+### SPA registration: manifest flags and the `emailAddress` claim
+
+Three further settings on the **SPA** side must be reproduced on any new SPA registration (for
+example a separate prod one):
+
+- **Enterprise application, Single sign-on, Attributes & Claims**: a custom claim named
+  `emailAddress` whose source attribute is `user.mail`. Tokens issued to the SPA therefore carry
+  the signed-in user's mail address under that name. This is a claims mapping on the service
+  principal (the enterprise app), not on the app registration, so it does not appear in the
+  manifest.
+- **App registration manifest, `acceptMappedClaims: true`**: required for Entra to emit a mapped
+  claim for a single-tenant app without a custom token signing key; with it `false` the
+  `emailAddress` claim above is silently dropped.
+- **App registration manifest, `isFallbackPublicClient: true`**: tells Entra to treat the app as a
+  public client when a flow cannot determine the client type from the redirect URI. MSAL.js runs
+  the authorization code + PKCE flow without a client secret, which is what this flag covers.
+
+Neither `Ishqnama.Api` nor the frontend reads `emailAddress` today: the backend identifies users
+by `oid` (falling back to `sub`) and the frontend shows `account.name`, falling back to
+`account.username`. The claim is available for future use (for example an account or contact
+page) without touching Entra again.
 
 ## 7. First deployment
 
