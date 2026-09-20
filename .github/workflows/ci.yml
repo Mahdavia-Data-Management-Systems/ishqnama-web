@@ -31,7 +31,7 @@ jobs:
     steps:
       # paths-filter diffs push events with local git, so the repo must be checked out. The action
       # deepens the history itself as far as it needs to reach the previous commit.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: dorny/paths-filter@v3
         id: filter
@@ -75,7 +75,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # full history so all api-v* tags are visible
 
