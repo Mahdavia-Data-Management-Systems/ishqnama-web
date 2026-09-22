@@ -139,21 +139,22 @@ that respects `env(safe-area-inset-bottom)`, animation disabled under
 
 Layout, top to bottom:
 
-1. The gold Ishqnama mark (`/logo-ishqnama-gold.svg`, already used in the app bar) inside a
-   `--gold-wash` circle.
+1. The Ishqnama mark (`/logo-ishqnama.svg`, the teal mark the footer uses; the gold mark is
+   invisible on `--gold-wash`) inside a `--gold-wash` circle.
 2. The feature title, display serif, `--text-xl`, `--text-primary`.
 3. The body line, body sans, `--text-sm`, `--text-secondary`.
 4. A primary `Button` labelled `SIGN_IN_LABEL`, full width on phones.
 5. A ghost `Button` labelled `NOT_NOW_LABEL` beneath it.
 6. A muted credit line with the MDMS mark (`/images/mdms-mark.webp`) and `SIGN_IN_CREDIT`,
-   `--text-xs`, `--text-tertiary`, so the reader is not surprised by the MDMS branded sign-in page.
+   `--text-xs`, `--text-secondary`, so the reader is not surprised by the MDMS branded sign-in page.
 
 Behaviour, copied from the share sheet: `role="dialog"`, `aria-modal="true"`,
 `aria-labelledby` pointing at the title, focus moves to the sheet on open and back to the
 previously focused element on close, Escape, backdrop click, the close button and "Not now" all
-call `onClose`, and `document.body.style.overflow` is locked while open. The frontend-design
-skill is used at implementation to settle the mark size, spacing and type sizes within this
-structure, not to change the structure.
+call `onClose`, and `document.body.style.overflow` is locked while open. Tab and Shift+Tab cycle
+within the sheet while it is open, and the sheet scrolls inside a 90dvh cap on short viewports.
+The frontend-design skill is used at implementation to settle the mark size, spacing and type
+sizes within this structure, not to change the structure.
 
 ### Call sites
 
@@ -171,7 +172,7 @@ rendered for signed-in readers by `reader-settings-context.tsx`, and the gate ne
 
 | `authSettled` | `isAuthenticated` | Renders |
 |---|---|---|
-| false | any | the existing "Signing in..." loading view, moved out of `protected-route.tsx` so both can use it |
+| false | any | the loading view (now reading "One moment", since anonymous readers reach it too), moved out of `protected-route.tsx` so both can use it |
 | true | false | the page shell: `SectionHeading` with eyebrow "Your library" and title "Saved", then `EmptyState` (icon `bookmark`, title and body from `SIGN_IN_COPY.saved`, action "Sign in" that calls `promptSignIn("saved")`); an effect calls `promptSignIn("saved")` once on the first render of this branch |
 | true | true | `<ProtectedRoute>{children}</ProtectedRoute>` exactly as today, keeping silent renewal and the "Sign in again" error state for expired sessions |
 
