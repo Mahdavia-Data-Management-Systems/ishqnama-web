@@ -99,7 +99,7 @@ else happens; MSAL logs the error through the existing logger callback.
 export const SIGN_IN_COPY: Record<SignInFeature, { title: string; body: string }> = {
   settings: {
     title: "Sign in to keep your reading settings",
-    body: "Choose how Noor e Imaan reads for you, saved for next time.",
+    body: "Choose how Noor e Imaan reads for you, saved for later.",
   },
   saved: {
     title: "Sign in to see your bookmarks",
