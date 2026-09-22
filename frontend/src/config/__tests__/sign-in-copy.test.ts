@@ -33,9 +33,19 @@ describe("sign-in copy", () => {
   });
 
   it("is written in sentence case", () => {
+    const properNouns = ["Noor", "Imaan", "Mahdavia", "Data", "Management", "System"];
     for (const s of allStrings) {
       expect(s[0], s).toBe(s[0].toUpperCase());
       expect(s, s).not.toBe(s.toUpperCase());
+
+      const words = s.trim().split(/\s+/);
+      for (const word of words.slice(1)) {
+        const bare = word.replace(/[^\p{L}]/gu, "");
+        if (!bare) continue;
+        if (bare[0] === bare[0].toUpperCase() && bare[0] !== bare[0].toLowerCase()) {
+          expect(properNouns, `${word} in "${s}"`).toContain(bare);
+        }
+      }
     }
   });
 });

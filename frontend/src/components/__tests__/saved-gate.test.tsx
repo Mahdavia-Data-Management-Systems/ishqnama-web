@@ -82,4 +82,18 @@ describe("SavedGate", () => {
     expect(screen.getByText("saved page content")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
+
+  it("prompts once when auth settles after an unsettled start", () => {
+    msal.inProgress = "startup";
+    const view = renderGate();
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    msal.inProgress = "none";
+    rerenderGate(view);
+    expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.saved.title })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Not now" }));
+    rerenderGate(view);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
 });
