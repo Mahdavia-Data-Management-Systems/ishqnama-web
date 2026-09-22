@@ -67,6 +67,22 @@ describe("SearchPage for an anonymous reader", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
     expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.search.title })).toBeTruthy();
   });
+
+  it("clears a typed query when the reader is signed out", () => {
+    msal.authed = true;
+    const view = renderPage();
+    const field = screen.getByRole("searchbox") as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "noor" } });
+    expect(field.value).toBe("noor");
+
+    msal.authed = false;
+    view.rerender(
+      <SignInPromptProvider>
+        <SearchPage />
+      </SignInPromptProvider>,
+    );
+    expect(field.value).toBe("");
+  });
 });
 
 describe("SearchPage for a signed-in reader", () => {

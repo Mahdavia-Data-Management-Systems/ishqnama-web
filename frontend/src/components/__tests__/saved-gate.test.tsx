@@ -49,7 +49,7 @@ describe("SavedGate", () => {
   it("shows the signing-in spinner and mounts nothing else while MSAL is still starting", () => {
     msal.inProgress = "startup";
     renderGate();
-    expect(screen.getByText("Signing in...")).toBeTruthy();
+    expect(screen.getByText("One moment")).toBeTruthy();
     expect(screen.queryByTestId("protected")).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.queryByText("saved page content")).toBeNull();

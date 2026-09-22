@@ -24,7 +24,7 @@ export default function AuthLoading() {
         }}
       />
       <p style={{ color: "var(--text-tertiary)", fontSize: "var(--text-base)" }}>
-        Signing in...
+        One moment
       </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

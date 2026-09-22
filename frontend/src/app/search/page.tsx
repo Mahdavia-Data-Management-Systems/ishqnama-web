@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useIsAuthenticated } from "@azure/msal-react";
 import { SIGN_IN_COPY, SIGN_IN_LABEL } from "@/config/sign-in-copy";
-import { useSignInPrompt } from "@/context/sign-in-prompt-context";
+import { useSignInGate, useSignInPrompt } from "@/context/sign-in-prompt-context";
 import SearchField from "@/components/ui/search-field";
 import SegmentedControl from "@/components/ui/segmented-control";
 import EmptyState from "@/components/empty-state";
@@ -62,16 +62,18 @@ export default function SearchPage() {
 
   const isAuthenticated = useIsAuthenticated();
   const { promptSignIn } = useSignInPrompt();
+  const gateSearch = useSignInGate("search");
   const abortRef = useRef<AbortController | null>(null);
 
   // An anonymous keystroke never reaches the field: the sign-in prompt opens instead.
   const handleQueryChange = (value: string) => {
-    if (!isAuthenticated) {
-      promptSignIn("search");
-      return;
-    }
-    setQuery(value);
+    gateSearch(() => setQuery(value));
   };
+
+  // A sign-out in another tab should not leave a stale query in the field.
+  useEffect(() => {
+    if (!isAuthenticated) setQuery("");
+  }, [isAuthenticated]);
 
   const translationId = getTranslationId(lang);
   const inputFontFamily =
