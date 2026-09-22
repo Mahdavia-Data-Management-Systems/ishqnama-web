@@ -40,24 +40,47 @@ describe("SearchPage for an anonymous reader", () => {
     expect(screen.getByText(SIGN_IN_COPY.search.title)).toBeTruthy();
   });
 
-  it("prompts once on the first keystroke and never searches", () => {
+  it("swallows the keystroke, opens the prompt and never searches", () => {
     renderPage();
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "n" } });
+    const field = screen.getByRole("searchbox") as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "n" } });
+    expect(field.value).toBe("");
     expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.search.title })).toBeTruthy();
+    expect(searchQuran).not.toHaveBeenCalled();
+  });
 
+  it("prompts again on every attempt after the sheet is dismissed", () => {
+    renderPage();
+    const field = screen.getByRole("searchbox") as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "n" } });
     fireEvent.click(screen.getByRole("button", { name: "Not now" }));
     expect(screen.queryByRole("dialog")).toBeNull();
 
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "noor" } });
-    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.change(field, { target: { value: "no" } });
+    expect(field.value).toBe("");
+    expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.search.title })).toBeTruthy();
     expect(searchQuran).not.toHaveBeenCalled();
   });
 
   it("reopens the prompt from the inline Sign in button", () => {
     renderPage();
-    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "n" } });
-    fireEvent.click(screen.getByRole("button", { name: "Not now" }));
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
     expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.search.title })).toBeTruthy();
+  });
+});
+
+describe("SearchPage for a signed-in reader", () => {
+  beforeEach(() => {
+    msal.authed = true;
+    vi.mocked(searchQuran).mockReset().mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+  });
+  afterEach(cleanup);
+
+  it("lets the reader type without any prompt", () => {
+    renderPage();
+    const field = screen.getByRole("searchbox") as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "noor" } });
+    expect(field.value).toBe("noor");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

@@ -62,15 +62,16 @@ export default function SearchPage() {
 
   const isAuthenticated = useIsAuthenticated();
   const { promptSignIn } = useSignInPrompt();
-  // Prompt an anonymous reader once per visit, on the first character they type.
-  const promptedRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    if (isAuthenticated || query.length === 0 || promptedRef.current) return;
-    promptedRef.current = true;
-    promptSignIn("search");
-  }, [isAuthenticated, query, promptSignIn]);
+  // An anonymous keystroke never reaches the field: the sign-in prompt opens instead.
+  const handleQueryChange = (value: string) => {
+    if (!isAuthenticated) {
+      promptSignIn("search");
+      return;
+    }
+    setQuery(value);
+  };
 
   const translationId = getTranslationId(lang);
   const inputFontFamily =
@@ -142,7 +143,7 @@ export default function SearchPage() {
         <div className={styles.searchBar}>
           <SearchField
             value={query}
-            onChange={setQuery}
+            onChange={handleQueryChange}
             placeholder={placeholders[lang] ?? "Search the Quran"}
             autoFocus
             inputStyle={{ fontFamily: inputFontFamily }}
