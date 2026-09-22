@@ -83,4 +83,19 @@ describe("SignInPromptSheet", () => {
     renderSheet({ feature: null });
     expect(document.body.style.overflow).toBe("");
   });
+
+  it("keeps Tab inside the dialog", () => {
+    renderSheet();
+    const closeButton = screen.getByRole("button", { name: "Close" });
+    const notNowButton = screen.getByRole("button", { name: "Not now" });
+
+    notNowButton.focus();
+    expect(document.activeElement).toBe(notNowButton);
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(document.activeElement).toBe(closeButton);
+
+    closeButton.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(notNowButton);
+  });
 });

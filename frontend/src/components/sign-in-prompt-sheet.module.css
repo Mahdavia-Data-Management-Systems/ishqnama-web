@@ -12,6 +12,8 @@
   position: relative;
   width: 100%;
   max-width: 440px;
+  max-height: 90dvh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -129,7 +131,7 @@
   margin: var(--space-5) 0 0;
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 .creditMark {
