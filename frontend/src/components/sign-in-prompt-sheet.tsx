@@ -72,7 +72,7 @@ export default function SignInPromptSheet({ isOpen, feature, onSignIn, onClose }
 
         <div className={styles.markCircle} aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-ishqnama-gold.svg" alt="" width={32} height={27} className={styles.mark} />
+          <img src="/logo-ishqnama.svg" alt="" width={32} height={27} className={styles.mark} />
         </div>
 
         <h2 id={headingId} className={styles.title}>
