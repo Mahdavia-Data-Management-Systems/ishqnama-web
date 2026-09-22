@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useIsAuthenticated } from "@azure/msal-react";
 import UserMenu from "./user-menu";
 import styles from "./app-bar.module.css";
 
@@ -10,12 +9,11 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/quran/", label: "Quran" },
   { href: "/search/", label: "Search" },
-  { href: "/saved/", label: "Saved", authOnly: true },
+  { href: "/saved/", label: "Saved" },
 ];
 
 export default function AppBar() {
   const pathname = usePathname();
-  const isAuthenticated = useIsAuthenticated();
 
   return (
     <header className={styles.header} data-app-bar>
@@ -34,7 +32,6 @@ export default function AppBar() {
 
         <nav className={styles.nav}>
           {navLinks.map((link) => {
-            if (link.authOnly && !isAuthenticated) return null;
             const isActive =
               link.href === "/"
                 ? pathname === "/"
