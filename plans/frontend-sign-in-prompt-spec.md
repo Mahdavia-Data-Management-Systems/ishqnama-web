@@ -182,8 +182,8 @@ branch and redirect the reader without ever showing the prompt.
 **Bookmark on a verse**, `frontend/src/components/scripture/quran-reader-client.tsx`. Both the
 continuous-mode `AyahBlock` and the verse popup already call `handleBookmarkVerse`. Its
 `if (!isAuthenticated) return;` is replaced by wrapping the existing body in `gate(...)` from
-`useSignInGate("bookmark")`. The component keeps its own `useIsAuthenticated` for the reading
-position save it also drives.
+`useSignInGate("bookmark")`. That guard was the component's only use of `useIsAuthenticated`, so
+the hook call and its import go too (the reading-position save lives in the page loaders).
 
 **Search**, `frontend/src/app/search/page.tsx`. Remove the anonymous early return and the direct
 `useMsal`/`loginRequest` imports it needed. The heading, tabs and field render for everyone. When
