@@ -31,7 +31,7 @@ export default function SignInPromptSheet({ isOpen, feature, onSignIn, onClose }
 
   // Lock scroll and move focus only when the sheet opens or closes.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !feature) return;
     const previous = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
     // Focus the dialog itself so keyboard users start inside it without a ring on the first button.
@@ -40,16 +40,16 @@ export default function SignInPromptSheet({ isOpen, feature, onSignIn, onClose }
       document.body.style.overflow = "";
       previous?.focus?.();
     };
-  }, [isOpen]);
+  }, [isOpen, feature]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !feature) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, feature, onClose]);
 
   if (!isOpen || !feature) return null;
 

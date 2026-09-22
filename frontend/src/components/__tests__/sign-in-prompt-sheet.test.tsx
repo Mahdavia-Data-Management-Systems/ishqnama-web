@@ -78,4 +78,9 @@ describe("SignInPromptSheet", () => {
     renderSheet({ feature: null });
     expect(screen.queryByRole("dialog")).toBeNull();
   });
+
+  it("does not lock body scroll when open without a feature", () => {
+    renderSheet({ feature: null });
+    expect(document.body.style.overflow).toBe("");
+  });
 });
