@@ -190,13 +190,17 @@ the hook call and its import go too (the reading-position save lives in the page
 anonymous:
 
 - the debounced search effect keeps its `!isAuthenticated` guard, so no request is made;
-- the first time `query` becomes non-empty, `promptSignIn("search")` fires once per page visit,
-  tracked in a ref so later keystrokes do not reopen the sheet;
+- typing into the field is intercepted: the `SearchField` `onChange` handler ignores the new
+  value when anonymous (the character never appears, `query` stays empty) and calls
+  `promptSignIn("search")` instead. Every attempt prompts; there is no once-per-visit ref,
+  because nothing is ever typed and the open sheet takes focus away from the field, so an
+  attempt is one keystroke, not a stream of them;
 - the results area renders `EmptyState` (icon `logIn`, title and body from
   `SIGN_IN_COPY.search`, action "Sign in" that calls `promptSignIn("search")`).
 
 There is no prompt on arrival at `/search/`. After sign-in the reader returns to `/search/` with
-an empty field.
+an empty field. (Revised 2026-09-23 from "prompt once on the first typed character, which stays
+in the field" at the owner's request: the gated action must not partially happen.)
 
 ### Adding a future account-only feature
 
@@ -213,7 +217,7 @@ Never hide the control from anonymous readers and never let a click do nothing.
 `CLAUDE.md` (repository root) gains a short **Sign-in prompt** bullet under the Frontend section
 describing the provider, the gate hook, the copy file and the rule above, and the "Protected
 pages" bullet is updated: `/saved/` is no longer bounced to sign-in, it shows the prompt over a
-page shell, and `/search/` prompts on the first keystroke.
+page shell, and `/search/` swallows anonymous keystrokes and prompts instead.
 
 ## Files
 
@@ -257,8 +261,8 @@ Unit tests with Vitest and jsdom, mocking `@azure/msal-react` per file as
 - `src/components/__tests__/saved-gate.test.tsx`: the three branches, and the arrival prompt fires
   exactly once across re-renders.
 - `src/app/search/__tests__/search-anonymous.test.tsx`: renders the page anonymous with
-  `next/navigation` and `@/lib/api-client` mocked; typing prompts once per visit, a second
-  keystroke does not reopen the sheet, and no search request is made.
+  `@/lib/api` mocked; a keystroke leaves the field empty and opens the sheet, dismissing and
+  typing again opens it again, and no search request is made.
 - `src/components/__tests__/reader-toolbar.test.tsx`: the gear renders for an anonymous reader and
   its click opens the prompt rather than calling `openSettings`.
 
