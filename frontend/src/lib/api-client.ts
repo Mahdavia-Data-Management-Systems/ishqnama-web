@@ -2,6 +2,7 @@ import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { msalInstance } from "@/components/auth-provider";
 import { apiScope } from "@/config/auth-config";
 import { beginRequest } from "@/lib/pending-requests";
+import { recoverExpiredSession } from "@/lib/session-renewal";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -86,7 +87,11 @@ export async function apiFetchWithOptionalAuth<T>(
       authHeaders.Authorization = `Bearer ${result.accessToken}`;
     } catch (err) {
       if (err instanceof InteractionRequiredAuthError) {
-        console.warn("Token acquisition requires interaction:", err.message);
+        // The 24-hour sign-in has lapsed and the hidden iframe could not renew it. Send the
+        // reader through Entra once (or sign them out locally if that already failed) rather
+        // than silently serving the page without their explanations. The anonymous request
+        // below still goes out; when redirecting, the page is about to navigate away anyway.
+        await recoverExpiredSession(msalInstance, account, [apiScope]);
       }
     }
   }
@@ -142,8 +147,10 @@ export async function authenticatedApiFetch<T>(
     accessToken = result.accessToken;
   } catch (err) {
     if (err instanceof InteractionRequiredAuthError) {
-      // Only redirect for interactive consent, not for misconfigured scopes
-      console.warn("Token acquisition requires interaction:", err.message);
+      // Same expired-sign-in handling as apiFetchWithOptionalAuth, so a bookmark or settings
+      // call on the reader recovers the session too. The error still propagates: with the
+      // account cleared the caller is anonymous, and with a redirect under way the page is leaving.
+      await recoverExpiredSession(msalInstance, account, [apiScope]);
     }
     throw err;
   }
