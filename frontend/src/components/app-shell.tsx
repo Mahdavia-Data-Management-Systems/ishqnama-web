@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import AuthProvider from "@/components/auth-provider";
+import SignInPromptProvider from "@/context/sign-in-prompt-context";
 import ReaderSettingsProvider from "@/context/reader-settings-context";
 import BookmarksProvider from "@/context/bookmarks-context";
 import AppBar from "@/components/navigation/app-bar";
@@ -33,15 +34,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <GlobalLoadingIndicator />
       <ApiWarmupNotice />
       <AuthProvider>
-        <ReaderSettingsProvider>
-          <BookmarksProvider>
-            <AppBar />
-            {children}
-            <Footer />
-            <BottomNav />
-            <PwaInstallPrompt />
-          </BookmarksProvider>
-        </ReaderSettingsProvider>
+        <SignInPromptProvider>
+          <ReaderSettingsProvider>
+            <BookmarksProvider>
+              <AppBar />
+              {children}
+              <Footer />
+              <BottomNav />
+              <PwaInstallPrompt />
+            </BookmarksProvider>
+          </ReaderSettingsProvider>
+        </SignInPromptProvider>
       </AuthProvider>
     </>
   );

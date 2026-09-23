@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect, useCallback, Fragment, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { useIsAuthenticated } from "@azure/msal-react";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
@@ -16,6 +15,7 @@ import ShareVerseSheet from "@/components/scripture/share-verse-sheet";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
+import { useSignInGate } from "@/context/sign-in-prompt-context";
 import { useApiReadiness } from "@/lib/api-readiness";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
 import type { RukuDto } from "@/types/api";
@@ -46,13 +46,13 @@ export default function QuranReaderClient({
   prev,
   next,
 }: Props) {
-  const isAuthenticated = useIsAuthenticated();
   const searchParams = useSearchParams();
   const {
     mode: persistedMode,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
   } = useReaderSettings();
   const { bookmarks, savePosition, hasCustomBookmarks } = useBookmarks();
+  const gateBookmark = useSignInGate("bookmark");
   const readiness = useApiReadiness();
   const placeholderText =
     readiness === "warming"
@@ -191,16 +191,18 @@ export default function QuranReaderClient({
     : undefined;
   const sharedTranslation = sharedVerse?.segments?.map((seg) => seg.text).filter(Boolean).join(" ");
 
+  // Anonymous readers get the sign-in prompt instead of a click that does nothing.
   const handleBookmarkVerse = useCallback((chapterNum: number, verseNum: number) => {
-    if (!isAuthenticated) return;
-    if (!hasCustomBookmarks) {
-      savePosition("nazra", chapterNum, verseNum);
-    } else {
-      pickerChapterRef.current = chapterNum;
-      pickerVerseRef.current = verseNum;
-      setPickerOpen(true);
-    }
-  }, [isAuthenticated, hasCustomBookmarks, savePosition]);
+    gateBookmark(() => {
+      if (!hasCustomBookmarks) {
+        savePosition("nazra", chapterNum, verseNum);
+      } else {
+        pickerChapterRef.current = chapterNum;
+        pickerVerseRef.current = verseNum;
+        setPickerOpen(true);
+      }
+    });
+  }, [gateBookmark, hasCustomBookmarks, savePosition]);
 
   const handlePickerSelect = useCallback((slug: string) => {
     savePosition(slug, pickerChapterRef.current, pickerVerseRef.current);

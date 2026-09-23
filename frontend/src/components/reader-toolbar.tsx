@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AuthenticatedTemplate } from "@azure/msal-react";
+import { useSignInGate } from "@/context/sign-in-prompt-context";
 import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { useReaderSettings } from "@/context/reader-settings-context";
@@ -47,6 +47,7 @@ export default function ReaderToolbar({
   onFontScaleChange,
 }: ReaderToolbarProps) {
   const { openSettings } = useReaderSettings();
+  const gateSettings = useSignInGate("settings");
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
 
   return (
@@ -97,12 +98,10 @@ export default function ReaderToolbar({
         </div>
 
         <div className={styles.navSide}>
-          {/* Settings only persist for signed-in readers, so the panel is hidden when anonymous. */}
-          <AuthenticatedTemplate>
-            <button onClick={openSettings} className={styles.settingsBtn} aria-label="Settings">
-              <Icon name="settings" size={18} />
-            </button>
-          </AuthenticatedTemplate>
+          {/* Settings persist for signed-in readers; anonymous readers get the sign-in prompt. */}
+          <button onClick={() => gateSettings(openSettings)} className={styles.settingsBtn} aria-label="Settings">
+            <Icon name="settings" size={18} />
+          </button>
           {next ? (
             <Link href={next.href} className={styles.navLink} aria-label={`Next: ${next.name}`}>
               <Icon name="chevronRight" size={16} />

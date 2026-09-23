@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { loginRequest } from "@/config/auth-config";
+import { useIsAuthenticated } from "@azure/msal-react";
+import { SIGN_IN_COPY, SIGN_IN_LABEL } from "@/config/sign-in-copy";
+import { useSignInGate, useSignInPrompt } from "@/context/sign-in-prompt-context";
 import SearchField from "@/components/ui/search-field";
 import SegmentedControl from "@/components/ui/segmented-control";
 import EmptyState from "@/components/empty-state";
@@ -60,8 +61,19 @@ export default function SearchPage() {
   const [error, setError] = useState(false);
 
   const isAuthenticated = useIsAuthenticated();
-  const { instance } = useMsal();
+  const { promptSignIn } = useSignInPrompt();
+  const gateSearch = useSignInGate("search");
   const abortRef = useRef<AbortController | null>(null);
+
+  // An anonymous keystroke never reaches the field: the sign-in prompt opens instead.
+  const handleQueryChange = (value: string) => {
+    gateSearch(() => setQuery(value));
+  };
+
+  // A sign-out in another tab should not leave a stale query in the field.
+  useEffect(() => {
+    if (!isAuthenticated) setQuery("");
+  }, [isAuthenticated]);
 
   const translationId = getTranslationId(lang);
   const inputFontFamily =
@@ -125,25 +137,6 @@ export default function SearchPage() {
 
   const hasMore = results.length < totalCount;
 
-  if (!isAuthenticated) {
-    return (
-      <main className={styles.main}>
-        <div className="page-container">
-          <SectionHeading eyebrow="Explore" title="Search" />
-          <EmptyState
-            icon="lock"
-            title="Sign in to search"
-            body="Log in to search across tarjuma and tafseer."
-            action={{
-              label: "Sign in",
-              onClick: () => instance.loginRedirect(loginRequest),
-            }}
-          />
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className={styles.main}>
       <div className="page-container">
@@ -152,7 +145,7 @@ export default function SearchPage() {
         <div className={styles.searchBar}>
           <SearchField
             value={query}
-            onChange={setQuery}
+            onChange={handleQueryChange}
             placeholder={placeholders[lang] ?? "Search the Quran"}
             autoFocus
             inputStyle={{ fontFamily: inputFontFamily }}
@@ -166,7 +159,16 @@ export default function SearchPage() {
         </div>
 
         <div className={styles.results}>
-          {!searched && !loading && (
+          {!isAuthenticated && (
+            <EmptyState
+              icon="logIn"
+              title={SIGN_IN_COPY.search.title}
+              body={SIGN_IN_COPY.search.body}
+              action={{ label: SIGN_IN_LABEL, onClick: () => promptSignIn("search") }}
+            />
+          )}
+
+          {isAuthenticated && !searched && !loading && (
             <EmptyState
               icon="search"
               title="Search in Noor e Imaan"

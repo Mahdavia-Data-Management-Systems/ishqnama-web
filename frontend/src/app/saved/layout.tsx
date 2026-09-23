@@ -1,11 +1,11 @@
 "use client";
 
-import ProtectedRoute from "@/components/protected-route";
+import SavedGate from "@/components/saved-gate";
 
 export default function SavedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <ProtectedRoute>{children}</ProtectedRoute>;
+  return <SavedGate>{children}</SavedGate>;
 }
