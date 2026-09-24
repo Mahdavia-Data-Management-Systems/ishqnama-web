@@ -1,7 +1,7 @@
 locals {
   # Hostnames the frontend is served from. The apex and www custom domains on the SWA are added by
   # hand (Cloudflare DNS-only records plus the SWA domain validation) and are not managed here.
-  web_hostnames = ["ishqnama.com", "www.ishqnama.com", "preview.ishqnama.com"]
+  web_hostnames = ["ishqnama.com", "www.ishqnama.com"]
 }
 
 module "swa" {

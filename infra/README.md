@@ -225,7 +225,6 @@ registrations as dev. On the **SPA** registration add the prod redirect URIs:
 
 - `https://ishqnama.com/redirect/`
 - `https://www.ishqnama.com/redirect/`
-- `https://preview.ishqnama.com/redirect/`
 - `https://<swa-default-hostname>/redirect/` (from the `swa_default_hostname` output, useful before DNS is live)
 
 Remove the bare-origin URIs (`https://ishqnama.com` and friends) once the bridge is deployed;

@@ -1,8 +1,8 @@
 import baseManifest from "../../public/manifest.json";
 
 /**
- * Domain whose subdomains identify a deployment environment: dev.ishqnama.com is dev,
- * preview.ishqnama.com is UAT. The apex and www are production and keep the plain name.
+ * Domain whose subdomains identify a deployment environment, e.g. dev.ishqnama.com is dev.
+ * The apex and www are production and keep the plain name.
  */
 const ENVIRONMENT_DOMAIN = "ishqnama.com";
 
@@ -11,9 +11,9 @@ const ENVIRONMENT_DOMAIN = "ishqnama.com";
  * installed from. It must run synchronously in the head, before the browser reads the
  * manifest for an install prompt.
  *
- * The prod Static Web App build serves ishqnama.com, www.ishqnama.com and
- * preview.ishqnama.com alike, so the name cannot be fixed at build time and is derived from
- * location.hostname instead. On an environment host the script swaps the static
+ * The name is derived from location.hostname rather than fixed at build time, so any
+ * environment subdomain gets its suffix while the prod hosts (ishqnama.com and
+ * www.ishqnama.com) keep the plain name. On an environment host the script swaps the static
  * /manifest.json link for a data: URL holding the same manifest with the suffixed name
  * (relative URLs cannot be resolved against a data: URL, so they are made absolute) and
  * sets apple-mobile-web-app-title for iOS, which does not read the manifest name for
