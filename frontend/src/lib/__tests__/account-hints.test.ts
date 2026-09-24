@@ -24,9 +24,11 @@ describe("interactiveRequestFor", () => {
     });
   });
 
-  it("uses the email claim as the login hint instead of the principal name", () => {
-    const acc = account({ email: "reader@gmail.com" });
-    expect(interactiveRequestFor(acc, scopes)).toEqual({ scopes, account: acc, loginHint: "reader@gmail.com" });
+  it("sends a local account's email without the account, so MSAL cannot send the opaque login_hint claim", () => {
+    const acc = account({ email: "reader@example.com", login_hint: "O.opaque" });
+    const request = interactiveRequestFor(acc, scopes);
+    expect(request).toEqual({ scopes, loginHint: "reader@example.com" });
+    expect(request.account).toBeUndefined();
   });
 
   it("falls back to the mapped emailAddress claim, then the emails array", () => {

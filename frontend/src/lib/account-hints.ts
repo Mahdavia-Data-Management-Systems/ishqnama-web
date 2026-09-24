@@ -13,8 +13,12 @@ import type { AccountInfo, RedirectRequest } from "@azure/msal-browser";
  * So for readers who signed in through a social provider (the ID token's `idp` claim), this
  * sets `domainHint`, which makes External ID skip its own page and send them straight to that
  * provider ("issuer acceleration"), and `loginHint` with their email, which then reaches the
- * provider and preselects their account. For other readers the email hint is a fallback that
- * only applies if the opaque claim is ever absent.
+ * provider and preselects their account.
+ *
+ * For other readers (local email accounts) with an email, the request leaves `account` out:
+ * MSAL then has no account to read the opaque claim from, skips its active-account lookup
+ * because `loginHint` is set, and sends the email as `login_hint`, so Entra's page shows the
+ * address the reader signed up with. Without an email the account stays, as the least-bad hint.
  */
 
 /** External ID `domain_hint` values by the `idp` claim each provider the tenant federates with produces. */
@@ -43,10 +47,12 @@ export function domainHintFor(account: AccountInfo): string | undefined {
 }
 
 export function interactiveRequestFor(account: AccountInfo, scopes: string[]): RedirectRequest {
-  const request: RedirectRequest = { scopes, account };
   const loginHint = emailHintFor(account);
-  if (loginHint) request.loginHint = loginHint;
   const domainHint = domainHintFor(account);
-  if (domainHint) request.domainHint = domainHint;
-  return request;
+  if (domainHint) {
+    const request: RedirectRequest = { scopes, account, domainHint };
+    if (loginHint) request.loginHint = loginHint;
+    return request;
+  }
+  return loginHint ? { scopes, loginHint } : { scopes, account };
 }
