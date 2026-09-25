@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "model:build": "node scripts/build-book-model.mjs",
-    "model:poster": "node scripts/render-book-poster.mjs"
+    "model:poster": "node scripts/render-book-poster.mjs",
+    "og:image": "node scripts/render-og-image.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.19.0",

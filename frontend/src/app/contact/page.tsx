@@ -1,4 +1,12 @@
 import styles from "../static-page.module.css";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata({
+  title: "Contact",
+  description:
+    "Send feedback, corrections and suggestions for Ishqnama to the Mahdavia Data Management Systems team.",
+  path: "/contact/",
+});
 
 export default function ContactPage() {
   return (

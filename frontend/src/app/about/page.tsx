@@ -1,6 +1,14 @@
 import styles from "../static-page.module.css";
 import BookModel from "@/components/book-model/book-model";
 import aboutStyles from "./about.module.css";
+import { pageMetadata } from "@/lib/page-metadata";
+
+export const metadata = pageMetadata({
+  title: "About",
+  description:
+    "About Ishqnama and Noor e Imaan, the Urdu tafseer of the Holy Quran by Hazrath Peer-o-Murshid Syed Meeranji Abid Khundmiri Sahib, brought to readers by Mahdavia Data Management Systems.",
+  path: "/about/",
+});
 
 export default function AboutPage() {
   return (

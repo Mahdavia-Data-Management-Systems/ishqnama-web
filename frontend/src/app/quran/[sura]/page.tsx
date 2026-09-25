@@ -1,12 +1,23 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SuraHeader from "@/components/scripture/sura-header";
 import { suras } from "@/data/suras";
 import SuraReaderLoader from "./sura-reader-loader";
+import { suraMetadata } from "@/lib/page-metadata";
 
 export function generateStaticParams() {
   return Array.from({ length: 114 }, (_, i) => ({
     sura: String(i + 1),
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ sura: string }>;
+}): Promise<Metadata> {
+  const { sura } = await params;
+  return suraMetadata(parseInt(sura, 10));
 }
 
 export default async function SuraReaderPage({

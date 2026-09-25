@@ -1,10 +1,21 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import JuzReaderLoader from "./juz-reader-loader";
+import { juzMetadata } from "@/lib/page-metadata";
 
 export function generateStaticParams() {
   return Array.from({ length: 30 }, (_, i) => ({
     juz: String(i + 1),
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ juz: string }>;
+}): Promise<Metadata> {
+  const { juz } = await params;
+  return juzMetadata(parseInt(juz, 10));
 }
 
 export default async function JuzReaderPage({

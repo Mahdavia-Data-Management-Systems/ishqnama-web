@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { suras } from "@/data/suras";
 import { RUKU_COUNTS_BY_SURA } from "@/data/rukus";
 import SuraRukuReaderLoader from "./sura-ruku-reader-loader";
+import { suraRukuMetadata } from "@/lib/page-metadata";
 
 export function generateStaticParams() {
   const params: { sura: string; rankInChapter: string }[] = [];
@@ -11,6 +13,16 @@ export function generateStaticParams() {
     }
   }
   return params;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ sura: string; rankInChapter: string }>;
+}): Promise<Metadata> {
+  const { sura, rankInChapter } = await params;
+  const suraNumber = parseInt(sura, 10);
+  return suraRukuMetadata(suraNumber, parseInt(rankInChapter, 10), RUKU_COUNTS_BY_SURA[suraNumber]);
 }
 
 export default async function SuraRukuPage({

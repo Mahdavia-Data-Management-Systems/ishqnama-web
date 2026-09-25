@@ -3,6 +3,7 @@ import { EB_Garamond, Source_Sans_3, Noto_Serif, Noto_Serif_Devanagari } from "n
 import "./globals.css";
 import AppShell from "@/components/app-shell";
 import { pwaManifestScript } from "@/lib/pwa-manifest";
+import { pageMetadata, siteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/page-metadata";
 
 const ebGaramond = EB_Garamond({
   subsets: ["latin"],
@@ -40,8 +41,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Ishqnama",
-  description: "Ishqnama — Quranic verses, translations and explanations",
+  // Resolves the relative og:url and og:image of every page to absolute URLs, which link
+  // previews need. See src/lib/page-metadata.ts.
+  metadataBase: siteUrl(),
+  applicationName: SITE_NAME,
+  // The home page's tags; every other page sets its own through pageMetadata().
+  ...pageMetadata({ description: SITE_DESCRIPTION, path: "/" }),
   icons: { icon: "/logo-ishqnama.svg" },
   manifest: "/manifest.json",
 };

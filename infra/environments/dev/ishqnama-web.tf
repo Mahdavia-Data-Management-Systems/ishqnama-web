@@ -13,6 +13,8 @@ module "swa" {
     # Minimal API on Container Apps. Read by deploy-frontend.yml at build time, so a change here
     # takes effect on the next frontend deploy (ci.yml runs it after infra).
     NEXT_PUBLIC_API_URL = "${local.api_url}/api"
+    # Origin that link previews (og:image, og:url) are built from; crawlers need absolute URLs.
+    NEXT_PUBLIC_SITE_URL = "https://dev.ishqnama.com"
   }
 }
 

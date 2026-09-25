@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RUKU_RANGES_BY_JUZ } from "@/data/rukus";
 import JuzRukuReaderLoader from "./juz-ruku-reader-loader";
+import { juzRukuMetadata } from "@/lib/page-metadata";
 
 export function generateStaticParams() {
   const params: { juz: string; rankInJuz: string }[] = [];
@@ -10,6 +12,15 @@ export function generateStaticParams() {
     }
   }
   return params;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ juz: string; rankInJuz: string }>;
+}): Promise<Metadata> {
+  const { juz, rankInJuz } = await params;
+  return juzRukuMetadata(parseInt(juz, 10), parseInt(rankInJuz, 10));
 }
 
 export default async function JuzRukuPage({
