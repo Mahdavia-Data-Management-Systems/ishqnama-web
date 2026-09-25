@@ -8,24 +8,21 @@ import type { AccountInfo, RedirectRequest } from "@azure/msal-browser";
  * Entra resolves it to the user but then labels them on its page with the principal name,
  * `<guid>@<tenant>.onmicrosoft.com`, which no reader recognises. MSAL's order of preference is
  * that claim, then `sid` (only with prompt=none), then an explicit `loginHint`, then the
- * account username, and it deliberately skips the opaque claim when `domainHint` is set.
+ * account username.
  *
- * So for readers who signed in through a social provider (the ID token's `idp` claim), this
- * sets `domainHint`, which makes External ID skip its own page and send them straight to that
- * provider ("issuer acceleration"), and `loginHint` with their email, which then reaches the
- * provider and preselects their account.
+ * So when the ID token has an email, the request carries it as `loginHint` and leaves `account`
+ * out: MSAL then has no account to read the opaque claim from, and skips its active-account
+ * lookup because `loginHint` is set. Entra looks the reader up by that email and, for readers who
+ * signed in through Google or Facebook, goes straight to that provider without showing its own
+ * page; local email accounts see their address on it. Without an email the account stays, as the
+ * least-bad hint.
  *
- * For other readers (local email accounts) with an email, the request leaves `account` out:
- * MSAL then has no account to read the opaque claim from, skips its active-account lookup
- * because `loginHint` is set, and sends the email as `login_hint`, so Entra's page shows the
- * address the reader signed up with. Without an email the account stays, as the least-bad hint.
+ * The request never sets `domainHint`. In this tenant `domain_hint=google` on its own fails with
+ * AADSTS90023 ("'google' '' pair is not an external identity provider"), and together with the
+ * email `login_hint` it makes Entra answer every sign-in Google posts back with a redirect to
+ * Google again, about 20 times, until it stops with AADSTS50196 (request loop). The email alone
+ * already reaches the right provider, for Facebook too.
  */
-
-/** External ID `domain_hint` values by the `idp` claim each provider the tenant federates with produces. */
-const DOMAIN_HINT_BY_IDP: Record<string, string> = {
-  "google.com": "google",
-  "facebook.com": "facebook",
-};
 
 function isEmail(value: unknown): value is string {
   return typeof value === "string" && value.includes("@") && !value.endsWith(".onmicrosoft.com");
@@ -40,19 +37,7 @@ export function emailHintFor(account: AccountInfo): string | undefined {
   return candidates.find(isEmail);
 }
 
-/** The External ID `domain_hint` for the provider the reader signed in with, if it is a social one. */
-export function domainHintFor(account: AccountInfo): string | undefined {
-  const idp = account.idTokenClaims?.idp;
-  return typeof idp === "string" ? DOMAIN_HINT_BY_IDP[idp.toLowerCase()] : undefined;
-}
-
 export function interactiveRequestFor(account: AccountInfo, scopes: string[]): RedirectRequest {
   const loginHint = emailHintFor(account);
-  const domainHint = domainHintFor(account);
-  if (domainHint) {
-    const request: RedirectRequest = { scopes, account, domainHint };
-    if (loginHint) request.loginHint = loginHint;
-    return request;
-  }
   return loginHint ? { scopes, loginHint } : { scopes, account };
 }

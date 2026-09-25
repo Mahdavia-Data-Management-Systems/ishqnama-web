@@ -43,24 +43,12 @@ describe("interactiveRequestFor", () => {
     expect(interactiveRequestFor(acc, scopes).loginHint).toBeUndefined();
   });
 
-  it("adds domain_hint=google for a reader who signed in with Google", () => {
-    const acc = account({ idp: "google.com", email: "reader@gmail.com" });
-    expect(interactiveRequestFor(acc, scopes)).toEqual({
-      scopes,
-      account: acc,
-      loginHint: "reader@gmail.com",
-      domainHint: "google",
-    });
-  });
-
-  it("adds domain_hint=facebook for a reader who signed in with Facebook", () => {
-    expect(interactiveRequestFor(account({ idp: "facebook.com" }), scopes).domainHint).toBe("facebook");
-  });
-
-  it("leaves domain_hint out for local accounts and unknown providers", () => {
-    expect(interactiveRequestFor(account({ idp: "https://login.microsoftonline.com/t/v2.0" }), scopes).domainHint)
-      .toBeUndefined();
-    expect(interactiveRequestFor(account({ idp: "apple.com" }), scopes).domainHint).toBeUndefined();
-    expect(interactiveRequestFor(account({ email: "r@example.com" }), scopes).domainHint).toBeUndefined();
+  it("sends social readers only their email, never a domain hint (domain_hint=google makes Entra loop)", () => {
+    for (const idp of ["google.com", "facebook.com"]) {
+      const acc = account({ idp, email: "reader@gmail.com", login_hint: "O.opaque" });
+      const request = interactiveRequestFor(acc, scopes);
+      expect(request).toEqual({ scopes, loginHint: "reader@gmail.com" });
+      expect(request.domainHint).toBeUndefined();
+    }
   });
 });

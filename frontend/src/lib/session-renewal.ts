@@ -89,8 +89,8 @@ export async function recoverExpiredSession(
   redirectStarted = true;
   writeMarker(now);
   // MSAL records the current URL and the redirect bridge navigates back to it afterwards. The
-  // request carries the reader's email and, for social sign-ins, the provider's domain hint, so
-  // Entra shows an address they recognise (or skips its page) rather than the GUID principal name.
+  // request carries the reader's email, so Entra shows an address they recognise (or, for social
+  // sign-ins, skips its page and goes straight to the provider) rather than the GUID principal name.
   instance.acquireTokenRedirect(interactiveRequestFor(account, scopes)).catch((err: unknown) => {
     // Typically interaction_in_progress when another redirect has already begun. The flag stays
     // set so this page load does not keep retrying; the next load starts afresh.

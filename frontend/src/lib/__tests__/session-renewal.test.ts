@@ -36,16 +36,11 @@ describe("recoverExpiredSession", () => {
     expect(instance.clearCache).not.toHaveBeenCalled();
   });
 
-  it("carries the reader's email and provider hints from the cached token", async () => {
+  it("carries the reader's email from the cached token, without a domain hint", async () => {
     const instance = makeInstance();
     const google = { ...account, idTokenClaims: { idp: "google.com", email: "reader@gmail.com" } } as AccountInfo;
     await recoverExpiredSession(instance, google, scopes, 1_000);
-    expect(instance.acquireTokenRedirect).toHaveBeenCalledWith({
-      scopes,
-      account: google,
-      loginHint: "reader@gmail.com",
-      domainHint: "google",
-    });
+    expect(instance.acquireTokenRedirect).toHaveBeenCalledWith({ scopes, loginHint: "reader@gmail.com" });
   });
 
   it("does not start a second redirect for parallel requests in the same page load", async () => {
