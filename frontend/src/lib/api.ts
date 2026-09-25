@@ -8,7 +8,6 @@ import type {
   ChapterDto,
   JuzDto,
   PagedResponse,
-  RukuDto,
   SearchResultDto,
   TranslationDto,
   VerseDto,
@@ -95,16 +94,6 @@ export function getJuzVerses(
 }
 
 // --- Rukus ---
-
-export function getRukus(
-  opts?: { chapterNum?: number; juzNum?: number },
-  signal?: AbortSignal,
-) {
-  return apiFetch<RukuDto[]>("/rukus", {
-    params: { chapterNum: opts?.chapterNum, juzNum: opts?.juzNum },
-    signal,
-  });
-}
 
 export function getRukuVerses(
   id: number,

@@ -16,7 +16,7 @@ import styles from "./global-loading-indicator.module.css";
  *  - nothing is painted unless requests have been pending for SHOW_DELAY_MS;
  *  - once shown it stays for at least MIN_VISIBLE_MS;
  *  - after the last request settles it lingers LINGER_MS before fading, which
- *    bridges the reader's chained calls (verse pages, then rukus);
+ *    bridges the reader's chained verse-page calls;
  *  - a request that starts during the linger or the fade brings it straight
  *    back without a fresh delay;
  *  - while the readiness store says the API is warming or unreachable the

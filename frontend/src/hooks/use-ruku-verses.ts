@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getRukus, getRukuVerses } from "@/lib/api";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getRukuVerses } from "@/lib/api";
 import { getTranslationId } from "@/lib/translation-map";
-import type { RukuDto } from "@/types/api";
+import { rukusInChapter, rukusInJuz } from "@/data/rukus";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 import { toDisplayVerse, type DisplayVerse } from "@/hooks/use-chapter-verses";
 
@@ -18,44 +18,37 @@ export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
   const rankInChapter = isChapter ? lookup.rankInChapter : undefined;
   const rankInJuz = isChapter ? undefined : lookup.rankInJuz;
 
-  const [ruku, setRuku] = useState<RukuDto | null>(null);
+  // The ruku list is static data, so the rukuId resolves without a request
+  const ruku = useMemo(
+    () =>
+      (chapterNum !== undefined
+        ? rukusInChapter(chapterNum).find((r) => r.rankInChapter === rankInChapter)
+        : rukusInJuz(juzNum!).find((r) => r.rankInJuz === rankInJuz)) ?? null,
+    [chapterNum, juzNum, rankInChapter, rankInJuz],
+  );
+
   const [verses, setVerses] = useState<DisplayVerse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    if (!ruku) {
+      setError("Ruku not found");
+      setLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
     const signal = controller.signal;
 
-    async function fetch() {
+    async function fetch(rukuId: number) {
       setLoading(true);
       setError(null);
 
       try {
-        // Step 1: resolve rukuId via getRukus with chapter or juz filter
-        const rukus = await getRukus(
-          { chapterNum, juzNum },
-          signal,
-        );
-
-        const found = rukus.find((r) =>
-          rankInChapter !== undefined
-            ? r.rankInChapter === rankInChapter
-            : r.rankInJuz === rankInJuz,
-        );
-
-        if (!found) {
-          setError("Ruku not found");
-          setLoading(false);
-          return;
-        }
-
-        setRuku(found);
-
-        // Step 2: fetch verses for this ruku
         const translationId = getTranslationId(lang);
-        const dtos = await getRukuVerses(found.rukuId, translationId, signal);
+        const dtos = await getRukuVerses(rukuId, translationId, signal);
 
         if (!signal.aborted) {
           setVerses(dtos.map(toDisplayVerse));
@@ -68,9 +61,9 @@ export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
       }
     }
 
-    fetch();
+    fetch(ruku.rukuId);
     return () => controller.abort();
-  }, [chapterNum, juzNum, rankInChapter, rankInJuz, lang, retryCount]);
+  }, [ruku, lang, retryCount]);
 
   const retry = useCallback(() => setRetryCount((c) => c + 1), []);
 

@@ -18,8 +18,7 @@ import { useBookmarks } from "@/context/bookmarks-context";
 import { useSignInGate } from "@/context/sign-in-prompt-context";
 import { useApiReadiness } from "@/lib/api-readiness";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
-import type { RukuDto } from "@/types/api";
-import { getRukus } from "@/lib/api";
+import { RUKU_BY_ID } from "@/data/rukus";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
@@ -134,24 +133,6 @@ export default function QuranReaderClient({
     }
     return ends;
   }, [verses]);
-
-  // Fetch ruku metadata for all chapters in this view
-  const [rukuMap, setRukuMap] = useState<Map<number, RukuDto>>(new Map());
-  useEffect(() => {
-    if (chapters.size === 0) return;
-    const controller = new AbortController();
-    (async () => {
-      const map = new Map<number, RukuDto>();
-      for (const ch of chapters) {
-        try {
-          const rukus = await getRukus({ chapterNum: ch }, controller.signal);
-          for (const r of rukus) map.set(r.rukuId, r);
-        } catch { /* abort or network error — graceful degrade */ }
-      }
-      if (!controller.signal.aborted) setRukuMap(map);
-    })();
-    return () => controller.abort();
-  }, [chapters]);
 
   const highlightQuery = searchParams.get("highlight") ?? undefined;
 
@@ -272,7 +253,7 @@ export default function QuranReaderClient({
                       isRukuEnd={rukuEndVerses.has(bookmarkKey)}
                       hasSajdah={verse.hasSajdah}
                       rukuId={verse.rukuId}
-                      rukuInfo={rukuMap.get(verse.rukuId)}
+                      rukuInfo={RUKU_BY_ID.get(verse.rukuId)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number)}
                       highlightQuery={highlightQuery}
@@ -360,7 +341,7 @@ export default function QuranReaderClient({
                           <AyahMarkerContainer variant="floated">
                             {verse.hasSajdah && <SajdahMark />}
                             {rukuEndVerses.has(verseKey) && (() => {
-                              const ri = rukuMap.get(verse.rukuId);
+                              const ri = RUKU_BY_ID.get(verse.rukuId);
                               return (
                                 <RukuMark
                                   rukuId={verse.rukuId}
@@ -506,7 +487,7 @@ export default function QuranReaderClient({
           chapter={shareTarget.chapter}
           verse={shareTarget.verse}
           translation={sharedTranslation}
-          ruku={sharedVerse ? rukuMap.get(sharedVerse.rukuId) : undefined}
+          ruku={sharedVerse ? RUKU_BY_ID.get(sharedVerse.rukuId) : undefined}
         />
       )}
 
