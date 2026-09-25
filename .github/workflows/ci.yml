@@ -33,7 +33,7 @@ jobs:
       # deepens the history itself as far as it needs to reach the previous commit.
       - uses: actions/checkout@v4
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
