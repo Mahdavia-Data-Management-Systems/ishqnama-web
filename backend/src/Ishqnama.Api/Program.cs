@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Ishqnama.Api.Contracts;
 using Ishqnama.Api.Endpoints;
+using Ishqnama.Api.Hosting;
 using Ishqnama.Api.Json;
 using Ishqnama.Api.Middleware;
 using Ishqnama.Application.Services;
@@ -10,6 +11,8 @@ using Ishqnama.Infrastructure;
 using Ishqnama.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,7 +57,11 @@ var allowedOrigins = (configuration["Cors:AllowedOrigins"] ?? string.Empty)
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(allowedOrigins)
     .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    .WithHeaders("Content-Type", "Accept", "Authorization")));
+    .WithHeaders("Content-Type", "Accept", "Authorization")
+    // The Authorization header makes every signed-in call preflighted; without a max-age browsers
+    // re-send the OPTIONS request almost every time (Chrome caches it for 5 s), doubling the round
+    // trips. Two hours is Chrome's cap; Firefox allows up to 24 h.
+    .SetPreflightMaxAge(TimeSpan.FromHours(2))));
 
 // Auth — Entra ID External (CIAM) bearer tokens issued for the API app registration.
 // Authentication runs on every request; only routes marked RequireAuthorization() challenge, so a
@@ -94,6 +101,14 @@ builder.Services
         };
     });
 builder.Services.AddAuthorization();
+
+// Load token signing keys and connect to Cosmos DB at startup rather than on the first signed-in request
+builder.Services.AddHostedService(sp => new WarmUpService(
+    sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>(),
+    sp.GetService<CosmosClient>(),
+    cosmosDatabase,
+    cosmosContainer,
+    sp.GetRequiredService<ILogger<WarmUpService>>()));
 
 // Response compression — the Functions platform did this for free; Kestrel does not
 builder.Services.AddResponseCompression(options =>

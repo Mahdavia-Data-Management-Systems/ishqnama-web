@@ -93,7 +93,9 @@ JWT bearer auth protects `/api/user/*` and `/api/search`. Other Quran endpoints 
 3. `ExceptionHandlingMiddleware` — Catches unhandled exceptions, returns 500 JSON
 4. `CacheHeaderMiddleware` — Sets `Cache-Control: public, max-age=2592000, immutable` + ETag; 304 short-circuit on `If-None-Match` match
 
-**API** — order: `UseResponseCompression` → `UseExceptionHandler` (`GlobalExceptionHandler`, same 500 body) → `UseCors` (default policy from `Cors:AllowedOrigins`) → `UseAuthentication` → `UseAuthorization` → `CacheHeaderMiddleware` → endpoints. The cache middleware applies to `/api/*` except `/api/user/*` and `/api/healthz`; `/health/live` and `/health/ready` sit outside `/api` and are never cached.
+**API** — order: `UseResponseCompression` → `UseExceptionHandler` (`GlobalExceptionHandler`, same 500 body) → `UseCors` (default policy from `Cors:AllowedOrigins`) → `UseAuthentication` → `UseAuthorization` → `CacheHeaderMiddleware` → endpoints. The cache middleware applies to `/api/*` except `/api/user/*` and `/api/healthz`; `/health/live` and `/health/ready` sit outside `/api` and are never cached. The CORS policy sets `Access-Control-Max-Age: 7200` (Chrome's cap), because the `Authorization` header preflights every signed-in call and without it browsers re-send the `OPTIONS` almost every time.
+
+**API warm-up** — `Hosting/WarmUpService` (a `BackgroundService`, so it never delays startup or `/api/healthz`) fetches the Entra discovery document and signing keys through JwtBearer's own `ConfigurationManager`, and reads a nonexistent Cosmos document (`ReadItemStreamAsync`, ~1 RU) to load the client's metadata and open its connection. Both are otherwise lazy and would land on the first settings/bookmarks request after every cold start, which the keep-alive ping does not trigger. Best effort: failures are logged as warnings.
 
 ## Caching
 
