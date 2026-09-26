@@ -60,13 +60,3 @@
   font-size: var(--text-sm);
   padding: var(--space-8) 0;
 }
-
-@media (max-width: 480px) {
-  .filters [data-seg-content="full"] {
-    display: none;
-  }
-
-  .filters [data-seg-content="short"] {
-    display: inline;
-  }
-}

@@ -14,15 +14,15 @@ import type { SearchResultDto } from "@/types/api";
 import styles from "./page.module.css";
 
 const tabOptions = [
-  { label: "Both", value: "both", shortLabel: "Both", ariaLabel: "Both" },
-  { label: "Tarjuma", value: "tarjuma", shortLabel: "Trjm", ariaLabel: "Tarjuma" },
-  { label: "Tafseer", value: "tafseer", shortLabel: "Tfsr", ariaLabel: "Tafseer" },
+  { label: "Both", value: "both", ariaLabel: "Both" },
+  { label: "Tarjuma", value: "tarjuma", ariaLabel: "Tarjuma" },
+  { label: "Tafseer", value: "tafseer", ariaLabel: "Tafseer" },
 ];
 
 const langOptions = [
-  { label: "English", value: "english", shortLabel: "En", ariaLabel: "English" },
-  { label: "हिन्दी", value: "hindi", shortLabel: "हि", ariaLabel: "हिन्दी" },
-  { label: "اردو", value: "urdu", shortLabel: "ار", ariaLabel: "اردو" },
+  { label: "English", value: "english", ariaLabel: "English" },
+  { label: "हिन्दी", value: "hindi", ariaLabel: "हिन्दी" },
+  { label: "اردو", value: "urdu", ariaLabel: "اردو" },
 ];
 
 const placeholders: Record<string, string> = {
