@@ -19,10 +19,14 @@ import { quranProgress } from "@/lib/quran-progress";
 import { suras } from "@/data/suras";
 import styles from "./page.module.css";
 
+// Commonly read chapters: Al-Fatiha, Ya-Sin, Al-Kahf, Ar-Rahman, Al-Mulk,
+// Al-Ikhlas, Al-Fath, Al-Waqi'ah, Al-Qadr.
+const POPULAR_SURA_NUMBERS = [1, 36, 18, 55, 67, 112, 48, 56, 97];
+const popularSuras = POPULAR_SURA_NUMBERS.map((n) => suras[n - 1]);
+
 export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
-  const previewSuras = [1, 36, 18, 55, 67, 112, 48, 56, 97].map((n) => suras[n - 1]);
   const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
   const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -115,7 +119,7 @@ export default function Home() {
             action={{ label: "View all 114", onClick: () => router.push("/quran/") }}
           />
           <div className={styles.suraList}>
-            {previewSuras.map((sura) => (
+            {popularSuras.map((sura) => (
               <SuraListItem
                 key={sura.number}
                 number={sura.number}
