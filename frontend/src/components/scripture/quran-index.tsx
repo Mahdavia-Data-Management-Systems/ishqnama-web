@@ -9,6 +9,7 @@ import JuzListItem from "@/components/scripture/juz-list-item";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { suras } from "@/data/suras";
 import { apiFetchWithOptionalAuth } from "@/lib/api-client";
+import { useAppBarBottom } from "@/lib/app-bar-offset";
 import type { JuzDto } from "@/types/api";
 import styles from "./quran-index.module.css";
 
@@ -35,6 +36,8 @@ export default function QuranIndex() {
   const [juzData, setJuzData] = useState<JuzDto[]>([]);
   // Ruku numbers follow the reader's language: Urdu until a signed-in reader's settings say otherwise.
   const { lang } = useReaderSettings();
+  // The heading and toolbar stick under the app bar, then at the viewport top once the bar has scrolled away.
+  const barBottom = useAppBarBottom();
 
   useEffect(() => {
     if (view !== "juz" || juzData.length > 0) return;
@@ -71,15 +74,20 @@ export default function QuranIndex() {
 
   return (
     <>
-      <SectionHeading eyebrow="The Holy Quran" title={view === "sura" ? "All chapters" : "All Ajza"} />
+      <div
+        className={styles.stickyHeader}
+        style={{ top: barBottom !== null ? `${barBottom}px` : undefined }}
+      >
+        <SectionHeading eyebrow="The Holy Quran" title={view === "sura" ? "All chapters" : "All Ajza"} />
 
-      <div className={styles.toolbar}>
-        <SearchField
-          value={search}
-          onChange={setSearch}
-          placeholder={view === "sura" ? "Search chapters" : "Search juz"}
-        />
-        <SegmentedControl options={viewOptions} value={view} onChange={setView} />
+        <div className={styles.toolbar}>
+          <SearchField
+            value={search}
+            onChange={setSearch}
+            placeholder={view === "sura" ? "Search chapters" : "Search juz"}
+          />
+          <SegmentedControl options={viewOptions} value={view} onChange={setView} />
+        </div>
       </div>
 
       {view === "sura" ? (
