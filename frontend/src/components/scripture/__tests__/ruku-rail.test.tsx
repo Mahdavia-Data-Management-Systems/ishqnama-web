@@ -4,7 +4,12 @@ import SuraListItem from "@/components/scripture/sura-list-item";
 import JuzListItem from "@/components/scripture/juz-list-item";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 
-function renderSura(number: number, name: string, lang: TranslationLang = "urdu") {
+function renderSura(
+  number: number,
+  name: string,
+  lang: TranslationLang = "urdu",
+  showRukuRail = true,
+) {
   render(
     <SuraListItem
       number={number}
@@ -13,6 +18,23 @@ function renderSura(number: number, name: string, lang: TranslationLang = "urdu"
       revelationType="Madani"
       verseCount={0}
       lang={lang}
+      showRukuRail={showRukuRail}
+    />,
+  );
+}
+
+function renderJuz(juzNumber: number, showRukuRail = true) {
+  render(
+    <JuzListItem
+      juzNumber={juzNumber}
+      arabicName=""
+      transliteratedName="Alif Lam Meem"
+      startChapter={1}
+      startVerse={1}
+      endChapter={2}
+      endVerse={141}
+      lang="urdu"
+      showRukuRail={showRukuRail}
     />,
   );
 }
@@ -52,23 +74,24 @@ describe("Ruku rails in the Quran index", () => {
   });
 
   it("links a juz's rukus by their rank in the juz and names their chapter", () => {
-    render(
-      <JuzListItem
-        juzNumber={1}
-        arabicName=""
-        transliteratedName="Alif Lam Meem"
-        startChapter={1}
-        startVerse={1}
-        endChapter={2}
-        endVerse={141}
-        lang="urdu"
-      />,
-    );
+    renderJuz(1);
     const links = rukuLinks("Rukus of juz 1");
     expect(hrefOf(links[0])).toBe("/quran/juz/1/ruku/0");
     expect(links[0].getAttribute("aria-label")).toBe("al-Fātiḥah, ruku 1, 7 verses");
     expect(hrefOf(links[1])).toBe("/quran/juz/1/ruku/1");
     expect(links[1].getAttribute("aria-label")).toBe("al-Baqarah, ruku 1, 7 verses");
+  });
+
+  it("hides a chapter's rail when the reader turns it off", () => {
+    renderSura(2, "al-Baqarah", "urdu", false);
+    expect(screen.queryByRole("list")).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("hides a juz's rail when the reader turns it off", () => {
+    renderJuz(1, false);
+    expect(screen.queryByRole("list")).toBeNull();
+    expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 
   it.each([

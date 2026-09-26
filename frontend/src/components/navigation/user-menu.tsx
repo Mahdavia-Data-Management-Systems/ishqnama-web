@@ -99,7 +99,7 @@ export default function UserMenu() {
           </button>
           <button onClick={() => { setOpen(false); openSettings(); }} className={styles.menuItem}>
             <Icon name="settings" size={18} />
-            <span>Reading settings</span>
+            <span>Settings</span>
           </button>
           <hr className={styles.divider} />
           <button

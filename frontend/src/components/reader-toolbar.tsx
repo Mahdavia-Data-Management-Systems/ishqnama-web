@@ -99,7 +99,7 @@ export default function ReaderToolbar({
 
         <div className={styles.navSide}>
           {/* Settings persist for signed-in readers; anonymous readers get the sign-in prompt. */}
-          <button onClick={() => gateSettings(openSettings)} className={styles.settingsBtn} aria-label="Settings">
+          <button onClick={() => gateSettings(() => openSettings("reader"))} className={styles.settingsBtn} aria-label="Settings">
             <Icon name="settings" size={18} />
           </button>
           {next ? (

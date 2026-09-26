@@ -35,7 +35,8 @@ export default function QuranIndex() {
   const [view, setView] = useState("sura");
   const [juzData, setJuzData] = useState<JuzDto[]>([]);
   // Ruku numbers follow the reader's language: Urdu until a signed-in reader's settings say otherwise.
-  const { lang } = useReaderSettings();
+  // Ruku rails follow the General settings; anonymous readers get the defaults (juz on, sura off).
+  const { lang, showSuraRukuMarks, showJuzRukuMarks } = useReaderSettings();
   // The heading and toolbar stick under the app bar, then at the viewport top once the bar has scrolled away.
   const barBottom = useAppBarBottom();
 
@@ -102,6 +103,7 @@ export default function QuranIndex() {
               revelationType={sura.revelationType}
               verseCount={sura.verseCount}
               lang={lang}
+              showRukuRail={showSuraRukuMarks}
             />
           ))}
           {filteredSuras.length === 0 && (
@@ -121,6 +123,7 @@ export default function QuranIndex() {
               endChapter={juz.endChapter ?? 0}
               endVerse={juz.endVerse ?? 0}
               lang={lang}
+              showRukuRail={showJuzRukuMarks}
             />
           ))}
           {filteredJuz.length === 0 && juzData.length > 0 && (
