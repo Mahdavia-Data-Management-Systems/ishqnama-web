@@ -107,21 +107,16 @@
   margin-bottom: var(--space-12);
 }
 
-.bookmarkGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-4);
-}
-
 .shelfCaption {
   margin: var(--space-3) 0 0;
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
-/* Bleeds to the page edges so cards scroll out of view instead of being
+/* A horizontal rail of cards, shared by the bookmarks and the popular chapters.
+   It bleeds to the page edges so cards scroll out of view instead of being
    clipped at the container padding; the padding keeps the first card aligned. */
-.suraRail {
+.rail {
   display: flex;
   gap: var(--space-3);
   margin: 0 calc(-1 * var(--space-6));
@@ -131,23 +126,30 @@
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--space-6);
-  /* No scrollbar: touch swipes it, and a mouse wheel scrolls it through
-     useWheelToHorizontal before handing back to the page. */
+  /* No scrollbar: touch swipes it, a mouse drags it (useDragToScroll), and on
+     the chapter rail a mouse wheel scrolls it (useWheelToHorizontal). */
   scrollbar-width: none;
 }
 
-.suraRail::-webkit-scrollbar {
+.rail::-webkit-scrollbar {
   display: none;
 }
 
 /* Set by useDragToScroll while a mouse drags the rail. */
-.suraRail[data-dragging],
-.suraRail[data-dragging] * {
+.rail[data-dragging],
+.rail[data-dragging] * {
   cursor: grabbing;
   user-select: none;
 }
 
-.suraRailItem {
+.railItem {
+  display: flex;
   flex: 0 0 160px;
   scroll-snap-align: start;
+}
+
+/* Tiles fill their slot so a row of mixed tiles lines up. */
+.railItem > * {
+  flex: 1;
+  min-width: 0;
 }

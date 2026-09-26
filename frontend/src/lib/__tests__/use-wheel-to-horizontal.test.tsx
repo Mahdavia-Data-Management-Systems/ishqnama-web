@@ -1,12 +1,12 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { useWheelToHorizontal } from "@/lib/use-wheel-to-horizontal";
 
 function Rail() {
-  const ref = useRef<HTMLDivElement>(null);
-  useWheelToHorizontal(ref);
-  return <div ref={ref} data-testid="rail" />;
+  const [el, setEl] = useState<HTMLDivElement | null>(null);
+  useWheelToHorizontal(el);
+  return <div ref={setEl} data-testid="rail" />;
 }
 
 function setup(scrollLeft: number) {

@@ -34,9 +34,11 @@ export default function Home() {
   const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
-  const suraRailRef = useRef<HTMLUListElement>(null);
-  useWheelToHorizontal(suraRailRef);
-  useDragToScroll(suraRailRef);
+  const [suraRail, setSuraRail] = useState<HTMLUListElement | null>(null);
+  const [bookmarkRail, setBookmarkRail] = useState<HTMLUListElement | null>(null);
+  useWheelToHorizontal(suraRail);
+  useDragToScroll(suraRail);
+  useDragToScroll(bookmarkRail);
 
   const showSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
   const shelfCaption = !showSkeletons
@@ -96,18 +98,22 @@ export default function Home() {
               title="Bookmarks"
               action={{ label: "View all", onClick: () => router.push("/saved/") }}
             />
-            <div className={styles.bookmarkGrid}>
+            <ul ref={setBookmarkRail} className={styles.rail}>
               {showSkeletons && (
                 <>
-                  <BookmarkTileSkeleton />
-                  <BookmarkTileSkeleton />
+                  <li className={styles.railItem}><BookmarkTileSkeleton /></li>
+                  <li className={styles.railItem}><BookmarkTileSkeleton /></li>
                 </>
               )}
               {customBookmarks.map((b) => (
-                <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
+                <li key={b.slug} className={styles.railItem}>
+                  <BookmarkTile bookmark={b} onDelete={removeBookmark} />
+                </li>
               ))}
-              <AddBookmarkTile onClick={() => setDialogOpen(true)} />
-            </div>
+              <li className={styles.railItem}>
+                <AddBookmarkTile onClick={() => setDialogOpen(true)} />
+              </li>
+            </ul>
             {shelfCaption && <p className={styles.shelfCaption}>{shelfCaption}</p>}
             <CreateBookmarkDialog
               isOpen={dialogOpen}
@@ -123,9 +129,9 @@ export default function Home() {
             eyebrow="Chapters"
             title="Begin reading"
           />
-          <ul ref={suraRailRef} className={styles.suraRail}>
+          <ul ref={setSuraRail} className={styles.rail}>
             {popularSuras.map((sura) => (
-              <li key={sura.number} className={styles.suraRailItem}>
+              <li key={sura.number} className={styles.railItem}>
                 <SuraCard
                   number={sura.number}
                   name={sura.name}

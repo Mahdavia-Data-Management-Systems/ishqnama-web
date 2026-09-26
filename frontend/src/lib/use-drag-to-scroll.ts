@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect } from "react";
 
 const DRAG_THRESHOLD_PX = 5;
 
@@ -11,10 +11,13 @@ const DRAG_THRESHOLD_PX = 5;
  * pen scroll the rail natively. Scroll snapping is suspended during the drag
  * and restored on release, which settles the rail on the nearest card. While
  * dragging, the rail carries data-dragging for cursor and selection styles.
+ *
+ * Takes the element rather than a ref (pass it from a callback ref held in
+ * state), so it attaches to a rail that only renders later, such as the
+ * signed-in reader's bookmarks.
  */
-export function useDragToScroll(ref: RefObject<HTMLElement | null>) {
+export function useDragToScroll(el: HTMLElement | null) {
   useEffect(() => {
-    const el = ref.current;
     if (!el) return;
     let pointerId: number | null = null;
     let startX = 0;
@@ -81,5 +84,5 @@ export function useDragToScroll(ref: RefObject<HTMLElement | null>) {
       el.style.scrollSnapType = "";
       delete el.dataset.dragging;
     };
-  }, [ref]);
+  }, [el]);
 }

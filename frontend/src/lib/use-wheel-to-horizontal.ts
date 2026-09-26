@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect } from "react";
 
 const LINE_HEIGHT_PX = 16;
 const SNAP_RESTORE_MS = 150;
@@ -13,10 +13,11 @@ const SNAP_RESTORE_MS = 150;
  * the wheel turns, because mandatory snap would pull each small wheel step
  * back to the card it started on, and restored once the wheel rests so the
  * rail settles on a card.
+ *
+ * Takes the element rather than a ref, for the same reason as useDragToScroll.
  */
-export function useWheelToHorizontal(ref: RefObject<HTMLElement | null>) {
+export function useWheelToHorizontal(el: HTMLElement | null) {
   useEffect(() => {
-    const el = ref.current;
     if (!el) return;
     let restoreTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -44,5 +45,5 @@ export function useWheelToHorizontal(ref: RefObject<HTMLElement | null>) {
       clearTimeout(restoreTimer);
       el.style.scrollSnapType = "";
     };
-  }, [ref]);
+  }, [el]);
 }

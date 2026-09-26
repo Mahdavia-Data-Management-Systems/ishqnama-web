@@ -1,13 +1,13 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { useDragToScroll } from "@/lib/use-drag-to-scroll";
 
 function Rail() {
-  const ref = useRef<HTMLDivElement>(null);
-  useDragToScroll(ref);
+  const [el, setEl] = useState<HTMLDivElement | null>(null);
+  useDragToScroll(el);
   return (
-    <div ref={ref} data-testid="rail">
+    <div ref={setEl} data-testid="rail">
       <a href="#card">card</a>
     </div>
   );
