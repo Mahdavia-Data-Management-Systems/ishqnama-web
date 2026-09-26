@@ -7,7 +7,7 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import BookModel from "@/components/book-model/book-model";
 import ContinueReadingCard from "@/components/continue-reading-card";
 import SectionHeading from "@/components/navigation/section-heading";
-import SuraListItem from "@/components/scripture/sura-list-item";
+import SuraCard from "@/components/scripture/sura-card";
 import BookmarkTile from "@/components/bookmark-tile";
 import AddBookmarkTile from "@/components/add-bookmark-tile";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
@@ -16,12 +16,14 @@ import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/conf
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useApiReadiness } from "@/lib/api-readiness";
 import { quranProgress } from "@/lib/quran-progress";
+import { useDragToScroll } from "@/lib/use-drag-to-scroll";
+import { useWheelToHorizontal } from "@/lib/use-wheel-to-horizontal";
 import { suras } from "@/data/suras";
 import styles from "./page.module.css";
 
-// Commonly read chapters: Al-Fatiha, Ya-Sin, Al-Kahf, Ar-Rahman, Al-Mulk,
-// Al-Ikhlas, Al-Fath, Al-Waqi'ah, Al-Qadr.
-const POPULAR_SURA_NUMBERS = [1, 36, 18, 55, 67, 112, 48, 56, 97];
+// Commonly read chapters: Ya-Sin, Al-Kahf, Ar-Rahman, Al-Mulk, Al-Ikhlas,
+// Al-Fath, Al-Waqi'ah, Al-Qadr.
+const POPULAR_SURA_NUMBERS = [36, 18, 55, 67, 112, 48, 56, 97];
 const popularSuras = POPULAR_SURA_NUMBERS.map((n) => suras[n - 1]);
 
 export default function Home() {
@@ -31,6 +33,9 @@ export default function Home() {
   const readiness = useApiReadiness();
   const [dialogOpen, setDialogOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const suraRailRef = useRef<HTMLUListElement>(null);
+  useWheelToHorizontal(suraRailRef);
+  useDragToScroll(suraRailRef);
 
   const showSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
   const shelfCaption = !showSkeletons
@@ -118,19 +123,19 @@ export default function Home() {
             title="Begin reading"
             action={{ label: "View all 114", onClick: () => router.push("/quran/") }}
           />
-          <div className={styles.suraList}>
+          <ul ref={suraRailRef} className={styles.suraRail}>
             {popularSuras.map((sura) => (
-              <SuraListItem
-                key={sura.number}
-                number={sura.number}
-                name={sura.name}
-                arabicName={sura.arabicName}
-                urduName={sura.urduName}
-                revelationType={sura.revelationType}
-                verseCount={sura.verseCount}
-              />
+              <li key={sura.number} className={styles.suraRailItem}>
+                <SuraCard
+                  number={sura.number}
+                  name={sura.name}
+                  arabicName={sura.arabicName}
+                  revelationType={sura.revelationType}
+                  verseCount={sura.verseCount}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       </div>
     </main>

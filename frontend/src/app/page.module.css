@@ -119,8 +119,35 @@
   color: var(--text-secondary);
 }
 
-.suraList {
+/* Bleeds to the page edges so cards scroll out of view instead of being
+   clipped at the container padding; the padding keeps the first card aligned. */
+.suraRail {
   display: flex;
-  flex-direction: column;
   gap: var(--space-3);
+  margin: 0 calc(-1 * var(--space-6));
+  padding: var(--space-1) var(--space-6) var(--space-3);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--space-6);
+  /* No scrollbar: touch swipes it, and a mouse wheel scrolls it through
+     useWheelToHorizontal before handing back to the page. */
+  scrollbar-width: none;
+}
+
+.suraRail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Set by useDragToScroll while a mouse drags the rail. */
+.suraRail[data-dragging],
+.suraRail[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.suraRailItem {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
 }
