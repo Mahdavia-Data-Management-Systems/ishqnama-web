@@ -1,7 +1,6 @@
 import { pageMetadata } from "@/lib/page-metadata";
 
-// For /quran/ itself, whose page is a client component and cannot export metadata. The
-// chapter, juz and ruku pages below override it with their own.
+// For /quran/ itself. The chapter, juz and ruku pages below override it with their own.
 export const metadata = pageMetadata({
   title: "The Holy Quran",
   description:

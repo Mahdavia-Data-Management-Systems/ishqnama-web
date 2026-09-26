@@ -7,6 +7,7 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import BookModel from "@/components/book-model/book-model";
 import ContinueReadingCard from "@/components/continue-reading-card";
 import SectionHeading from "@/components/navigation/section-heading";
+import QuranIndex from "@/components/scripture/quran-index";
 import SuraCard from "@/components/scripture/sura-card";
 import BookmarkTile from "@/components/bookmark-tile";
 import AddBookmarkTile from "@/components/add-bookmark-tile";
@@ -121,7 +122,6 @@ export default function Home() {
           <SectionHeading
             eyebrow="Chapters"
             title="Begin reading"
-            action={{ label: "View all 114", onClick: () => router.push("/quran/") }}
           />
           <ul ref={suraRailRef} className={styles.suraRail}>
             {popularSuras.map((sura) => (
@@ -136,6 +136,11 @@ export default function Home() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* Complete index */}
+        <section className={styles.section}>
+          <QuranIndex />
         </section>
       </div>
     </main>
