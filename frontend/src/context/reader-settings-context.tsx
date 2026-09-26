@@ -2,7 +2,10 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { useIsAuthenticated } from "@azure/msal-react";
-import SettingsSheet, { type SettingsSyncStatus } from "@/components/settings-sheet";
+import SettingsSheet, {
+  type SettingsSection,
+  type SettingsSyncStatus,
+} from "@/components/settings-sheet";
 import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
 import { DEFAULT_FONT_SIZE_INDEX } from "@/config/reader-config";
 import { getApiReadiness, onReady, useApiReadiness } from "@/lib/api-readiness";
@@ -28,10 +31,14 @@ import type { UserSettingsDto } from "@/types/user";
 export type SettingsLoadState = "idle" | "loading" | "loaded" | "failed";
 
 export const DEFAULT_SETTINGS: UserSettingsDto = {
-  mode: "verse",
+  // Anonymous readers always read continuously; new signed-in readers start there too.
+  mode: "continuous",
   lang: "urdu",
   fontScale: DEFAULT_FONT_SIZE_INDEX,
-  showTafseer: false,
+  // On for readers with no saved settings; anonymous readers see no tafseer either way (the API strips it).
+  showTafseer: true,
+  showSuraRukuMarks: false,
+  showJuzRukuMarks: true,
 };
 
 const SAVE_DEBOUNCE_MS = 500;
@@ -49,9 +56,12 @@ interface ReaderSettingsContextValue {
   lang: TranslationLang;
   fontScale: number;
   showTafseer: boolean;
+  showSuraRukuMarks: boolean;
+  showJuzRukuMarks: boolean;
   updateSettings: (patch: Partial<UserSettingsDto>) => void;
   settingsOpen: boolean;
-  openSettings: () => void;
+  /** Opens the sheet with every section collapsed, or with `expand` open. */
+  openSettings: (expand?: SettingsSection) => void;
   closeSettings: () => void;
 }
 
@@ -71,6 +81,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
 
   const [settings, setSettings] = useState<UserSettingsDto>(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<SettingsSection | null>(null);
   const [loadState, setLoadStateValue] = useState<SettingsLoadState>("idle");
 
   // Refs mirror state synchronously so callbacks and timers always read the latest values.
@@ -194,6 +205,8 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
       if (patch.lang !== undefined) defined.lang = patch.lang;
       if (patch.fontScale !== undefined) defined.fontScale = patch.fontScale;
       if (patch.showTafseer !== undefined) defined.showTafseer = patch.showTafseer;
+      if (patch.showSuraRukuMarks !== undefined) defined.showSuraRukuMarks = patch.showSuraRukuMarks;
+      if (patch.showJuzRukuMarks !== undefined) defined.showJuzRukuMarks = patch.showJuzRukuMarks;
 
       applySettings({ ...settingsRef.current, ...defined });
 
@@ -207,7 +220,10 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
     [isAuthenticated, applySettings, persistSettings],
   );
 
-  const openSettings = useCallback(() => setSettingsOpen(true), []);
+  const openSettings = useCallback((expand?: SettingsSection) => {
+    setExpandedSection(expand ?? null);
+    setSettingsOpen(true);
+  }, []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
   let syncStatus: SettingsSyncStatus = null;
@@ -217,7 +233,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
 
   const mode = settings.mode as ReadingMode;
   const lang = settings.lang as TranslationLang;
-  const { fontScale, showTafseer } = settings;
+  const { fontScale, showTafseer, showSuraRukuMarks, showJuzRukuMarks } = settings;
 
   return (
     <ReaderSettingsContext.Provider
@@ -226,6 +242,8 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
         lang,
         fontScale,
         showTafseer,
+        showSuraRukuMarks,
+        showJuzRukuMarks,
         updateSettings,
         settingsOpen,
         openSettings,
@@ -237,6 +255,11 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
         <SettingsSheet
           isOpen={settingsOpen}
           onClose={closeSettings}
+          expandedSection={expandedSection}
+          showSuraRukuMarks={showSuraRukuMarks}
+          onSuraRukuMarksChange={(v) => updateSettings({ showSuraRukuMarks: v })}
+          showJuzRukuMarks={showJuzRukuMarks}
+          onJuzRukuMarksChange={(v) => updateSettings({ showJuzRukuMarks: v })}
           mode={mode}
           onModeChange={(m) => updateSettings({ mode: m })}
           lang={lang}

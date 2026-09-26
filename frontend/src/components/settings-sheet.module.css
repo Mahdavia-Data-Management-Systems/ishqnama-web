@@ -72,11 +72,113 @@
   gap: var(--space-6);
 }
 
+/* One collapsible group of related preferences; the sheet will hold more than the reader's. */
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionHeading {
+  margin: 0;
+  border-bottom: 1px solid rgba(0, 68, 70, 0.08);
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: start;
+  cursor: pointer;
+}
+
+.sectionChevron {
+  display: flex;
+  color: var(--text-secondary);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.sectionChevron[data-expanded="true"] {
+  transform: rotate(180deg);
+}
+
+.sectionPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each setting is a row; a hairline separates it from the one above. */
+.sectionPanel > .group {
+  padding-block: var(--space-4);
+}
+
+.sectionPanel > .group + .group {
+  border-top: 1px solid rgba(0, 68, 70, 0.08);
+}
+
+/* `display: flex` would otherwise override the hidden attribute. */
+.sectionPanel[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectionChevron {
+    transition: none;
+  }
+}
+
 .group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-3);
+}
+
+/* Label on the start side, control pulled to the end. On a narrow sheet the control
+   wraps under its label and stays at the end. */
+.inlineGroup {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inlineGroup > :last-child {
+  margin-inline-start: auto;
+}
+
+/* A row's label names the setting, so it reads like the switch labels (ui/switch). */
+.inlineGroup > .label {
+  font-size: var(--text-base);
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+/* A titled group's settings sit a step closer together than separate rows. */
+.titledGroup {
+  gap: var(--space-2);
+}
+
+/* Heads a titled group; muted and small so the settings under it carry the weight. */
+.groupTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+/* A switch spans its row: the label on the start side, the switch pulled to the end. */
+.switchRow {
+  justify-content: space-between;
+  align-self: stretch;
 }
 
 .label {

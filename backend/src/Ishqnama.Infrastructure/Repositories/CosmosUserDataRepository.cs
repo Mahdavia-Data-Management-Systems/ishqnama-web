@@ -24,7 +24,8 @@ public sealed partial class CosmosUserDataRepository(
             var response = await _container.ReadItemAsync<UserSettings>(
                 "settings", new PartitionKey(userId));
             var s = response.Resource;
-            return new UserSettingsDto(s.Mode, s.Lang, s.FontScale, s.ShowTafseer);
+            return new UserSettingsDto(
+                s.Mode, s.Lang, s.FontScale, s.ShowTafseer, s.ShowSuraRukuMarks, s.ShowJuzRukuMarks);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
@@ -42,7 +43,9 @@ public sealed partial class CosmosUserDataRepository(
             Mode = settings.Mode,
             Lang = settings.Lang,
             FontScale = settings.FontScale,
-            ShowTafseer = settings.ShowTafseer
+            ShowTafseer = settings.ShowTafseer,
+            ShowSuraRukuMarks = settings.ShowSuraRukuMarks,
+            ShowJuzRukuMarks = settings.ShowJuzRukuMarks
         };
         await _container.UpsertItemAsync(doc, new PartitionKey(userId));
     }

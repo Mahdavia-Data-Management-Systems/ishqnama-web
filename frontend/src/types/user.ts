@@ -3,6 +3,10 @@ export interface UserSettingsDto {
   lang: string;
   fontScale: number;
   showTafseer: boolean;
+  /** Ruku rails under chapter cards in the Quran index. */
+  showSuraRukuMarks: boolean;
+  /** Ruku rails under juz cards in the Quran index. */
+  showJuzRukuMarks: boolean;
 }
 
 export interface UserBookmarkDto {

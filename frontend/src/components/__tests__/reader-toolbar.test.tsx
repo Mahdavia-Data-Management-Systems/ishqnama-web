@@ -55,6 +55,7 @@ describe("ReaderToolbar settings gear", () => {
     renderToolbar();
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(openSettings).toHaveBeenCalledTimes(1);
+    expect(openSettings).toHaveBeenCalledWith("reader");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

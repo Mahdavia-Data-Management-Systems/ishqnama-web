@@ -13,6 +13,8 @@ interface JuzListItemProps {
   endChapter: number;
   endVerse: number;
   lang: TranslationLang;
+  /** Whether to show the ruku rail (the reader's "For juz" setting). */
+  showRukuRail: boolean;
 }
 
 export default function JuzListItem({
@@ -24,6 +26,7 @@ export default function JuzListItem({
   endChapter,
   endVerse,
   lang,
+  showRukuRail,
 }: JuzListItemProps) {
   return (
     <div className={styles.item}>
@@ -46,13 +49,15 @@ export default function JuzListItem({
         </div>
       </Link>
 
-      <RukuRail
-        rukus={rukusInJuz(juzNumber)}
-        hrefFor={(r) => `/quran/juz/${juzNumber}/ruku/${r.rankInJuz}/`}
-        lang={lang}
-        label={`Rukus of juz ${juzNumber}`}
-        breakAt="chapter"
-      />
+      {showRukuRail && (
+        <RukuRail
+          rukus={rukusInJuz(juzNumber)}
+          hrefFor={(r) => `/quran/juz/${juzNumber}/ruku/${r.rankInJuz}/`}
+          lang={lang}
+          label={`Rukus of juz ${juzNumber}`}
+          breakAt="chapter"
+        />
+      )}
     </div>
   );
 }

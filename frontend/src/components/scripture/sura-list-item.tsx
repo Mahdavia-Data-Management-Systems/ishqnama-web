@@ -13,6 +13,8 @@ interface SuraListItemProps {
   revelationType: "Makki" | "Madani";
   verseCount: number;
   lang: TranslationLang;
+  /** Whether to show the ruku rail (the reader's "For sura" setting). */
+  showRukuRail: boolean;
 }
 
 export default function SuraListItem({
@@ -23,6 +25,7 @@ export default function SuraListItem({
   revelationType,
   verseCount,
   lang,
+  showRukuRail,
 }: SuraListItemProps) {
   const rukus = rukusInChapter(number);
 
@@ -53,7 +56,7 @@ export default function SuraListItem({
         </div>
       </Link>
 
-      {rukus.length > 1 && (
+      {showRukuRail && rukus.length > 1 && (
         <RukuRail
           rukus={rukus}
           hrefFor={(r) => `/quran/${number}/ruku/${r.rankInChapter}/`}

@@ -24,7 +24,14 @@ vi.mock("@/lib/user-api", () => ({
 const mockedGet = vi.mocked(getUserSettings);
 const mockedSave = vi.mocked(saveUserSettings);
 
-const SERVER: UserSettingsDto = { mode: "continuous", lang: "english", fontScale: 3, showTafseer: true };
+const SERVER: UserSettingsDto = {
+  mode: "continuous",
+  lang: "english",
+  fontScale: 3,
+  showTafseer: true,
+  showSuraRukuMarks: true,
+  showJuzRukuMarks: false,
+};
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
@@ -53,6 +60,27 @@ describe("mergeSettings", () => {
 
   it("falls back to defaults when the server has no settings", () => {
     expect(mergeSettings(null, { mode: "continuous" })).toEqual({ ...DEFAULT_SETTINGS, mode: "continuous" });
+  });
+
+  it("reads continuously by default", () => {
+    expect(DEFAULT_SETTINGS.mode).toBe("continuous");
+  });
+
+  it("shows tafseer by default", () => {
+    expect(DEFAULT_SETTINGS.showTafseer).toBe(true);
+  });
+
+  it("shows juz ruku marks but not chapter ones by default", () => {
+    expect(DEFAULT_SETTINGS).toMatchObject({ showSuraRukuMarks: false, showJuzRukuMarks: true });
+  });
+
+  it("fills the ruku mark settings from defaults when the server predates them", () => {
+    const { showSuraRukuMarks: _s, showJuzRukuMarks: _j, ...older } = SERVER;
+    expect(mergeSettings(older as UserSettingsDto, {})).toEqual({
+      ...older,
+      showSuraRukuMarks: false,
+      showJuzRukuMarks: true,
+    });
   });
 
   it("returns the server settings unchanged for an empty patch", () => {
