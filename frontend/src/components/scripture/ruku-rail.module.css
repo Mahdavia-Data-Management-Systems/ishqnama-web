@@ -1,0 +1,91 @@
+/* The ruku marks of one chapter or juz, set along the foot of its index card
+   like the marks in a printed mushaf's margin. The rail bleeds to the card's
+   edges (matching .item's padding in sura-list-item.module.css) so marks
+   scroll out under the edge instead of being clipped at the padding, and the
+   trailing edge fades to show the row continues. */
+.rail {
+  display: flex;
+  gap: var(--space-1);
+  margin: var(--space-3) calc(-1 * var(--space-5)) calc(-1 * var(--space-2));
+  padding: var(--space-2) var(--space-5) var(--space-1);
+  border-top: 1px solid rgba(190, 170, 48, 0.28);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--space-5);
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 calc(100% - var(--space-10)), transparent);
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Set by useDragToScroll while a mouse drags the rail. */
+.rail[data-dragging],
+.rail[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* The first ruku of each new juz (in a chapter rail) or chapter (in a juz
+   rail) sits after a hairline, since the rank it shows starts again at 1. */
+.startsNew {
+  margin-left: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 1px solid rgba(0, 68, 70, 0.14);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 3.75rem;
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A soft teal disc settles behind the mark on hover, focus and press. */
+.link::before {
+  content: "";
+  position: absolute;
+  inset: var(--space-1) 0;
+  border-radius: inherit;
+  background: rgba(0, 68, 70, 0.07);
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.link:hover::before,
+.link:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.link:active::before {
+  background: rgba(0, 68, 70, 0.12);
+}
+
+.link:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Sizes the reader's ruku mark for the rail and centres it on the tile. */
+.mark {
+  position: relative;
+  display: inline-flex;
+  font-size: 1.5rem;
+  transform: translateY(-0.55rem);
+}
+

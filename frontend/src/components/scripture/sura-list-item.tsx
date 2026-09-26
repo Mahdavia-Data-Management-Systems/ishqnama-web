@@ -1,5 +1,8 @@
 import Link from "next/link";
 import Badge from "@/components/ui/badge";
+import RukuRail from "@/components/scripture/ruku-rail";
+import type { TranslationLang } from "@/components/scripture/ayah-block";
+import { rukusInChapter } from "@/data/rukus";
 import styles from "./sura-list-item.module.css";
 
 interface SuraListItemProps {
@@ -9,6 +12,7 @@ interface SuraListItemProps {
   urduName?: string;
   revelationType: "Makki" | "Madani";
   verseCount: number;
+  lang: TranslationLang;
 }
 
 export default function SuraListItem({
@@ -18,31 +22,46 @@ export default function SuraListItem({
   urduName,
   revelationType,
   verseCount,
+  lang,
 }: SuraListItemProps) {
+  const rukus = rukusInChapter(number);
+
   return (
-    <Link href={`/quran/${number}/`} className={`${styles.item} ${revelationType === "Makki" ? styles.makki : styles.madani}`}>
-      <span className={styles.number}>{number}</span>
+    <div className={`${styles.item} ${revelationType === "Makki" ? styles.makki : styles.madani}`}>
+      <Link href={`/quran/${number}/`} className={styles.header}>
+        <span className={styles.number}>{number}</span>
 
-      <div className={styles.info}>
-        <div className={styles.primary}>
-          <span className={styles.name}>{name}</span>
-          <Badge tone={revelationType === "Makki" ? "makki" : "madani"}>
-            {revelationType}
-          </Badge>
+        <div className={styles.info}>
+          <div className={styles.primary}>
+            <span className={styles.name}>{name}</span>
+            <Badge tone={revelationType === "Makki" ? "makki" : "madani"}>
+              {revelationType}
+            </Badge>
+          </div>
+          <span className={styles.meta}>{verseCount} verses</span>
         </div>
-        <span className={styles.meta}>{verseCount} verses</span>
-      </div>
 
-      <div className={styles.arabicSide}>
-        {urduName && (
-          <span className={styles.urduName} dir="rtl" lang="ur">
-            {urduName}
+        <div className={styles.arabicSide}>
+          {urduName && (
+            <span className={styles.urduName} dir="rtl" lang="ur">
+              {urduName}
+            </span>
+          )}
+          <span className={styles.arabicName} dir="rtl" lang="ar">
+            {arabicName}
           </span>
-        )}
-        <span className={styles.arabicName} dir="rtl" lang="ar">
-          {arabicName}
-        </span>
-      </div>
-    </Link>
+        </div>
+      </Link>
+
+      {rukus.length > 1 && (
+        <RukuRail
+          rukus={rukus}
+          hrefFor={(r) => `/quran/${number}/ruku/${r.rankInChapter}/`}
+          lang={lang}
+          label={`Rukus of ${name}`}
+          breakAt="juz"
+        />
+      )}
+    </div>
   );
 }

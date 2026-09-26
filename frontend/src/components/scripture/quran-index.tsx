@@ -6,6 +6,7 @@ import SearchField from "@/components/ui/search-field";
 import SegmentedControl from "@/components/ui/segmented-control";
 import SuraListItem from "@/components/scripture/sura-list-item";
 import JuzListItem from "@/components/scripture/juz-list-item";
+import { useReaderSettings } from "@/context/reader-settings-context";
 import { suras } from "@/data/suras";
 import { apiFetchWithOptionalAuth } from "@/lib/api-client";
 import type { JuzDto } from "@/types/api";
@@ -32,6 +33,8 @@ export default function QuranIndex() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("sura");
   const [juzData, setJuzData] = useState<JuzDto[]>([]);
+  // Ruku numbers follow the reader's language: Urdu until a signed-in reader's settings say otherwise.
+  const { lang } = useReaderSettings();
 
   useEffect(() => {
     if (view !== "juz" || juzData.length > 0) return;
@@ -90,6 +93,7 @@ export default function QuranIndex() {
               urduName={sura.urduName}
               revelationType={sura.revelationType}
               verseCount={sura.verseCount}
+              lang={lang}
             />
           ))}
           {filteredSuras.length === 0 && (
@@ -108,6 +112,7 @@ export default function QuranIndex() {
               startVerse={juz.startVerse ?? 0}
               endChapter={juz.endChapter ?? 0}
               endVerse={juz.endVerse ?? 0}
+              lang={lang}
             />
           ))}
           {filteredJuz.length === 0 && juzData.length > 0 && (

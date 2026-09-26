@@ -1,23 +1,35 @@
+/* The card: a header link to the chapter or juz, then its ruku rail
+   (ruku-rail.module.css bleeds to this padding). */
 .item {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
   padding: var(--space-4) var(--space-5);
   background: var(--surface-card);
   border-radius: var(--radius-md);
-  text-decoration: none;
-  color: inherit;
   box-shadow: var(--shadow-card);
-  transition:
-    box-shadow var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+  overflow: hidden;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .item:hover {
   box-shadow: var(--shadow-card-hover);
 }
 
-.item:active {
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.header:hover {
+  color: inherit;
+}
+
+.header:active {
   transform: scale(0.985);
 }
 
