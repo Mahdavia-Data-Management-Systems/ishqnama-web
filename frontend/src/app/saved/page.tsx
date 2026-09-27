@@ -7,8 +7,6 @@ import SectionHeading from "@/components/navigation/section-heading";
 import SegmentedControl from "@/components/ui/segmented-control";
 import EmptyState from "@/components/empty-state";
 import BookmarkTile from "@/components/bookmark-tile";
-import AddBookmarkTile from "@/components/add-bookmark-tile";
-import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
 import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
@@ -26,9 +24,8 @@ export default function SavedPage() {
   const [tab, setTab] = useState("bookmarks");
   const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
-  const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
+  const { bookmarks, status, removeBookmark } = useBookmarks();
   const readiness = useApiReadiness();
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const showBookmarkSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
   const waitingCaption =
@@ -91,28 +88,31 @@ export default function SavedPage() {
 
         <div className={styles.content}>
           {tab === "bookmarks" ? (
-            <>
-              <div className={styles.bookmarkGrid}>
-                {showBookmarkSkeletons && (
-                  <>
-                    <BookmarkTileSkeleton />
-                    <BookmarkTileSkeleton />
-                  </>
-                )}
-                {customBookmarks.map((b) => (
-                  <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
-                ))}
-                <AddBookmarkTile onClick={() => setDialogOpen(true)} />
-              </div>
-              {showBookmarkSkeletons && waitingCaption && (
-                <p className={styles.waitingCaption}>{waitingCaption}</p>
-              )}
-              <CreateBookmarkDialog
-                isOpen={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-                onCreate={(title, icon) => addBookmark(title, icon)}
+            !showBookmarkSkeletons && customBookmarks.length === 0 ? (
+              <EmptyState
+                icon={config.icon}
+                title={config.title}
+                body={config.body}
+                action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
               />
-            </>
+            ) : (
+              <>
+                <div className={styles.bookmarkGrid}>
+                  {showBookmarkSkeletons && (
+                    <>
+                      <BookmarkTileSkeleton />
+                      <BookmarkTileSkeleton />
+                    </>
+                  )}
+                  {customBookmarks.map((b) => (
+                    <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
+                  ))}
+                </div>
+                {showBookmarkSkeletons && waitingCaption && (
+                  <p className={styles.waitingCaption}>{waitingCaption}</p>
+                )}
+              </>
+            )
           ) : loading ? (
             <>
               <div className={styles.skeletonList}>

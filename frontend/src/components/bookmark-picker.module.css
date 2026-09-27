@@ -106,3 +106,13 @@
   font-size: var(--text-xs);
   color: var(--text-tertiary);
 }
+
+.newItem {
+  border-top: 1px solid rgba(0, 68, 70, 0.08);
+  margin-top: var(--space-1);
+}
+
+.newItemIcon {
+  background: var(--gold-wash);
+  color: var(--gold-label);
+}

@@ -11,6 +11,7 @@ import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
+import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import ShareVerseSheet from "@/components/scripture/share-verse-sheet";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useReaderSettings } from "@/context/reader-settings-context";
@@ -50,7 +51,7 @@ export default function QuranReaderClient({
     mode: persistedMode,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
   } = useReaderSettings();
-  const { bookmarks, savePosition, hasCustomBookmarks } = useBookmarks();
+  const { bookmarks, savePosition, addBookmark } = useBookmarks();
   const gateBookmark = useSignInGate("bookmark");
   const readiness = useApiReadiness();
   const placeholderText =
@@ -106,6 +107,7 @@ export default function QuranReaderClient({
   const [selectedVerse, setSelectedVerse] = useState<{ chapter: number; verse: number } | null>(null);
   const [highlightedSeg, setHighlightedSeg] = useState<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const pickerChapterRef = useRef<number>(0);
   const pickerVerseRef = useRef<number>(0);
   const popupExplanationRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -175,19 +177,21 @@ export default function QuranReaderClient({
   // Anonymous readers get the sign-in prompt instead of a click that does nothing.
   const handleBookmarkVerse = useCallback((chapterNum: number, verseNum: number) => {
     gateBookmark(() => {
-      if (!hasCustomBookmarks) {
-        savePosition("nazra", chapterNum, verseNum);
-      } else {
-        pickerChapterRef.current = chapterNum;
-        pickerVerseRef.current = verseNum;
-        setPickerOpen(true);
-      }
+      pickerChapterRef.current = chapterNum;
+      pickerVerseRef.current = verseNum;
+      setPickerOpen(true);
     });
-  }, [gateBookmark, hasCustomBookmarks, savePosition]);
+  }, [gateBookmark]);
 
   const handlePickerSelect = useCallback((slug: string) => {
     savePosition(slug, pickerChapterRef.current, pickerVerseRef.current);
   }, [savePosition]);
+
+  // The picker hands off to the dialog, so the refs still hold the tapped verse.
+  const handleCreateBookmark = useCallback(async (title: string, icon: string) => {
+    const created = await addBookmark(title, icon);
+    savePosition(created.slug, pickerChapterRef.current, pickerVerseRef.current);
+  }, [addBookmark, savePosition]);
 
   return (
     <>
@@ -496,6 +500,13 @@ export default function QuranReaderClient({
         onClose={() => setPickerOpen(false)}
         bookmarks={bookmarks}
         onSelect={handlePickerSelect}
+        onCreateNew={() => setCreateOpen(true)}
+      />
+
+      <CreateBookmarkDialog
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreate={handleCreateBookmark}
       />
 
       <ReaderToolbar

@@ -11,6 +11,7 @@ interface BookmarkPickerProps {
   onClose: () => void;
   bookmarks: UserBookmarkDto[];
   onSelect: (slug: string) => void;
+  onCreateNew: () => void;
 }
 
 function getPositionLabel(chapterNumber: number, verseNumber: number): string {
@@ -20,7 +21,7 @@ function getPositionLabel(chapterNumber: number, verseNumber: number): string {
   return `${name} ${chapterNumber}:${verseNumber}`;
 }
 
-export default function BookmarkPicker({ isOpen, onClose, bookmarks, onSelect }: BookmarkPickerProps) {
+export default function BookmarkPicker({ isOpen, onClose, bookmarks, onSelect, onCreateNew }: BookmarkPickerProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -61,6 +62,22 @@ export default function BookmarkPicker({ isOpen, onClose, bookmarks, onSelect }:
               </button>
             </li>
           ))}
+          <li>
+            <button
+              className={`${styles.item} ${styles.newItem}`}
+              onClick={() => {
+                onClose();
+                onCreateNew();
+              }}
+            >
+              <span className={`${styles.itemIcon} ${styles.newItemIcon}`}>
+                <Icon name="plus" size={18} />
+              </span>
+              <span className={styles.itemBody}>
+                <span className={styles.itemTitle}>New bookmark</span>
+              </span>
+            </button>
+          </li>
         </ul>
       </div>
     </div>

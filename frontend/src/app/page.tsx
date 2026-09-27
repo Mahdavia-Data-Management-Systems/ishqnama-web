@@ -10,8 +10,6 @@ import SectionHeading from "@/components/navigation/section-heading";
 import QuranIndex from "@/components/scripture/quran-index";
 import SuraCard from "@/components/scripture/sura-card";
 import BookmarkTile from "@/components/bookmark-tile";
-import AddBookmarkTile from "@/components/add-bookmark-tile";
-import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
 import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
@@ -30,9 +28,8 @@ const popularSuras = POPULAR_SURA_NUMBERS.map((n) => suras[n - 1]);
 export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
-  const { bookmarks, status, addBookmark, removeBookmark } = useBookmarks();
+  const { bookmarks, status, removeBookmark } = useBookmarks();
   const readiness = useApiReadiness();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const [suraRail, setSuraRail] = useState<HTMLUListElement | null>(null);
   const [bookmarkRail, setBookmarkRail] = useState<HTMLUListElement | null>(null);
@@ -91,7 +88,7 @@ export default function Home() {
         </section>
 
         {/* Bookmarks */}
-        {isAuthenticated && (
+        {isAuthenticated && (showSkeletons || customBookmarks.length > 0) && (
           <section className={styles.section}>
             <SectionHeading
               eyebrow="Your library"
@@ -110,16 +107,8 @@ export default function Home() {
                   <BookmarkTile bookmark={b} onDelete={removeBookmark} />
                 </li>
               ))}
-              <li className={styles.railItem}>
-                <AddBookmarkTile onClick={() => setDialogOpen(true)} />
-              </li>
             </ul>
             {shelfCaption && <p className={styles.shelfCaption}>{shelfCaption}</p>}
-            <CreateBookmarkDialog
-              isOpen={dialogOpen}
-              onClose={() => setDialogOpen(false)}
-              onCreate={(title, icon) => addBookmark(title, icon)}
-            />
           </section>
         )}
 
