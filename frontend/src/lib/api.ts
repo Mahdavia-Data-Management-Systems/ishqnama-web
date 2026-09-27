@@ -6,7 +6,6 @@ import {
 import type {
   ChapterDetailDto,
   ChapterDto,
-  JuzDto,
   PagedResponse,
   SearchResultDto,
   TranslationDto,
@@ -69,11 +68,7 @@ export function getVerseRange(
   });
 }
 
-// --- Juz ---
-
-export function getJuz(signal?: AbortSignal) {
-  return apiFetch<JuzDto[]>("/juz", { signal });
-}
+// --- Juz --- (the juz list itself is static data in src/data/juz.ts)
 
 export function getJuzVerses(
   num: number,

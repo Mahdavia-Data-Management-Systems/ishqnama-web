@@ -7,8 +7,8 @@ import SegmentedControl from "@/components/ui/segmented-control";
 import SuraListItem from "@/components/scripture/sura-list-item";
 import JuzListItem from "@/components/scripture/juz-list-item";
 import { useReaderSettings } from "@/context/reader-settings-context";
+import { JUZ } from "@/data/juz";
 import { suras } from "@/data/suras";
-import { apiFetchWithOptionalAuth } from "@/lib/api-client";
 import { useAppBarBottom } from "@/lib/app-bar-offset";
 import {
   DEFAULT_QURAN_INDEX_VIEW,
@@ -16,7 +16,6 @@ import {
   saveQuranIndexView,
   type QuranIndexView,
 } from "@/lib/quran-index-view";
-import type { JuzDto } from "@/types/api";
 import styles from "./quran-index.module.css";
 
 /** Strip macrons, dots-below, and other combining diacritics for search. */
@@ -39,7 +38,6 @@ const viewOptions = [
 export default function QuranIndex() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<QuranIndexView>(DEFAULT_QURAN_INDEX_VIEW);
-  const [juzData, setJuzData] = useState<JuzDto[]>([]);
   // Ruku numbers follow the reader's language: Urdu until a signed-in reader's settings say otherwise.
   // Ruku rails follow the General settings; anonymous readers get the defaults (juz on, sura off).
   const { lang, showSuraRukuMarks, showJuzRukuMarks } = useReaderSettings();
@@ -57,16 +55,6 @@ export default function QuranIndex() {
     saveQuranIndexView(value);
   };
 
-  useEffect(() => {
-    if (view !== "juz" || juzData.length > 0) return;
-
-    let cancelled = false;
-    apiFetchWithOptionalAuth<JuzDto[]>("/juz").then((data) => {
-      if (!cancelled) setJuzData(data);
-    });
-    return () => { cancelled = true; };
-  }, [view, juzData.length]);
-
   const filteredSuras = useMemo(() => {
     if (!search.trim()) return suras;
     const q = stripDiacritics(search.toLowerCase());
@@ -80,15 +68,15 @@ export default function QuranIndex() {
   }, [search]);
 
   const filteredJuz = useMemo(() => {
-    if (!search.trim()) return juzData;
+    if (!search.trim()) return JUZ;
     const q = stripDiacritics(search.toLowerCase());
-    return juzData.filter(
+    return JUZ.filter(
       (j) =>
         stripDiacritics(j.transliteratedName.toLowerCase()).includes(q) ||
         j.arabicName.includes(search) ||
         String(j.juzNumber).includes(q)
     );
-  }, [search, juzData]);
+  }, [search]);
 
   return (
     <>
@@ -143,7 +131,7 @@ export default function QuranIndex() {
               showRukuRail={showJuzRukuMarks}
             />
           ))}
-          {filteredJuz.length === 0 && juzData.length > 0 && (
+          {filteredJuz.length === 0 && (
             <p className={styles.noResults}>No juz match your search.</p>
           )}
         </div>

@@ -6,9 +6,8 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useJuzVerses } from "@/hooks/use-juz-verses";
 import { addHistoryEntry } from "@/lib/user-api";
-import { apiFetchWithOptionalAuth } from "@/lib/api-client";
+import { JUZ_BY_NUMBER } from "@/data/juz";
 import type { TranslationLang } from "@/components/reader-toolbar";
-import type { JuzDto } from "@/types/api";
 import JuzHeader from "@/components/scripture/juz-header";
 import QuranReaderClient from "@/components/scripture/quran-reader-client";
 
@@ -34,18 +33,7 @@ export default function JuzReaderLoader({ juzNumber, prev, next }: Props) {
 
   const { verses, loading, error, retry } = useJuzVerses(juzNumber, lang);
 
-  // Fetch juz metadata for header
-  const [meta, setMeta] = useState<JuzDto | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    apiFetchWithOptionalAuth<JuzDto[]>("/juz").then((data) => {
-      if (!cancelled) {
-        const found = data.find((j) => j.juzNumber === juzNumber);
-        if (found) setMeta(found);
-      }
-    });
-    return () => { cancelled = true; };
-  }, [juzNumber]);
+  const meta = JUZ_BY_NUMBER.get(juzNumber);
 
   // Record reading history
   useEffect(() => {
