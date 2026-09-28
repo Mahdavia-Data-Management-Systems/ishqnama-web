@@ -1,0 +1,13 @@
+/* Typography for the juz quarter mark; positioning lives in AyahMarkerContainer */
+.wrapper {
+  font-size: 0.7em;
+  font-family: var(--font-arabic);
+  color: var(--gold);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Clear the ruku mark's lower number when both end the same verse */
+.wrapper:not(:first-child) {
+  margin-top: 0.5em;
+}

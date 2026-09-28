@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
+import JuzQuarterMark from "@/components/scripture/juz-quarter-mark";
 import RukuMark from "@/components/scripture/ruku-mark";
 import SajdahMark from "@/components/scripture/sajdah-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
@@ -19,6 +20,7 @@ import { useBookmarks } from "@/context/bookmarks-context";
 import { useSignInGate } from "@/context/sign-in-prompt-context";
 import { useApiReadiness } from "@/lib/api-readiness";
 import type { DisplayVerse } from "@/hooks/use-chapter-verses";
+import { JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
 import { RUKU_BY_ID } from "@/data/rukus";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { localizeNumber } from "@/lib/translation-map";
@@ -258,6 +260,7 @@ export default function QuranReaderClient({
                       hasSajdah={verse.hasSajdah}
                       rukuId={verse.rukuId}
                       rukuInfo={RUKU_BY_ID.get(verse.rukuId)}
+                      juzQuarter={JUZ_QUARTER_BY_VERSE.get(bookmarkKey)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number)}
                       highlightQuery={highlightQuery}
@@ -357,6 +360,9 @@ export default function QuranReaderClient({
                                 />
                               );
                             })()}
+                            {JUZ_QUARTER_BY_VERSE.has(verseKey) && (
+                              <JuzQuarterMark quarter={JUZ_QUARTER_BY_VERSE.get(verseKey)!} />
+                            )}
                           </AyahMarkerContainer>
                         </span>
                       );

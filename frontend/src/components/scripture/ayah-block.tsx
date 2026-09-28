@@ -3,10 +3,12 @@
 import { useRef, useState } from "react";
 import IconButton from "@/components/ui/icon-button";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
+import JuzQuarterMark from "@/components/scripture/juz-quarter-mark";
 import RukuMark from "@/components/scripture/ruku-mark";
 import SajdahMark from "@/components/scripture/sajdah-mark";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
+import type { JuzQuarter } from "@/data/juz-quarters";
 import type { RukuDto } from "@/types/api";
 import { localizeNumber } from "@/lib/translation-map";
 import styles from "./ayah-block.module.css";
@@ -54,6 +56,7 @@ interface AyahBlockProps {
   hasSajdah?: boolean;
   rukuId?: number;
   rukuInfo?: RukuDto;
+  juzQuarter?: JuzQuarter;
   onToggleBookmark?: () => void;
   onShare?: () => void;
   fontScale?: number;
@@ -73,6 +76,7 @@ export default function AyahBlock({
   hasSajdah = false,
   rukuId,
   rukuInfo,
+  juzQuarter,
   onToggleBookmark,
   onShare,
   fontScale = 1,
@@ -148,6 +152,7 @@ export default function AyahBlock({
               fontScale={fontScale}
             />
           )}
+          {juzQuarter != null && <JuzQuarterMark quarter={juzQuarter} />}
         </AyahMarkerContainer>
       </div>
 
