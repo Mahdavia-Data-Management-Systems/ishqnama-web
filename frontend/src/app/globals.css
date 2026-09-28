@@ -19,7 +19,7 @@
 
 @font-face {
   font-family: 'PDMS Saleem Quran';
-  src: url('/fonts/PDMSSaleemQuranFont.ttf') format('truetype');
+  src: url('/fonts/PDMSSaleemQuranFont.v1.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -27,7 +27,7 @@
 
 @font-face {
   font-family: 'Nafees Web Naskh';
-  src: url('/fonts/NafeesWebNaskh.ttf') format('truetype');
+  src: url('/fonts/NafeesWebNaskh.v1.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
