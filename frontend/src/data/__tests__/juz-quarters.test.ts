@@ -10,7 +10,7 @@ describe("static juz quarter data", () => {
     expect(JUZ_QUARTERS).toHaveLength(90);
     JUZ_QUARTERS.forEach((q, i) => {
       expect(q.juz).toBe(Math.floor(i / 3) + 1);
-      expect(q.quarter).toBe((i % 3) + 1);
+      expect(q.precedingQuarter).toBe((i % 3) + 1);
     });
   });
 
@@ -32,12 +32,12 @@ describe("static juz quarter data", () => {
 
   it("hangs each mark on the verse before its quarter starts", () => {
     expect(JUZ_QUARTER_BY_VERSE.size).toBe(90);
-    // Juz 1: quarters start at 2:44, 2:75 and 2:106
-    expect(JUZ_QUARTER_BY_VERSE.get("2-43")).toBe(1);
-    expect(JUZ_QUARTER_BY_VERSE.get("2-74")).toBe(2);
-    expect(JUZ_QUARTER_BY_VERSE.get("2-105")).toBe(3);
-    // Juz 4's three-quarter point opens an-Nisa, so it closes Al Imran
-    expect(JUZ_QUARTER_BY_VERSE.get("3-200")).toBe(3);
-    expect(JUZ_QUARTER_BY_VERSE.has("4-1")).toBe(false);
+    // Juz 1: quarters start at 2:47, 2:79 and 2:110
+    expect(JUZ_QUARTER_BY_VERSE.get("2-46")).toBe(1);
+    expect(JUZ_QUARTER_BY_VERSE.get("2-78")).toBe(2);
+    expect(JUZ_QUARTER_BY_VERSE.get("2-109")).toBe(3);
+    // Juz 8's half opens al-A'raf, so it closes al-An'am
+    expect(JUZ_QUARTER_BY_VERSE.get("6-165")).toBe(2);
+    expect(JUZ_QUARTER_BY_VERSE.has("7-0")).toBe(false);
   });
 });
