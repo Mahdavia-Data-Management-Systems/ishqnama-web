@@ -3,7 +3,7 @@
 /* ── Local Fonts ── */
 @font-face {
   font-family: 'Jameel Noori Nastaleeq';
-  src: url('/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+  src: url('/fonts/JameelNooriNastaleeq.v1.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: 'Jameel Noori Nastaleeq Kasheeda';
-  src: url('/fonts/JameelNooriNastaleeqKasheeda.ttf') format('truetype');
+  src: url('/fonts/JameelNooriNastaleeqKasheeda.v1.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

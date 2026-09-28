@@ -29,7 +29,7 @@ const dataUrl = async (file, type) =>
 const logo = await dataUrl("public/logo-ishqnama-gold.svg", "image/svg+xml");
 const book = await dataUrl("public/images/noor-e-imaan-book-poster.webp", "image/webp");
 const mdms = await dataUrl("public/images/mdms-mark.webp", "image/webp");
-const nastaleeq = await dataUrl("public/fonts/JameelNooriNastaleeq.ttf", "font/ttf");
+const nastaleeq = await dataUrl("design/Jameel Noori Nastaleeq.ttf", "font/ttf");
 
 const html = `<!doctype html>
 <html>

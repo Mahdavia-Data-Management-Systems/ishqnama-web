@@ -141,7 +141,7 @@ The design system handles four scripts simultaneously. Scripture sets the scale,
 ### Font Loading
 
 - **Google Fonts** (EB Garamond, Source Sans 3, Noto Serif, Noto Serif Devanagari): loaded via `next/font/google` with CSS variable injection
-- **Local fonts** (PDMS Saleem Quran, Jameel Noori Nastaleeq, Jameel Noori Nastaleeq Kasheeda, Nafees Web Naskh): `@font-face` declarations in `globals.css`, served from `/fonts/`
+- **Local fonts** (PDMS Saleem Quran, Jameel Noori Nastaleeq, Jameel Noori Nastaleeq Kasheeda, Nafees Web Naskh): `@font-face` declarations in `globals.css`, served from `/fonts/`. The Nastaleeq pair is served as WOFF2 built from the TTFs in `design/` by `npm run fonts:build`
 
 ---
 

@@ -10,7 +10,8 @@
     "test": "vitest run",
     "model:build": "node scripts/build-book-model.mjs",
     "model:poster": "node scripts/render-book-poster.mjs",
-    "og:image": "node scripts/render-og-image.mjs"
+    "og:image": "node scripts/render-og-image.mjs",
+    "fonts:build": "python scripts/build-urdu-fonts.py"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.19.0",
