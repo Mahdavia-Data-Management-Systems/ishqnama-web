@@ -5,9 +5,20 @@
   color: var(--gold);
   line-height: 1.4;
   white-space: nowrap;
+  /* On its own the mark is turned 90° anticlockwise, reading bottom to top:
+     vertical-rl turns the line clockwise and the half turn flips it. A
+     writing mode rather than a bare rotate() so the mark takes its rotated
+     height in the stack. */
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
-/* Clear the ruku mark's lower number when both end the same verse */
+/* Under a sajdah or ruku mark the quarter mark stays level and a little
+   smaller, so the stack does not grow tall, and clears the ruku mark's lower
+   number when both end the same verse */
 .wrapper:not(:first-child) {
   margin-top: 0.5em;
+  font-size: 0.6em;
+  writing-mode: horizontal-tb;
+  transform: none;
 }
