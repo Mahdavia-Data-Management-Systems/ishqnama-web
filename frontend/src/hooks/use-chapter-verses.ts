@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getChapterVerses } from "@/lib/api";
 import { getTranslationId } from "@/lib/translation-map";
+import { ensureTranslationFont } from "@/lib/translation-font";
 import type { VerseDto } from "@/types/api";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 
@@ -54,6 +55,8 @@ export function useChapterVerses(chapterNumber: number, lang: TranslationLang) {
     async function fetch() {
       setLoading(true);
       setError(null);
+      // Loads in parallel with the request, so the verses appear once, already in their font
+      const fontReady = ensureTranslationFont(lang);
 
       try {
         const translationId = getTranslationId(lang);
@@ -84,6 +87,8 @@ export function useChapterVerses(chapterNumber: number, lang: TranslationLang) {
             allDtos.push(...page.items);
           }
         }
+
+        await fontReady;
 
         if (!signal.aborted) {
           setVerses(allDtos.map(toDisplayVerse));

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getRukuVerses } from "@/lib/api";
 import { getTranslationId } from "@/lib/translation-map";
+import { ensureTranslationFont } from "@/lib/translation-font";
 import { rukusInChapter, rukusInJuz } from "@/data/rukus";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 import { toDisplayVerse, type DisplayVerse } from "@/hooks/use-chapter-verses";
@@ -45,10 +46,14 @@ export function useRukuVerses(lookup: RukuLookup, lang: TranslationLang) {
     async function fetch(rukuId: number) {
       setLoading(true);
       setError(null);
+      // Loads in parallel with the request, so the verses appear once, already in their font
+      const fontReady = ensureTranslationFont(lang);
 
       try {
         const translationId = getTranslationId(lang);
         const dtos = await getRukuVerses(rukuId, translationId, signal);
+
+        await fontReady;
 
         if (!signal.aborted) {
           setVerses(dtos.map(toDisplayVerse));
