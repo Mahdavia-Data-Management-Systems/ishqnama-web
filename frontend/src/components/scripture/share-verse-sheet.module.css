@@ -82,7 +82,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
 }
 
 .closeButton:focus-visible,

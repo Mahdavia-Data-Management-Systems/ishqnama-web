@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-5) var(--space-6);
-  border-bottom: 1px solid rgba(0, 68, 70, 0.08);
+  border-bottom: 1px solid var(--tint-teal-8);
 }
 
 .title {
@@ -62,7 +62,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
 }
 
 .body {
@@ -80,7 +80,7 @@
 
 .sectionHeading {
   margin: 0;
-  border-bottom: 1px solid rgba(0, 68, 70, 0.08);
+  border-bottom: 1px solid var(--tint-teal-8);
 }
 
 .sectionToggle {
@@ -121,7 +121,7 @@
 }
 
 .sectionPanel > .group + .group {
-  border-top: 1px solid rgba(0, 68, 70, 0.08);
+  border-top: 1px solid var(--tint-teal-8);
 }
 
 /* `display: flex` would otherwise override the hidden attribute. */
@@ -190,7 +190,7 @@
 .fontStepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(18, 49, 47, 0.2);
+  border: 1px solid var(--tint-ink-20);
   border-radius: var(--radius-pill);
   padding: 3px;
   background: var(--surface-card);
@@ -213,7 +213,7 @@
 }
 
 .fontBtn:hover:not(:disabled) {
-  background: rgba(18, 49, 47, 0.06);
+  background: var(--tint-ink-6);
   color: var(--text-primary);
 }
 

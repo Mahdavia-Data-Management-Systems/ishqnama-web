@@ -88,7 +88,7 @@
 .divider {
   border: none;
   height: 1px;
-  background: rgba(0, 68, 70, 0.08);
+  background: var(--tint-teal-8);
   margin: var(--space-2) var(--space-3);
 }
 
@@ -108,6 +108,6 @@
 }
 
 .menuItem:hover {
-  background: rgba(0, 68, 70, 0.04);
+  background: var(--tint-teal-4);
   color: var(--text-primary);
 }

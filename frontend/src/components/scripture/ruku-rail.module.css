@@ -39,7 +39,7 @@
 .startsNew {
   margin-left: var(--space-2);
   padding-left: var(--space-3);
-  border-left: 1px solid rgba(0, 68, 70, 0.14);
+  border-left: 1px solid var(--tint-teal-14);
 }
 
 .link {
@@ -59,7 +59,7 @@
   position: absolute;
   inset: var(--space-1) 0;
   border-radius: inherit;
-  background: rgba(0, 68, 70, 0.07);
+  background: var(--tint-teal-7);
   opacity: 0;
   transform: scale(0.85);
   transition:
@@ -74,7 +74,7 @@
 }
 
 .link:active::before {
-  background: rgba(0, 68, 70, 0.12);
+  background: var(--tint-teal-12);
 }
 
 .link:focus-visible {

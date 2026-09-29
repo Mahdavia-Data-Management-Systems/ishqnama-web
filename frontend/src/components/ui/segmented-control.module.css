@@ -1,9 +1,9 @@
 .wrapper {
   display: inline-flex;
-  border: 1px solid rgba(18, 49, 47, 0.2);
+  border: 1px solid var(--tint-ink-20);
   border-radius: var(--radius-pill);
   padding: 3px;
-  background: #fff;
+  background: var(--surface-raised);
 }
 
 .segment {
@@ -30,7 +30,7 @@
 }
 
 .active {
-  background: var(--teal-primary);
+  background: var(--fill-primary);
   color: var(--text-on-dark);
   box-shadow: none;
 }

@@ -24,7 +24,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid rgba(0, 68, 70, 0.08);
+  border-bottom: 1px solid var(--tint-teal-8);
   position: sticky;
   top: 0;
   background: var(--surface-card);
@@ -52,7 +52,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
 }
 
 .list {
@@ -76,7 +76,7 @@
 }
 
 .item:hover {
-  background-color: rgba(0, 68, 70, 0.04);
+  background-color: var(--tint-teal-4);
 }
 
 .itemIcon {
@@ -86,7 +86,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
   color: var(--text-secondary);
   flex-shrink: 0;
 }
@@ -108,7 +108,7 @@
 }
 
 .newItem {
-  border-top: 1px solid rgba(0, 68, 70, 0.08);
+  border-top: 1px solid var(--tint-teal-8);
   margin-top: var(--space-1);
 }
 

@@ -5,7 +5,7 @@
   position: relative;
   overflow: hidden;
   background: var(--surface-page);
-  border: 1px solid rgba(0, 68, 70, 0.08);
+  border: 1px solid var(--tint-teal-8);
   border-radius: var(--radius-md);
 }
 

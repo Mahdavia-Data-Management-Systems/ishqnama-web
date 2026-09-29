@@ -46,7 +46,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
 }
 
 .message {
@@ -63,9 +63,9 @@
 }
 
 .dangerBtn {
-  background: var(--color-error, #c0392b);
+  background: var(--fill-danger);
 }
 
 .dangerBtn:hover:not(:disabled) {
-  background: var(--color-error-hover, #a93226);
+  background: var(--fill-danger-hover);
 }

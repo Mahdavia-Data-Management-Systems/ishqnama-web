@@ -30,12 +30,12 @@
 }
 
 .default:hover {
-  background: rgba(0, 68, 70, 0.08);
+  background: var(--tint-teal-8);
   color: var(--text-primary);
 }
 
 .ghost:hover {
-  background: rgba(0, 68, 70, 0.06);
+  background: var(--tint-teal-6);
 }
 
 .on-dark,

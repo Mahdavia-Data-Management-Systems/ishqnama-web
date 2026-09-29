@@ -18,11 +18,11 @@
 }
 
 .madani {
-  background: #EFF7F8;
+  background: var(--badge-madani-bg);
   color: var(--madani);
 }
 
 .neutral {
-  background: rgba(18, 49, 47, 0.08);
+  background: var(--tint-ink-8);
   color: var(--text-secondary);
 }
