@@ -65,6 +65,39 @@
   --makki: #8A7A1E;
   --madani: #004446;
 
+  /* Colors – Fills behind --text-on-dark (teal and error split into text and fill roles) */
+  --fill-primary: #004446;
+  --fill-primary-hover: #003234;
+  --fill-primary-press: #002526;
+  --fill-danger: #C0392B;
+  --fill-danger-hover: #A93226;
+  --color-error: #C0392B;
+  --color-surface-hover: rgba(255, 255, 255, 0.04);
+
+  /* Colors – One-off surfaces */
+  --surface-raised: #FFFFFF;
+  --badge-madani-bg: #EFF7F8;
+  --book-glow: rgba(0, 41, 43, 0.35);
+  --ribbon-shadow: rgba(0, 68, 70, 0.18);
+
+  /* Colors – Tints for hover backgrounds and hairlines. The number is the alpha in
+     hundredths; light is teal or ink, dark is the same alpha of white or light ink. */
+  --tint-teal-3: rgba(0, 68, 70, 0.03);
+  --tint-teal-4: rgba(0, 68, 70, 0.04);
+  --tint-teal-6: rgba(0, 68, 70, 0.06);
+  --tint-teal-7: rgba(0, 68, 70, 0.07);
+  --tint-teal-8: rgba(0, 68, 70, 0.08);
+  --tint-teal-10: rgba(0, 68, 70, 0.1);
+  --tint-teal-12: rgba(0, 68, 70, 0.12);
+  --tint-teal-14: rgba(0, 68, 70, 0.14);
+  --tint-teal-15: rgba(0, 68, 70, 0.15);
+  --tint-teal-20: rgba(0, 68, 70, 0.2);
+  --tint-ink-6: rgba(18, 49, 47, 0.06);
+  --tint-ink-8: rgba(18, 49, 47, 0.08);
+  --tint-ink-10: rgba(18, 49, 47, 0.1);
+  --tint-ink-12: rgba(18, 49, 47, 0.12);
+  --tint-ink-20: rgba(18, 49, 47, 0.2);
+
   /* Gradient */
   --gradient-splash: linear-gradient(135deg, #004446 0%, #00292B 100%);
 
@@ -142,6 +175,68 @@
   --max-width-reader: 760px;
   --header-height: 60px;
   --toolbar-height: 56px;
+}
+
+/* ── Dark theme ──
+   Set on <html> by the head script in src/lib/theme.ts. Screen only, so printing always uses
+   the light values. Tokens left out are the same in both themes (see theme-tokens.test.ts). */
+@media screen {
+  :root[data-theme="dark"] {
+    --surface-page: #0A1C1C;
+    --surface-card: #102828;
+    --surface-chrome: #00292B;
+    --surface-chrome-deep: #001A1B;
+    --surface-overlay: rgba(0, 0, 0, 0.6);
+    --surface-selection: rgba(205, 185, 68, 0.16);
+
+    --text-primary: #E4EEE9;
+    --text-secondary: rgba(228, 238, 233, 0.7);
+    --text-tertiary: rgba(228, 238, 233, 0.52);
+
+    --gold-wash: rgba(205, 185, 68, 0.16);
+    --gold-label: #D8C766;
+
+    --teal-primary: #5FB8BE;
+    --teal-hover: #7CC8CD;
+    --teal-press: #4FA5AB;
+    --teal-accent: #6CC7CE;
+    --makki: #D8C766;
+    --madani: #5FB8BE;
+
+    --fill-primary: #1F7C82;
+    --fill-primary-hover: #248A91;
+    --fill-primary-press: #1A6D72;
+    --fill-danger: #B3372B;
+    --fill-danger-hover: #9E3026;
+    --color-error: #EF8A80;
+    --color-surface-hover: rgba(255, 255, 255, 0.05);
+
+    --surface-raised: #153232;
+    --badge-madani-bg: rgba(95, 184, 190, 0.14);
+    --book-glow: rgba(190, 170, 48, 0.12);
+    --ribbon-shadow: rgba(0, 0, 0, 0.45);
+
+    --tint-teal-3: rgba(255, 255, 255, 0.03);
+    --tint-teal-4: rgba(255, 255, 255, 0.04);
+    --tint-teal-6: rgba(255, 255, 255, 0.06);
+    --tint-teal-7: rgba(255, 255, 255, 0.07);
+    --tint-teal-8: rgba(255, 255, 255, 0.08);
+    --tint-teal-10: rgba(255, 255, 255, 0.1);
+    --tint-teal-12: rgba(255, 255, 255, 0.12);
+    --tint-teal-14: rgba(255, 255, 255, 0.14);
+    --tint-teal-15: rgba(255, 255, 255, 0.15);
+    --tint-teal-20: rgba(255, 255, 255, 0.2);
+    --tint-ink-6: rgba(228, 238, 233, 0.06);
+    --tint-ink-8: rgba(228, 238, 233, 0.08);
+    --tint-ink-10: rgba(228, 238, 233, 0.1);
+    --tint-ink-12: rgba(228, 238, 233, 0.12);
+    --tint-ink-20: rgba(228, 238, 233, 0.2);
+
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
 }
 
 /* ── Reduced Motion ── */
