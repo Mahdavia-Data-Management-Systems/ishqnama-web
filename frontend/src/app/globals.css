@@ -380,6 +380,21 @@ input, textarea, select {
   padding: 0 var(--space-6) 0 var(--space-8);
 }
 
+/* ── Themed logo (see src/components/themed-logo.tsx) ── */
+.logo-dark {
+  display: none !important;
+}
+
+@media screen {
+  :root[data-theme="dark"] .logo-light {
+    display: none !important;
+  }
+
+  :root[data-theme="dark"] .logo-dark {
+    display: block !important;
+  }
+}
+
 /* ── Utility ── */
 .visually-hidden {
   position: absolute;

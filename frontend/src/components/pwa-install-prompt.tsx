@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Button from "./ui/button";
+import ThemedLogo from "./themed-logo";
 import styles from "./pwa-install-prompt.module.css";
 
 const DISMISSED_KEY = "pwa-install-dismissed";
@@ -55,12 +56,7 @@ export default function PwaInstallPrompt() {
     <div className={styles.backdrop} onClick={handleDismiss}>
       <div className={styles.prompt} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo-ishqnama.svg"
-            alt="Ishqnama"
-            className={styles.icon}
-          />
+          <ThemedLogo alt="Ishqnama" className={styles.icon} />
           <span className={styles.title}>Install Ishqnama</span>
         </div>
         <p className={styles.description}>
