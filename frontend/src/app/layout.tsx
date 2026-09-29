@@ -3,6 +3,7 @@ import { EB_Garamond, Source_Sans_3, Noto_Serif, Noto_Serif_Devanagari } from "n
 import "./globals.css";
 import AppShell from "@/components/app-shell";
 import { pwaManifestScript } from "@/lib/pwa-manifest";
+import { themeScript } from "@/lib/theme-script";
 import { pageMetadata, siteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/page-metadata";
 
 const ebGaramond = EB_Garamond({
@@ -59,10 +60,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${ebGaramond.variable} ${sourceSans.variable} ${notoSerif.variable} ${notoSerifDevanagari.variable}`}
     >
       <head>
+        {/* Sets data-theme, color-scheme and theme-color from the reader's Light / Dark /
+            Match my device choice before first paint, so a dark reader never sees a light
+            flash. Inlined for the same reason as the manifest script. See src/lib/theme-script.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
         {/* Names the installed PWA after the environment host (e.g. "Ishqnama - Dev"). Must
             run before the browser reads the manifest, so it is inlined in the head rather
             than mounted as a component. See src/lib/pwa-manifest.ts. */}

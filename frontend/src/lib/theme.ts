@@ -10,30 +10,16 @@ import { useSyncExternalStore } from "react";
  * useTheme() for the app-bar menu. The two apply the same three changes; the "agrees with the
  * head script" test keeps them in step.
  */
-export type ThemePreference = "light" | "dark" | "system";
-export type ResolvedTheme = "light" | "dark";
+import {
+  DARK_QUERY,
+  THEME_COLOR,
+  THEME_STORAGE_KEY,
+  type ResolvedTheme,
+  type ThemePreference,
+} from "./theme-script";
 
-export const THEME_STORAGE_KEY = "ishqnama-theme";
-
-/** The browser bar colour for each theme: the app bar's chrome colour. */
-export const THEME_COLOR = { light: "#004446", dark: "#00292B" } as const;
-
-const DARK_QUERY = "(prefers-color-scheme: dark)";
-
-/** Inline script for the document head. It must stay self-contained ES5: it runs before any bundle. */
-export function themeScript(): string {
-  return `(function(){
-var p="system";
-try{var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});if(s==="light"||s==="dark"||s==="system")p=s;}catch(e){}
-var d=p==="dark"||(p==="system"&&typeof window.matchMedia==="function"&&window.matchMedia(${JSON.stringify(DARK_QUERY)}).matches);
-var t=d?"dark":"light";
-var h=document.documentElement;
-h.setAttribute("data-theme",t);
-h.style.colorScheme=t;
-var m=document.querySelector('meta[name="theme-color"]');
-if(m)m.setAttribute("content",d?${JSON.stringify(THEME_COLOR.dark)}:${JSON.stringify(THEME_COLOR.light)});
-})();`;
-}
+export { THEME_COLOR, THEME_STORAGE_KEY, themeScript } from "./theme-script";
+export type { ResolvedTheme, ThemePreference } from "./theme-script";
 
 function readPreference(): ThemePreference {
   try {
