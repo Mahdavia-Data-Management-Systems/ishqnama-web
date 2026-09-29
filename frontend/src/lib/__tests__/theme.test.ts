@@ -58,7 +58,7 @@ describe("head script", () => {
     ["dark", true, "dark"],
     ["system", false, "light"],
     ["system", true, "dark"],
-    [null, true, "dark"],
+    [null, true, "light"],
     ["sepia", false, "light"],
   ])("stored %s on a %s-dark device gives %s", (stored, deviceDark, expected) => {
     fakeDevice(deviceDark);
@@ -69,11 +69,11 @@ describe("head script", () => {
     expect(metaColour()).toBe(expected === "dark" ? "#00292B" : "#004446");
   });
 
-  it("treats blocked storage as match my device", () => {
+  it("treats blocked storage as light", () => {
     fakeDevice(true);
     vi.stubGlobal("localStorage", { getItem: () => { throw new Error("blocked"); } });
     runScript();
-    expect(html().getAttribute("data-theme")).toBe("dark");
+    expect(html().getAttribute("data-theme")).toBe("light");
   });
 
   it("treats a browser without matchMedia as a light device", () => {
@@ -98,11 +98,11 @@ describe("theme store", () => {
     expect(result.current.resolved).toBe("dark");
   });
 
-  it("defaults to match my device", () => {
+  it("defaults to light, even on a dark device", () => {
     fakeDevice(true);
     const { result } = renderHook(() => useTheme());
-    expect(result.current.preference).toBe("system");
-    expect(result.current.resolved).toBe("dark");
+    expect(result.current.preference).toBe("light");
+    expect(result.current.resolved).toBe("light");
   });
 
   it("persists a choice and applies it to the page", () => {
@@ -130,6 +130,7 @@ describe("theme store", () => {
 
   it("follows the device while on match my device", () => {
     const device = fakeDevice(false);
+    localStorage.setItem(THEME_STORAGE_KEY, "system");
     const { result } = renderHook(() => useTheme());
     act(() => device.set(true));
     expect(result.current.resolved).toBe("dark");
@@ -179,7 +180,8 @@ describe("theme store", () => {
   });
 
   it("head script updates every theme-color meta", () => {
-    fakeDevice(true);
+    fakeDevice(false);
+    localStorage.setItem(THEME_STORAGE_KEY, "dark");
     document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#004446">');
     runScript();
     const all = [...document.querySelectorAll('meta[name="theme-color"]')].map((m) => m.getAttribute("content"));

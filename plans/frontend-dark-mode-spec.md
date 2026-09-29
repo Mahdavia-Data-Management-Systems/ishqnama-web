@@ -31,7 +31,7 @@ block of `frontend/src/app/globals.css`, styling is CSS Modules plus `globals.cs
 
 ## Goals
 
-- Readers choose **Light**, **Dark** or **Match my device**; the default is Match my device.
+- Readers choose **Light**, **Dark** or **Match my device**; the default is Light (changed from Match my device), so a reader on a dark device sees light pages until they choose otherwise.
 - The choice applies before first paint on every page, including the static prerendered HTML and
   the `/redirect/` MSAL bridge, so a dark reader never sees a light flash.
 - With Match my device, the open page follows the device switching live.
@@ -53,7 +53,7 @@ block of `frontend/src/app/globals.css`, styling is CSS Modules plus `globals.cs
 
 | Question | Decision |
 |---|---|
-| Purpose | Both night reading comfort and following the device: default Match my device, with a Light / Dark override |
+| Purpose | Both night reading comfort and following the device: default Light, with Dark and Match my device as choices |
 | Storage | `localStorage` per browser, key `ishqnama-theme`, values `light`, `dark`, `system` |
 | Palette | "Deep teal night" (mockup A): dark teal page and cards, lightened teal accents, gold unchanged |
 | Control | An icon button in the app bar for everyone, opening a three-item menu |

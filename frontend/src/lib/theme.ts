@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Light, dark or following the device, remembered per browser.
+ * Light, dark or following the device, remembered per browser. Light until the reader chooses.
  *
  * themeScript() runs inline in the document head before first paint and sets data-theme,
  * color-scheme and the theme-color meta on <html>, so the prerendered page never flashes the
@@ -12,6 +12,7 @@ import { useSyncExternalStore } from "react";
  */
 import {
   DARK_QUERY,
+  DEFAULT_THEME_PREFERENCE,
   THEME_COLOR,
   THEME_STORAGE_KEY,
   type ResolvedTheme,
@@ -24,9 +25,9 @@ export type { ResolvedTheme, ThemePreference } from "./theme-script";
 function readPreference(): ThemePreference {
   try {
     const saved = localStorage.getItem(THEME_STORAGE_KEY);
-    return saved === "light" || saved === "dark" || saved === "system" ? saved : "system";
+    return saved === "light" || saved === "dark" || saved === "system" ? saved : DEFAULT_THEME_PREFERENCE;
   } catch {
-    return "system";
+    return DEFAULT_THEME_PREFERENCE;
   }
 }
 
@@ -56,7 +57,7 @@ interface ThemeState {
   resolved: ResolvedTheme;
 }
 
-const SERVER_STATE: ThemeState = { preference: "system", resolved: "light" };
+const SERVER_STATE: ThemeState = { preference: DEFAULT_THEME_PREFERENCE, resolved: "light" };
 
 let state: ThemeState | null = null;
 // A choice made while storage is blocked lives here for the rest of the visit.
