@@ -37,13 +37,27 @@ describe("ThemeMenu", () => {
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it("closes on Escape and returns focus to the button", () => {
+  it("moves focus to the checked item when it opens", () => {
+    render(<ThemeMenu />);
+    fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
+    expect(document.activeElement).toBe(screen.getByRole("menuitemradio", { name: "Match my device" }));
+  });
+
+  it("closes on Escape pressed on the button and returns focus to it", () => {
     render(<ThemeMenu />);
     const button = screen.getByRole("button", { name: "Appearance" });
     fireEvent.click(button);
-    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+    button.focus();
+    fireEvent.keyDown(button, { key: "Escape" });
     expect(screen.queryByRole("menu")).toBeNull();
     expect(document.activeElement).toBe(button);
+  });
+
+  it("closes on Escape pressed on an item", () => {
+    render(<ThemeMenu />);
+    fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Dark" }), { key: "Escape" });
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("closes on a click outside", () => {
@@ -53,11 +67,13 @@ describe("ThemeMenu", () => {
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it("shows the icon of the theme on screen", () => {
-    const { container, rerender } = render(<ThemeMenu />);
-    expect(container.querySelector('[data-icon="sun"]')).toBeTruthy();
-    theme = { ...theme, resolved: "dark" };
-    rerender(<ThemeMenu />);
-    expect(container.querySelector('[data-icon="moon"]')).toBeTruthy();
+  it("renders both icons for CSS to pick, so the prerendered page shows the right one", () => {
+    // The server snapshot is always light, so an icon chosen in React would show the sun to a
+    // dark reader until hydration. Both are rendered and globals.css shows one per data-theme.
+    const { container } = render(<ThemeMenu />);
+    const button = screen.getByRole("button", { name: "Appearance" });
+    expect(button.querySelector('.theme-icon-light[data-icon="sun"]')).toBeTruthy();
+    expect(button.querySelector('.theme-icon-dark[data-icon="moon"]')).toBeTruthy();
+    expect(container.querySelectorAll("[data-icon]")).toHaveLength(2);
   });
 });

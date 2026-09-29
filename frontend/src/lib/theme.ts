@@ -45,7 +45,10 @@ function apply(theme: ResolvedTheme): void {
   const root = document.documentElement;
   root.setAttribute("data-theme", theme);
   root.style.colorScheme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLOR[theme]);
+  // Every one, not the first: Next.js adds a second theme-color meta at hydration.
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+    meta.setAttribute("content", THEME_COLOR[theme]);
+  }
 }
 
 interface ThemeState {
@@ -85,9 +88,22 @@ function attach(): () => void {
   };
   query?.addEventListener?.("change", onDevice);
   window.addEventListener("storage", onStorage);
+
+  // Next.js re-renders its viewport theme-color meta on client navigation, resetting it to the
+  // light colour. Put back the current theme's colour whenever that happens. Setting a value that
+  // already matches is skipped, so the observer's own writes do not loop.
+  const heads = typeof MutationObserver === "function" ? new MutationObserver(() => {
+    const want = THEME_COLOR[getSnapshot().resolved];
+    for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+      if (meta.getAttribute("content") !== want) meta.setAttribute("content", want);
+    }
+  }) : null;
+  heads?.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: ["content"] });
+
   return () => {
     query?.removeEventListener?.("change", onDevice);
     window.removeEventListener("storage", onStorage);
+    heads?.disconnect();
   };
 }
 

@@ -156,6 +156,36 @@ describe("theme store", () => {
     expect(html().getAttribute("data-theme")).toBe("dark");
   });
 
+  it("updates every theme-color meta, including one Next.js adds at hydration", () => {
+    fakeDevice(false);
+    document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#004446">');
+    runScript();
+    setThemePreference("dark");
+    const all = [...document.querySelectorAll('meta[name="theme-color"]')].map((m) => m.getAttribute("content"));
+    expect(all).toEqual(["#00292B", "#00292B"]);
+  });
+
+  it("corrects a theme-color meta that Next.js re-renders on client navigation", async () => {
+    fakeDevice(false);
+    localStorage.setItem(THEME_STORAGE_KEY, "dark");
+    renderHook(() => useTheme());
+    document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#004446">');
+    const added = document.head.lastElementChild!;
+    await new Promise((r) => setTimeout(r, 0));
+    expect(added.getAttribute("content")).toBe("#00292B");
+    added.setAttribute("content", "#004446");
+    await new Promise((r) => setTimeout(r, 0));
+    expect(added.getAttribute("content")).toBe("#00292B");
+  });
+
+  it("head script updates every theme-color meta", () => {
+    fakeDevice(true);
+    document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#004446">');
+    runScript();
+    const all = [...document.querySelectorAll('meta[name="theme-color"]')].map((m) => m.getAttribute("content"));
+    expect(all).toEqual(["#00292B", "#00292B"]);
+  });
+
   it("agrees with the head script for every preference", () => {
     for (const deviceDark of [false, true]) {
       for (const p of ["light", "dark", "system"] as const) {

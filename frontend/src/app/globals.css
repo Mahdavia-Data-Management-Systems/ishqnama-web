@@ -380,18 +380,24 @@ input, textarea, select {
   padding: 0 var(--space-6) 0 var(--space-8);
 }
 
-/* ── Themed logo (see src/components/themed-logo.tsx) ── */
-.logo-dark {
+/* ── Themed logo and app-bar theme icon (themed-logo.tsx, theme-menu.tsx) ── */
+.logo-dark,
+.theme-icon-dark {
   display: none !important;
 }
 
 @media screen {
-  :root[data-theme="dark"] .logo-light {
+  :root[data-theme="dark"] .logo-light,
+  :root[data-theme="dark"] .theme-icon-light {
     display: none !important;
   }
 
   :root[data-theme="dark"] .logo-dark {
     display: block !important;
+  }
+
+  :root[data-theme="dark"] .theme-icon-dark {
+    display: flex !important;
   }
 }
 

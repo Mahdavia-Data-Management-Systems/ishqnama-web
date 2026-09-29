@@ -23,7 +23,7 @@ var t=d?"dark":"light";
 var h=document.documentElement;
 h.setAttribute("data-theme",t);
 h.style.colorScheme=t;
-var m=document.querySelector('meta[name="theme-color"]');
-if(m)m.setAttribute("content",d?${JSON.stringify(THEME_COLOR.dark)}:${JSON.stringify(THEME_COLOR.light)});
+var m=document.querySelectorAll('meta[name="theme-color"]');
+for(var i=0;i<m.length;i++)m[i].setAttribute("content",d?${JSON.stringify(THEME_COLOR.dark)}:${JSON.stringify(THEME_COLOR.light)});
 })();`;
 }
