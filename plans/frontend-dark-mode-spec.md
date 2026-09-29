@@ -122,23 +122,27 @@ tokens listed below.
 
 | Token | Light (equals the literal it replaces) | Dark |
 |---|---|---|
-| `--hover-tint` | `rgba(0,68,70,.04)` | `rgba(255,255,255,.05)` |
-| `--hover-tint-strong` | `rgba(0,68,70,.08)` | `rgba(255,255,255,.09)` |
-| `--hairline` | `rgba(0,68,70,.10)` | `rgba(255,255,255,.08)` |
-| `--hairline-strong` | `rgba(0,68,70,.20)` | `rgba(255,255,255,.14)` |
+| `--tint-teal-N` (N = 3, 4, 6, 7, 8, 10, 12, 14, 15, 20) | `rgba(0,68,70,N/100)` | `rgba(255,255,255,N/100)` |
+| `--tint-ink-N` (N = 6, 8, 10, 12, 20) | `rgba(18,49,47,N/100)` | `rgba(228,238,233,N/100)` |
 | `--surface-raised` | `#FFFFFF` | `#153232` |
+| `--badge-madani-bg` | `#EFF7F8` | `rgba(95,184,190,.14)` |
+| `--ribbon-shadow` | `rgba(0,68,70,.18)` | `rgba(0,0,0,.45)` |
 | `--color-error` | `#C0392B` | `#EF8A80` |
 | `--fill-danger` (new) | `#C0392B` | `#B3372B` |
 | `--fill-danger-hover` (new) | `#A93226` | `#9E3026` |
 | `--color-surface-hover` | `rgba(255,255,255,.04)` | `rgba(255,255,255,.05)` |
 | `--book-glow` | `rgba(0,41,43,.35)` | `rgba(190,170,48,.12)` |
 
-The existing literals do not all fall exactly on these values: ink tints (`rgba(18,49,47,…)`)
-and teal tints at intermediate alphas exist. Where a literal is visibly distinct from the
-nearest token, the implementation adds a token for it rather than rounding, so that light mode
-stays pixel-identical. The token list above is the expected core, not a closed set. Literals
-that are the same in both themes by design (for example gold on the always-dark chrome) stay
-as literals and go on the guard test's allowlist (see Testing).
+The tint scale is named by alpha rather than by role (hover, hairline), because the codebase
+uses eleven distinct teal alphas and five ink alphas across roles; one token per literal keeps
+light mode pixel-identical. The one accepted light-mode change is the stray
+`rgba(180,141,61,.1)` in `create-bookmark-dialog.module.css`, which becomes the gold tint
+`rgba(190,170,48,.1)`. Literals that are the same in both themes by design stay as literals and
+are allowed by the guard test: white tints (on the always-dark chrome), black (shadows and
+masks) and gold tints (see Testing).
+
+The dark block sits inside `@media screen`, so printing always uses the light values (this
+replaces a separate print override).
 
 The light values of `--color-error` and `--color-surface-hover` are the fallbacks their call
 sites already use (`#c0392b` and `rgba(255,255,255,.04)`), so defining them changes nothing in
@@ -155,7 +159,8 @@ same offsets and blurs), because teal shadows vanish on a teal page.
 The dark teal panels (home hero, sura header, continue-reading card) keep their gradient in both
 themes; they are lighter than the dark page, so they remain distinct.
 
-**Printing**: `@media print` applies the light token values regardless of `data-theme`.
+**Printing**: the dark block is scoped to `@media screen`, so printed pages always use the light
+values regardless of `data-theme`.
 
 ### 2. Theme script, store and control
 
@@ -212,9 +217,8 @@ the same non-technical rule as `readiness-copy.ts` and `sign-in-copy.ts` (no "sy
   `logo-ishqnama-gold.svg`, and a global rule shows the gold one only under `[data-theme=dark]`
   and the teal one otherwise. Being CSS-driven, it is correct from the first paint, needs no
   hydration check, and follows live theme changes. The favicon stays teal.
-- **MDMS logo** (`public/images/mdms-logo.webp`, About page): if its artwork is dark on
-  transparent, it sits on a small light rounded plate in dark mode. The implementation checks the
-  image and applies the plate only if needed.
+- **MDMS logo** (`public/images/mdms-logo.webp`, About page): checked while planning; its gold
+  and green artwork has a filled white centre and reads on dark, so it needs no plate.
 - **Book model and poster.** The poster is transparent (RGBA) and `book-scene.ts` renders with
   `alpha: true`, so both sit on the dark page unchanged. The teal radial glow in
   `book-model.module.css` moves to `--book-glow`.
