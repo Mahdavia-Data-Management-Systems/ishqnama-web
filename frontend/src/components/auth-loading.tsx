@@ -17,7 +17,7 @@ export default function AuthLoading() {
         style={{
           width: 40,
           height: 40,
-          border: "3px solid rgba(0, 68, 70, 0.1)",
+          border: "3px solid var(--tint-teal-10)",
           borderTopColor: "var(--teal-primary)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",

@@ -226,7 +226,7 @@ export default function QuranReaderClient({
                       className={styles.chapterDivider}
                       style={
                         verse.chapterNumber !== firstChapter
-                          ? { borderTop: "1px solid rgba(0,68,70,0.08)" }
+                          ? { borderTop: "1px solid var(--tint-teal-8)" }
                           : undefined
                       }
                     >
@@ -283,7 +283,7 @@ export default function QuranReaderClient({
                       className={styles.chapterDivider}
                       style={
                         gi > 0
-                          ? { borderTop: "1px solid rgba(0,68,70,0.08)" }
+                          ? { borderTop: "1px solid var(--tint-teal-8)" }
                           : undefined
                       }
                     >

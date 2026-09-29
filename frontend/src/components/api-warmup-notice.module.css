@@ -19,7 +19,7 @@
    on a wrapper and follows the swallowtail through drop-shadow. */
 .shadow {
   max-width: 100%;
-  filter: drop-shadow(0 2px 3px rgba(0, 68, 70, 0.18));
+  filter: drop-shadow(0 2px 3px var(--ribbon-shadow));
   transform: translateY(-100%);
   transition:
     transform var(--duration-slow) var(--ease-out),

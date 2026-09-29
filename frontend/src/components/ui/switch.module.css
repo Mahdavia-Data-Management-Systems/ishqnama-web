@@ -16,7 +16,7 @@
   width: 44px;
   height: 24px;
   border: none;
-  background: rgba(0, 68, 70, 0.2);
+  background: var(--tint-teal-20);
   border-radius: 12px;
   cursor: pointer;
   transition: background-color var(--duration-normal) var(--ease-out);
@@ -24,7 +24,7 @@
 }
 
 .on {
-  background: var(--teal-primary);
+  background: var(--fill-primary);
 }
 
 .thumb {

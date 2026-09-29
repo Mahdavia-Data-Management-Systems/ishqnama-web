@@ -52,7 +52,7 @@
 }
 
 .itemButton:hover {
-  background-color: var(--color-surface-hover, rgba(255, 255, 255, 0.04));
+  background-color: var(--color-surface-hover);
 }
 
 .itemTitle {

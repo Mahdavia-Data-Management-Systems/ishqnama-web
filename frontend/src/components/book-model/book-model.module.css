@@ -57,6 +57,6 @@
   right: 18%;
   bottom: 3%;
   height: 9%;
-  background: radial-gradient(ellipse at center, rgba(0, 41, 43, 0.35), transparent 70%);
+  background: radial-gradient(ellipse at center, var(--book-glow), transparent 70%);
   pointer-events: none;
 }

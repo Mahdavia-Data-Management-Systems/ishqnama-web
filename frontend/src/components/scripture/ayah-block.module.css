@@ -3,7 +3,7 @@
 }
 
 .block + .block {
-  border-top: 1px solid rgba(0, 68, 70, 0.06);
+  border-top: 1px solid var(--tint-teal-6);
 }
 
 .meta {
@@ -87,7 +87,7 @@
 }
 
 .tafseer {
-  background: rgba(0, 68, 70, 0.03);
+  background: var(--tint-teal-3);
   border-left: 3px solid var(--gold);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   padding: var(--space-3) var(--space-4);

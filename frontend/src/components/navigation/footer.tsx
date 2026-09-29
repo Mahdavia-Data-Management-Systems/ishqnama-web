@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { isReaderRoute } from "@/lib/reader-route";
+import ThemedLogo from "@/components/themed-logo";
 import styles from "./footer.module.css";
 
 const footerLinks = [
@@ -22,14 +23,7 @@ export default function Footer() {
   return (
     <footer className={styles.footer} data-clears={clears}>
       <div className={styles.inner}>
-        <Image
-          src="/logo-ishqnama.svg"
-          alt=""
-          width={28}
-          height={28}
-          className={styles.logo}
-          aria-hidden="true"
-        />
+        <ThemedLogo alt="" width={28} height={28} className={styles.logo} />
         <nav className={styles.links}>
           {footerLinks.map((link) => (
             <Link key={link.href} href={link.href} className={styles.link}>

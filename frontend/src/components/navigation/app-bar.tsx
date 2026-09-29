@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeMenu from "./theme-menu";
 import UserMenu from "./user-menu";
 import styles from "./app-bar.module.css";
 
@@ -48,7 +49,10 @@ export default function AppBar() {
           })}
         </nav>
 
-        <UserMenu />
+        <div className={styles.actions}>
+          <ThemeMenu />
+          <UserMenu />
+        </div>
       </div>
     </header>
   );
