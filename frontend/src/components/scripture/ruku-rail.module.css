@@ -11,6 +11,11 @@
   border-top: 1px solid rgba(190, 170, 48, 0.28);
   list-style: none;
   overflow-x: auto;
+  /* With overflow-x set, overflow-y would compute to auto, and the few pixels
+     the marks overflow by would make the rail a vertical scroller too: an
+     up/down swipe on it would nudge the rail instead of scrolling the page.
+     Hidden clips the same way but takes no touch or wheel scrolling. */
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scroll-padding-inline: var(--space-5);
