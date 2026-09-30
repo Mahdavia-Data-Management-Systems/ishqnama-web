@@ -7,6 +7,7 @@ import { JUZ_QUARTER_NAMES } from "@/components/scripture/juz-quarter-mark";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 import { JUZ_QUARTER_BY_RUKU, type JuzQuarter } from "@/data/juz-quarters";
 import { suras } from "@/data/suras";
+import { localizeNumber } from "@/lib/translation-map";
 import { useDragToScroll } from "@/lib/use-drag-to-scroll";
 import type { RukuDto } from "@/types/api";
 import styles from "./ruku-rail.module.css";
@@ -15,6 +16,12 @@ import styles from "./ruku-rail.module.css";
 const RAIL_FONT_SCALE = 1;
 
 const QUARTER_GLYPHS: Record<JuzQuarter, string> = { 1: "¼", 2: "½", 3: "¾" };
+
+/** A new juz is numbered under its hairline, a new chapter over it. */
+const BREAK_CLASS: Record<RukuRailProps["breakAt"], string> = {
+  juz: styles.startsJuz,
+  chapter: styles.startsChapter,
+};
 
 interface RukuRailProps {
   rukus: RukuDto[];
@@ -51,7 +58,12 @@ export default function RukuRail({ rukus, hrefFor, lang, label, breakAt }: RukuR
           : "";
         const name = `${chapterName ? `${chapterName}, ruku` : "Ruku"} ${ruku.rankInChapter}, ${ruku.verseCount} verses${quarterName}`;
         return (
-          <li key={ruku.rukuId} className={startsNew ? `${styles.item} ${styles.startsNew}` : styles.item}>
+          <li key={ruku.rukuId} className={startsNew ? `${styles.item} ${styles.startsNew} ${BREAK_CLASS[breakAt]}` : styles.item}>
+            {startsNew && (
+              <span className={styles.breakNumber} aria-hidden="true">
+                {localizeNumber(ruku[key], lang)}
+              </span>
+            )}
             <Link href={hrefFor(ruku)} className={styles.link} aria-label={name} title={name}>
               <span className={styles.mark} aria-hidden="true">
                 <RukuMark
