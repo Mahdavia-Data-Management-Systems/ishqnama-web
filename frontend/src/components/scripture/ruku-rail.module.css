@@ -62,11 +62,19 @@
 }
 
 /* The first ruku of each new juz (in a chapter rail) or chapter (in a juz
-   rail) sits after a hairline, since the rank it shows starts again at 1. */
-.startsNew {
-  margin-left: var(--space-2);
-  padding-left: var(--space-3);
+   rail) sits after a hairline, since the rank it shows starts again at 1.
+   The hairline is drawn in the rail's gap rather than added to it, so the
+   marks keep their even spacing. It stops short of the foot, where a
+   quarter mark after the previous ruku can share the same gap. */
+.startsNew::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: var(--space-3);
+  left: calc(var(--space-1) / -2);
   border-left: 1px solid var(--tint-teal-14);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .link {
