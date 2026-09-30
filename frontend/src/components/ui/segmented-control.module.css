@@ -3,7 +3,7 @@
   border: 1px solid var(--tint-ink-20);
   border-radius: var(--radius-pill);
   padding: 3px;
-  background: var(--surface-raised);
+  background: var(--surface-card);
 }
 
 .segment {
@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: center;
   border: none;
-  background: var(--surface-card);
+  background: transparent;
   font-family: var(--font-body);
   font-weight: 500;
   letter-spacing: normal;

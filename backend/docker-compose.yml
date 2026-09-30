@@ -33,18 +33,39 @@ services:
       timeout: 5s
       retries: 20
 
-  # Rebuild after changing anything under src/: compose reuses the existing image otherwise.
+  # Runs src/Ishqnama.Api from the mounted source under `dotnet watch`, so edits hot-reload (or
+  # restart the app on changes hot reload cannot apply) without rebuilding anything. The deployed
+  # image is still built from src/Ishqnama.Api/Dockerfile; this service no longer exercises it.
   api:
-    build:
-      context: .
-      dockerfile: src/Ishqnama.Api/Dockerfile
-    image: ishqnama-api:local
+    image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: ishqnama-api
+    working_dir: /src
+    command: ["dotnet", "watch", "--project", "src/Ishqnama.Api", "run", "--no-launch-profile"]
+    volumes:
+      - ./global.json:/src/global.json:ro
+      - ./src:/src/src
+      # Keep the container's restore and build output apart from the host's: obj/ holds
+      # absolute Windows paths from host builds, which break a Linux restore.
+      - /src/src/Ishqnama.Api/bin
+      - /src/src/Ishqnama.Api/obj
+      - /src/src/Ishqnama.Application/bin
+      - /src/src/Ishqnama.Application/obj
+      - /src/src/Ishqnama.Domain/bin
+      - /src/src/Ishqnama.Domain/obj
+      - /src/src/Ishqnama.Infrastructure/bin
+      - /src/src/Ishqnama.Infrastructure/obj
+      - nuget-packages:/root/.nuget/packages
     ports:
       # 8080 is taken by the emulator and 5080 by `dotnet run`, so the container image and a
       # locally run API can be up at the same time.
       - "5081:8080"
     environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      # File change events from a Windows or macOS host do not reach the container reliably.
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      # No terminal to answer dotnet watch's "restart?" prompt after an edit hot reload cannot apply.
+      DOTNET_WATCH_RESTART_ON_RUDE_EDIT: "true"
       # Mirrors src/Ishqnama.Api/appsettings.Development.json, with container hostnames.
       ConnectionStrings__QuranDb: "Host=postgres;Port=5432;Database=ishqnama;Username=postgres;Password=postgres"
       CosmosDb__Endpoint: "https://cosmos:8081"
@@ -63,3 +84,4 @@ services:
 volumes:
   postgres-data:
   cosmos-data:
+  nuget-packages:
