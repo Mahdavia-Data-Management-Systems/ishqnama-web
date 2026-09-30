@@ -1,3 +1,4 @@
+import { RUKUS } from "@/data/rukus";
 import { suras } from "@/data/suras";
 
 /**
@@ -127,3 +128,25 @@ export const JUZ_QUARTER_BY_VERSE: ReadonlyMap<string, JuzQuarter> = new Map(
     return [`${c}-${v}`, q.precedingQuarter];
   }),
 );
+
+export interface RukuJuzQuarter {
+  quarter: JuzQuarter;
+  /** The mark is on the ruku's last verse, so it falls after the ruku rather than inside it. */
+  after: boolean;
+}
+
+/** The quarter mark inside or at the end of each ruku, keyed by rukuId. */
+export const JUZ_QUARTER_BY_RUKU: ReadonlyMap<number, RukuJuzQuarter> = (() => {
+  const byRuku = new Map<number, RukuJuzQuarter>();
+  let firstVerse = 1;
+  RUKUS.forEach((ruku, i) => {
+    if (i > 0 && RUKUS[i - 1].chapterNumber !== ruku.chapterNumber) firstVerse = 1;
+    const lastVerse = firstVerse + ruku.verseCount - 1;
+    for (let v = firstVerse; v <= lastVerse; v++) {
+      const quarter = JUZ_QUARTER_BY_VERSE.get(`${ruku.chapterNumber}-${v}`);
+      if (quarter) byRuku.set(ruku.rukuId, { quarter, after: v === lastVerse });
+    }
+    firstVerse = lastVerse + 1;
+  });
+  return byRuku;
+})();

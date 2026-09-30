@@ -30,8 +30,35 @@
 }
 
 .item {
+  position: relative;
   flex: 0 0 auto;
   scroll-snap-align: start;
+}
+
+/* Juz quarter marks sit at the foot of the rail, out of the flow so the
+   tiles never move: under a ruku whose middle holds the quarter point, or in
+   the gap after one that ends on it. */
+.quarterBelow,
+.quarterAfter {
+  position: absolute;
+  /* Dips into the rail's bottom padding, clear of the numbers under the ع,
+     but no further: the scrolling rail clips anything below it. */
+  bottom: calc(var(--space-1) * -0.75);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.quarterBelow {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.quarterAfter {
+  right: calc(var(--space-1) / -2);
+  transform: translateX(50%);
 }
 
 /* The first ruku of each new juz (in a chapter rail) or chapter (in a juz
