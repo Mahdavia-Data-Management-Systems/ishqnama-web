@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { suras } from "@/data/suras";
 import { JUZ } from "@/data/juz";
-import { JUZ_QUARTERS, JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
+import { JUZ_QUARTERS, JUZ_QUARTER_BY_RUKU, JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
+import { RUKUS } from "@/data/rukus";
 
 const order = (chapter: number, verse: number) => chapter * 1000 + verse;
 
@@ -39,5 +40,25 @@ describe("static juz quarter data", () => {
     // Juz 8's half opens al-A'raf, so it closes al-An'am
     expect(JUZ_QUARTER_BY_VERSE.get("6-165")).toBe(2);
     expect(JUZ_QUARTER_BY_VERSE.has("7-0")).toBe(false);
+  });
+
+  it("places each mark in, or at the end of, exactly one ruku", () => {
+    expect(JUZ_QUARTER_BY_RUKU.size).toBe(90);
+    const counts = [...JUZ_QUARTER_BY_RUKU.values()].reduce(
+      (n, { quarter }) => ({ ...n, [quarter]: (n[quarter] ?? 0) + 1 }),
+      {} as Record<number, number>,
+    );
+    expect(counts).toEqual({ 1: 30, 2: 30, 3: 30 });
+  });
+
+  it("puts a mark after a ruku only when it ends on the ruku's last verse", () => {
+    const rukuOf = (chapter: number, rank: number) =>
+      RUKUS.find((r) => r.chapterNumber === chapter && r.rankInChapter === rank)!.rukuId;
+    // 2:46 ends al-Baqarah's ruku 5 (2:40-46)
+    expect(JUZ_QUARTER_BY_RUKU.get(rukuOf(2, 5))).toEqual({ quarter: 1, after: true });
+    // 2:78 falls inside ruku 9 (2:72-82)
+    expect(JUZ_QUARTER_BY_RUKU.get(rukuOf(2, 9))).toEqual({ quarter: 2, after: false });
+    // 6:165 closes al-An'am's last ruku
+    expect(JUZ_QUARTER_BY_RUKU.get(rukuOf(6, 20))).toEqual({ quarter: 2, after: true });
   });
 });

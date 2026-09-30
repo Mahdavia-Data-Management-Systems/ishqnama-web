@@ -94,6 +94,22 @@ describe("Ruku rails in the Quran index", () => {
     expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 
+  it("marks the juz quarters under or after their rukus, named for screen readers", () => {
+    renderSura(2, "al-Baqarah");
+    const links = rukuLinks("Rukus of al-Baqarah");
+    // 2:46 ends ruku 5; 2:78 is inside ruku 9
+    expect(links[4].getAttribute("aria-label")).toBe("Ruku 5, 7 verses, a quarter of the juz after it");
+    expect(links[8].getAttribute("aria-label")).toBe("Ruku 9, 11 verses, half of the juz");
+
+    const after = links[4].nextElementSibling!;
+    expect(after.textContent).toBe("¼");
+    expect(after.className).toContain("quarterAfter");
+    const below = links[8].nextElementSibling!;
+    expect(below.textContent).toBe("½");
+    expect(below.className).toContain("quarterBelow");
+    expect(below.getAttribute("aria-hidden")).toBe("true");
+  });
+
   it.each([
     ["urdu", "۴۰"],
     ["hindi", "४०"],
