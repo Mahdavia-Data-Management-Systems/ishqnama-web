@@ -67,6 +67,25 @@ describe("Ruku rails in the Quran index", () => {
     expect(breaks).toHaveLength(2);
   });
 
+  it("numbers each divider with the juz or chapter it opens", () => {
+    const breakNumbers = (label: string) =>
+      rukuLinks(label)
+        .map((link) => link.parentElement!)
+        .filter((item) => item.className.includes("startsNew"))
+        .map((item) => {
+          const number = item.firstElementChild!;
+          expect(number.getAttribute("aria-hidden")).toBe("true");
+          return [number.textContent, item.className.includes("startsJuz") ? "juz" : "chapter"];
+        });
+
+    renderSura(2, "al-Baqarah", "english");
+    expect(breakNumbers("Rukus of al-Baqarah")).toEqual([["2", "juz"], ["3", "juz"]]);
+    cleanup();
+
+    renderJuz(1);
+    expect(breakNumbers("Rukus of juz 1")).toEqual([["۲", "chapter"]]);
+  });
+
   it("shows no rail for a chapter with a single ruku", () => {
     renderSura(1, "al-Fātiḥah");
     expect(screen.queryByRole("list")).toBeNull();

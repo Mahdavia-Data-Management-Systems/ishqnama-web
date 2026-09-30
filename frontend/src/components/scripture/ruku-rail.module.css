@@ -37,18 +37,24 @@
 
 /* Juz quarter marks sit at the foot of the rail, out of the flow so the
    tiles never move: under a ruku whose middle holds the quarter point, or in
-   the gap after one that ends on it. */
+   the gap after one that ends on it. The divider numbers share their type. */
 .quarterBelow,
-.quarterAfter {
+.quarterAfter,
+.breakNumber {
   position: absolute;
-  /* Dips into the rail's bottom padding, clear of the numbers under the ع,
-     but no further: the scrolling rail clips anything below it. */
-  bottom: calc(var(--space-1) * -0.75);
   font-family: var(--font-body);
   font-size: 0.75rem;
   line-height: 1;
   color: var(--text-tertiary);
   pointer-events: none;
+}
+
+/* Dips into the rail's bottom padding, clear of the numbers under the ع,
+   but no further: the scrolling rail clips anything below it. */
+.quarterBelow,
+.quarterAfter,
+.startsJuz .breakNumber {
+  bottom: calc(var(--space-1) * -0.75);
 }
 
 .quarterBelow {
@@ -62,11 +68,33 @@
 }
 
 /* The first ruku of each new juz (in a chapter rail) or chapter (in a juz
-   rail) sits after a hairline, since the rank it shows starts again at 1. */
-.startsNew {
-  margin-left: var(--space-2);
-  padding-left: var(--space-3);
+   rail) sits after a hairline, since the rank it shows starts again at 1.
+   The hairline is drawn in the rail's gap rather than added to it, so the
+   marks keep their even spacing. It stops short of the foot, where the new
+   juz's number or a quarter mark after the previous ruku sits, and a new
+   chapter's line also stops short of the top for the chapter's number. */
+.startsNew::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: var(--space-3);
+  left: calc(var(--space-1) / -2);
   border-left: 1px solid var(--tint-teal-14);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.startsChapter::before {
+  top: var(--space-3);
+}
+
+.breakNumber {
+  left: calc(var(--space-1) / -2);
+  transform: translateX(-50%);
+}
+
+.startsChapter .breakNumber {
+  top: 0;
 }
 
 .link {
