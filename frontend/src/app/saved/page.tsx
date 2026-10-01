@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import SectionHeading from "@/components/navigation/section-heading";
-import SegmentedControl from "@/components/ui/segmented-control";
+import Tabs from "@/components/ui/tabs";
 import EmptyState from "@/components/empty-state";
 import BookmarkTile from "@/components/bookmark-tile";
 import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
@@ -84,9 +84,13 @@ export default function SavedPage() {
       <div className="page-container">
         <SectionHeading eyebrow="Your library" title="Saved" />
 
-        <SegmentedControl options={tabOptions} value={tab} onChange={setTab} />
-
-        <div className={styles.content}>
+        <Tabs
+          options={tabOptions}
+          value={tab}
+          onChange={setTab}
+          label="Saved"
+          panelClassName={styles.content}
+        >
           {tab === "bookmarks" ? (
             !showBookmarkSkeletons && customBookmarks.length === 0 ? (
               <EmptyState
@@ -146,7 +150,7 @@ export default function SavedPage() {
               ))}
             </ul>
           )}
-        </div>
+        </Tabs>
       </div>
     </main>
   );
