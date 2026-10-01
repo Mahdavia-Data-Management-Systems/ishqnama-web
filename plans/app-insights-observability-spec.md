@@ -48,7 +48,7 @@ client-side MSAL auth.
 | # | Question | Decision |
 |---|---|---|
 | 1 | Backend | Workspace-based Application Insights per environment, on the existing ACA Log Analytics workspace |
-| 2 | SDKs | Frontend `@microsoft/applicationinsights-web` (no React plugin). API `Azure.Monitor.OpenTelemetry.AspNetCore` (the OpenTelemetry distro) plus `Npgsql.OpenTelemetry` |
+| 2 | SDKs | Frontend `@microsoft/applicationinsights-web` (no React plugin). API `Azure.Monitor.OpenTelemetry.Exporter` with the OpenTelemetry hosting, ASP.NET Core and HttpClient instrumentation packages, plus `Npgsql.OpenTelemetry` (the distro was dropped: it adds trim warnings) |
 | 3 | Correlation | W3C `traceparent` only, sent **only on requests that already carry `Authorization`**. Anonymous GETs stay CORS "simple" requests |
 | 4 | User identity | `user_AuthenticatedId` = first 16 hex chars of SHA-256 of `oid`, computed the same way on both sides. Never the email, name or raw `oid` |
 | 5 | Noise | `/api/healthz`, `/health/*`, `OPTIONS` and Entra token calls are excluded on both sides |
@@ -125,37 +125,41 @@ removing the manual header.
 
 ### Packages
 
-- `Azure.Monitor.OpenTelemetry.AspNetCore` (traces, metrics and logs exporter, ASP.NET Core and
-  HttpClient instrumentation).
+- `Azure.Monitor.OpenTelemetry.Exporter`, `OpenTelemetry.Extensions.Hosting`,
+  `OpenTelemetry.Instrumentation.AspNetCore` and `OpenTelemetry.Instrumentation.Http`.
+  The `Azure.Monitor.OpenTelemetry.AspNetCore` distro was tried first, but it was the only new
+  source of a trim warning (IL2104) in the trimmed image, so the same pieces are composed by
+  hand (see Trimming and footprint).
 - `Npgsql.OpenTelemetry` (`AddNpgsql()`). The Quran data is cached in memory after the first
   request, so this mostly shows the cold-start load, which is what we want to see.
 
 ### Registration in `Program.cs`
 
 Only when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set, so local `dotnet run` and
-docker-compose keep working without it (the distro throws without a connection string):
+docker-compose keep working without it:
 
 ```csharp
-if (!string.IsNullOrEmpty(configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
-{
-    builder.Services.AddOpenTelemetry()
-        .UseAzureMonitor(o => o.EnableLiveMetrics = false)
-        .WithTracing(t => t
-            .AddSource("Azure.Cosmos.Operation")
-            .AddNpgsql());
-
-    builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(o =>
-        o.Filter = TelemetryFilter.ShouldTrace);
-}
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("ishqnama-api"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options => options.Filter = TelemetryFilter.ShouldTrace)
+        .AddHttpClientInstrumentation()
+        .AddSource("Azure.Cosmos.Operation")
+        .AddNpgsql()
+        .AddAzureMonitorTraceExporter(ConfigureExporter))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddAzureMonitorMetricExporter(ConfigureExporter))
+    .WithLogging(logging => logging.AddAzureMonitorLogExporter(ConfigureExporter));
 ```
 
 - `TelemetryFilter.ShouldTrace(HttpContext)` (new, `Hosting/TelemetryFilter.cs`) returns false
   for `OPTIONS`, `/health/live`, `/health/ready` and `/api/healthz`. The probes alone are about 480
   requests an hour while a replica is up, and the keep-alive ping adds 30 an hour per open tab.
 - Cosmos tracing: set `CosmosClientOptions.CosmosClientTelemetryOptions = new() { DisableDistributedTracing = false }`
-  in `Ishqnama.Infrastructure/DependencyInjection.cs`, and set the
-  `Azure.Experimental.EnableActivitySource` AppContext switch. Check the current Cosmos SDK docs
-  for whether the switch is still needed for the installed version.
+  in `Ishqnama.Infrastructure/DependencyInjection.cs` (tracing is off by default in the GA SDK)
+  and listen to the `Azure.Cosmos.Operation` source. No AppContext switch is needed.
 - Logs: the distro also exports `ILogger` output, which would duplicate the container console
   logs. Add an OpenTelemetry logging filter at `Warning` so only warnings and errors (including
   `GlobalExceptionHandler`) reach the `AppTraces` and `AppExceptions` tables.
@@ -179,10 +183,13 @@ mode does not read `Request-Context`.
 The image is published trimmed (`PublishTrimmed`, `TrimMode=partial`) and self-contained, with
 0.5 GiB for the API container.
 
-- Run `dotnet publish` and treat any new IL2xxx/IL3xxx trim warnings from the OpenTelemetry or
-  Azure Monitor packages as blockers. Fallback: compose `OpenTelemetry.Extensions.Hosting` +
-  `OpenTelemetry.Instrumentation.AspNetCore` + `Azure.Monitor.OpenTelemetry.Exporter` by hand.
-  These are published as AOT- and trim-compatible.
+- Any new IL2xxx/IL3xxx trim warning from `dotnet publish` is a blocker. Checked: the distro
+  added `IL2104: Assembly 'Azure.Monitor.OpenTelemetry.AspNetCore' produced trim warnings`, and
+  the hand-composed packages add none over the existing baseline (EF Core, MVC, Newtonsoft).
+  The trimmed image exports request, exception, log and metric telemetry; probe, keep-alive and
+  `OPTIONS` requests are filtered out; and the request's operation ID and parent follow the
+  incoming `traceparent`. This was verified by running the image against a local fake
+  ingestion endpoint. Publish size went from 67 to 70 MB.
 - Compare working set and cold-start time before and after on dev: a container restart, then
   the first `/api/chapters`. A regression over ~40 MB or ~2 s needs discussion before prod.
 

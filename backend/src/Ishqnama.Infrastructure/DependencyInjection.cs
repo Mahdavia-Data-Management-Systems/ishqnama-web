@@ -34,6 +34,12 @@ public static class DependencyInjection
                 SerializerOptions = new CosmosSerializationOptions
                 {
                     PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+                },
+                // Off by default in the GA SDK. Spans go to the "Azure.Cosmos.Operation" source,
+                // which the API's OpenTelemetry setup listens to when Application Insights is on.
+                CosmosClientTelemetryOptions = new CosmosClientTelemetryOptions
+                {
+                    DisableDistributedTracing = false
                 }
             };
 
