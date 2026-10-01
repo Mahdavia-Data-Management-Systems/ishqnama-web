@@ -225,13 +225,17 @@ A module-level facade that the rest of the app imports. It never imports the SDK
     enableCorsCorrelation: false,          // see Decision 3; api-client adds the header itself
     disableAjaxTracking: true,             // nothing uses XHR
     disableFetchTracking: false,
-    excludeRequestFromAutoTrackingPatterns: [/\/api\/healthz/, /ciamlogin\.com/, /login\.microsoftonline\.com/],
+    excludeRequestFromAutoTrackingPatterns: [/\/api\/healthz/],
     enableAutoRouteTracking: false,        // route changes tracked manually
     enableUnhandledPromiseRejectionTracking: true,
     autoTrackPageVisitTime: true,
   }
   ```
 
+- A dependency initializer keeps only fetches to the API origin (`isApiCall`). Checking in a
+  browser showed that Next.js prefetches every visible link's `?_rsc=` payload, hundreds of them
+  on the Quran index, and each was recorded as a dependency. Entra token calls are dropped by the
+  same rule.
 - A telemetry initializer removes the URL hash and drops any item whose URL contains `/redirect/`
   as a safety net.
 
@@ -245,8 +249,10 @@ redirect bridge route like the other app-shell components. It sits outside `Auth
 - On `usePathname()` change: start a new operation ID (`context.telemetryTrace.traceID = generateW3CId()`),
   then `trackPageView`. Each page has its own operation, so its API calls group under it.
 - `useReportWebVitals` from `next/web-vitals` → `trackMetric("web-vital-<name>", value, { rating, route })`
-  for LCP, INP, CLS, FCP and TTFB. `route` is the path pattern (`/quran/[sura]/`), not the
-  concrete path, so results aggregate.
+  for LCP, INP, CLS, FCP and TTFB. `route` is the **landing** route's pattern (number-only
+  segments become `[n]`), because LCP and CLS can be reported after a client-side navigation
+  but describe the first load. The callback is module-level: `useReportWebVitals` re-subscribes
+  and re-reports when its callback changes identity.
 
 ### User context
 
@@ -297,8 +303,8 @@ spec.
 
 ### Bundle
 
-The SDK is about 40–50 KB gzipped, in its own chunk, loaded after `load` on every page. Check
-with `npm run build` that it does not appear in the first-load JS of any route.
+The SDK is about 72 KB gzipped (measured), in its own chunk, loaded after `load` on every page.
+It is not referenced from any page's first-load HTML.
 
 ## Privacy
 
@@ -326,8 +332,10 @@ Match "30 days" to the configured retention.
   calls, absent on anonymous `apiFetch`.
 - `src/lib/__tests__/telemetry-events.test.ts`: event property keys are drawn from an allowlist,
   so a future `query` or `text` property fails the test.
-- Backend: unit tests for `TelemetryFilter.ShouldTrace` (probe paths, `OPTIONS`, a normal route)
-  and for `UserHash.From` against the same vector as the frontend test.
+- Backend: the solution has no test project yet, so `TelemetryFilter` and `UserHash` were
+  checked by running the trimmed image against a fake ingestion endpoint (see Trimming and
+  footprint). The frontend test pins the hash vector
+  (`11111111-2222-3333-4444-555555555555` → `666ff6ccaa5b3c07`), which `UserHash.From` matches.
 - Existing suites (`no-hardcoded-colours`, `sign-in-copy`, etc.) stay green.
 
 ## Verification (dev)
