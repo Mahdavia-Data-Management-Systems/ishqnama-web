@@ -18,10 +18,41 @@
   color: var(--text-secondary);
 }
 
-.bookmarkGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-4);
+.rail {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0 calc(-1 * var(--space-6));
+  padding: var(--space-1) var(--space-6) var(--space-3);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--space-6);
+  /* No scrollbar: touch swipes it and a mouse drags it (useDragToScroll). */
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Set by useDragToScroll while a mouse drags the rail. */
+.rail[data-dragging],
+.rail[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.railItem {
+  display: flex;
+  flex: 0 0 160px;
+  scroll-snap-align: start;
+}
+
+/* Tiles fill their slot so a row of mixed tiles lines up. */
+.railItem > * {
+  flex: 1;
+  min-width: 0;
 }
 
 .list {

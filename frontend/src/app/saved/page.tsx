@@ -11,6 +11,7 @@ import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
 import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useApiReadiness } from "@/lib/api-readiness";
+import { useDragToScroll } from "@/lib/use-drag-to-scroll";
 import { getUserHistory } from "@/lib/user-api";
 import type { UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
@@ -26,6 +27,8 @@ export default function SavedPage() {
   const isAuthenticated = useIsAuthenticated();
   const { bookmarks, status, removeBookmark } = useBookmarks();
   const readiness = useApiReadiness();
+  const [bookmarkRail, setBookmarkRail] = useState<HTMLUListElement | null>(null);
+  useDragToScroll(bookmarkRail);
 
   const showBookmarkSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
   const waitingCaption =
@@ -101,17 +104,19 @@ export default function SavedPage() {
               />
             ) : (
               <>
-                <div className={styles.bookmarkGrid}>
+                <ul ref={setBookmarkRail} className={styles.rail}>
                   {showBookmarkSkeletons && (
                     <>
-                      <BookmarkTileSkeleton />
-                      <BookmarkTileSkeleton />
+                      <li className={styles.railItem}><BookmarkTileSkeleton /></li>
+                      <li className={styles.railItem}><BookmarkTileSkeleton /></li>
                     </>
                   )}
                   {customBookmarks.map((b) => (
-                    <BookmarkTile key={b.slug} bookmark={b} onDelete={removeBookmark} />
+                    <li key={b.slug} className={styles.railItem}>
+                      <BookmarkTile bookmark={b} onDelete={removeBookmark} />
+                    </li>
                   ))}
-                </div>
+                </ul>
                 {showBookmarkSkeletons && waitingCaption && (
                   <p className={styles.waitingCaption}>{waitingCaption}</p>
                 )}
