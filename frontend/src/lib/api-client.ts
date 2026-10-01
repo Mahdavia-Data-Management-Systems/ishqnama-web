@@ -3,8 +3,19 @@ import { msalInstance } from "@/components/auth-provider";
 import { apiScope } from "@/config/auth-config";
 import { beginRequest } from "@/lib/pending-requests";
 import { recoverExpiredSession } from "@/lib/session-renewal";
+import { traceparentHeader } from "@/lib/telemetry";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+/**
+ * Adds a W3C traceparent so Application Insights links the call to its API request. Only for
+ * requests that already carry Authorization: they are preflighted anyway, whereas the header
+ * would add a preflight to an anonymous GET.
+ */
+function addTraceparent(headers: Record<string, string>): void {
+  const traceparent = traceparentHeader();
+  if (traceparent) headers.traceparent = traceparent;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -85,6 +96,7 @@ export async function apiFetchWithOptionalAuth<T>(
         account,
       });
       authHeaders.Authorization = `Bearer ${result.accessToken}`;
+      addTraceparent(authHeaders);
     } catch (err) {
       if (err instanceof InteractionRequiredAuthError) {
         // The 24-hour sign-in has lapsed and the hidden iframe could not renew it. Send the
@@ -160,6 +172,7 @@ export async function authenticatedApiFetch<T>(
     Authorization: `Bearer ${accessToken}`,
     ...(fetchOptions.headers as Record<string, string>),
   };
+  addTraceparent(headers);
 
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";

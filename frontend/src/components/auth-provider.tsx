@@ -8,6 +8,7 @@ import {
 } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "@/config/auth-config";
+import { setUser } from "@/lib/telemetry";
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -31,6 +32,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      setUser(msalInstance.getActiveAccount()?.idTokenClaims?.oid);
+
       // Handle future login events (e.g. popup flow or subsequent redirects)
       msalInstance.addEventCallback((event) => {
         if (
@@ -39,6 +42,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         ) {
           const result = event.payload as AuthenticationResult;
           msalInstance.setActiveAccount(result.account);
+        }
+        // Covers sign-in, and the local sign-out in session-renewal.ts
+        if (event.eventType === EventType.ACTIVE_ACCOUNT_CHANGED) {
+          setUser(msalInstance.getActiveAccount()?.idTokenClaims?.oid);
         }
       });
 

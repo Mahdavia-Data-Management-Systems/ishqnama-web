@@ -54,6 +54,8 @@ jobs:
           echo "NEXT_PUBLIC_ENTRA_API_SCOPE=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_ENTRA_API_SCOPE')" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_API_URL=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_API_URL')" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_SITE_URL=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_SITE_URL')" >> "$GITHUB_ENV"
+          # "// empty" leaves telemetry off (rather than set to "null") if the setting is missing
+          echo "NEXT_PUBLIC_APPINSIGHTS_CONNECTION_STRING=$(echo "$SETTINGS" | jq -r '.NEXT_PUBLIC_APPINSIGHTS_CONNECTION_STRING // empty')" >> "$GITHUB_ENV"
           
         working-directory: .
 
