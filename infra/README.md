@@ -27,12 +27,12 @@ The azurerm provider registers missing providers itself at the start of a run, b
 subscription that can add several minutes to the first apply, so register them ahead of time:
 
 ```bash
-for ns in Microsoft.KeyVault Microsoft.Web Microsoft.App Microsoft.OperationalInsights Microsoft.DocumentDB; do
+for ns in Microsoft.KeyVault Microsoft.Web Microsoft.App Microsoft.OperationalInsights Microsoft.Insights Microsoft.DocumentDB; do
   az provider register --namespace $ns --wait
 done
 # Should print nothing
 az provider list \
-  --query "[?registrationState!='Registered' && contains('Microsoft.KeyVault Microsoft.Web Microsoft.App Microsoft.OperationalInsights Microsoft.DocumentDB', namespace)].namespace" \
+  --query "[?registrationState!='Registered' && contains('Microsoft.KeyVault Microsoft.Web Microsoft.App Microsoft.OperationalInsights Microsoft.Insights Microsoft.DocumentDB', namespace)].namespace" \
   -o tsv
 ```
 
@@ -297,6 +297,53 @@ In the Static Web App `swa-ishqnama-prod`, Custom domains:
 
 CORS on the API already allows both hostnames and the SWA default hostname
 (`local.api_cors_allowed_origins`).
+
+## Monitoring and its cost caps
+
+Each environment has one Log Analytics workspace (`ishqnama-<env>-logs`, module
+`log-analytics`), used by both the Container Apps environment and a workspace-based Application
+Insights resource (`appi-ishqnama-<env>`). The API gets
+its connection string as the `appinsights-connection` Container App secret, and the frontend as
+the `NEXT_PUBLIC_APPINSIGHTS_CONNECTION_STRING` SWA app setting, which ends up in the public JS
+bundle.
+
+Log Analytics includes 5 GB a month of free ingestion **per billing account**, not per
+subscription. Dev and prod have separate subscriptions but most likely share one billing account,
+so their caps together must stay under 5 GB a month. Container console logs count towards it
+too:
+
+| Environment | Workspace `daily_quota_gb` | App Insights `daily_data_cap_in_gb` |
+|---|---|---|
+| dev | 0.05 (~1.5 GB/month) | 0.04 |
+| prod | 0.1 (~3 GB/month) | 0.08 |
+
+Check in **Cost Management → Billing scopes** whether the two subscriptions really share a billing
+account. If they don't, each can have up to ~0.16 GB a day. When a cap is reached, ingestion
+stops until the next UTC day. That is the intended failure mode: anyone holding the public
+connection string can send telemetry, and the caps turn a flood into a lost day of data instead
+of a bill. Check real usage with `Usage | where IsBillable | summarize sum(Quantity) by bin(TimeGenerated, 1d)`
+in the workspace after a week on dev, before relying on the prod numbers.
+
+Saved queries worth keeping in the workspace:
+
+```kusto
+// Core Web Vitals p75 by landing route, last 7 days
+AppMetrics
+| where TimeGenerated > ago(7d) and Name startswith "web-vital-"
+| extend route = tostring(Properties.route)
+| summarize p75 = percentile(Sum / ItemCount, 75) by Name, route
+
+// Cold-start waits readers sat through
+AppMetrics
+| where Name == "api-warmup-ms"
+| summarize count(), p50 = percentile(Sum / ItemCount, 50), p95 = percentile(Sum / ItemCount, 95) by bin(TimeGenerated, 1d)
+
+// Failed browser calls to the API, with the API's own record of the same operation
+AppDependencies
+| where Success == false and Type == "Fetch"
+| join kind=leftouter (AppRequests | project OperationId, ApiName = Name, ApiResult = ResultCode) on OperationId
+| project TimeGenerated, Target, ResultCode, ApiName, ApiResult, UserAuthenticatedId
+```
 
 ## 9. Tearing down
 

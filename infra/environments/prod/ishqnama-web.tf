@@ -21,6 +21,8 @@ module "swa" {
     NEXT_PUBLIC_API_URL = "${local.api_url}/api"
     # Origin that link previews (og:image, og:url) are built from; crawlers need absolute URLs.
     NEXT_PUBLIC_SITE_URL = "https://${local.web_hostnames[0]}"
+    # Application Insights for the browser SDK. Not a secret: it ships in the public bundle.
+    NEXT_PUBLIC_APPINSIGHTS_CONNECTION_STRING = nonsensitive(module.app_insights.connection_string)
   }
 }
 

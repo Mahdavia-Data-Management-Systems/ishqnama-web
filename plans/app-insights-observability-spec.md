@@ -84,16 +84,21 @@ removing the manual header.
 ### New module `infra/modules/azure/app-insights`
 
 - `azurerm_application_insights`: `application_type = "web"`, `workspace_id` from the new
-  `aca-environment` output, `daily_data_cap_in_gb` (variable), `retention_in_days` matching the
+  `log-analytics` module's `id` output, `daily_data_cap_in_gb` (variable), `retention_in_days` matching the
   workspace, `internet_ingestion_enabled = true`, `local_authentication_disabled = false` (the
   browser ingests with the connection string; Entra-authenticated ingestion is not possible from
   an anonymous browser).
 - Outputs: `connection_string` (sensitive), `id`, `app_id`.
 
-### `aca-environment` module
+### New module `infra/modules/azure/log-analytics`
 
-- New variable `daily_quota_gb` (default `-1`, unlimited, to keep existing behaviour), passed to
-  `azurerm_log_analytics_workspace.daily_quota_gb`.
+- The `azurerm_log_analytics_workspace` moves out of `aca-environment` into its own module,
+  since Application Insights now uses it as well. A `moved` block in each environment keeps the
+  existing workspace (same name, `ishqnama-<env>-logs`), so nothing is recreated.
+- Variables `name`, `retention_in_days` (default 30) and `daily_quota_gb` (default `-1`,
+  unlimited); outputs `id` and `name`.
+- `aca-environment` now takes `log_analytics_workspace_id` instead of creating the workspace,
+  and loses its `log_retention_in_days` variable and `log_analytics_workspace_id` output.
 
 ### Environments (`dev` and `prod`)
 

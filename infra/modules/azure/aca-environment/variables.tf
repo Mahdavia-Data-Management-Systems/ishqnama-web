@@ -9,7 +9,12 @@ variable "location" {
 }
 
 variable "environment_name" {
-  description = "Name of the Container Apps environment (the Log Analytics workspace is named '<environment_name>-logs')"
+  description = "Name of the Container Apps environment"
+  type        = string
+}
+
+variable "log_analytics_workspace_id" {
+  description = "ID of the Log Analytics workspace the environment sends its logs to"
   type        = string
 }
 
@@ -42,12 +47,6 @@ variable "workload_profiles" {
       workload_profile_type = "Consumption"
     }
   ]
-}
-
-variable "log_retention_in_days" {
-  description = "Retention of the Log Analytics workspace in days"
-  type        = number
-  default     = 30
 }
 
 variable "tags" {

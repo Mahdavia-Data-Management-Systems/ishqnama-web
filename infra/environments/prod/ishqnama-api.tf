@@ -34,12 +34,49 @@ resource "random_password" "postgres" {
 # zero with it and needs no TCP ingress or VNet.
 # ---------------------------------------------------------------------------------------------
 
+# Logs for the Container Apps environment and Application Insights telemetry
+module "log_analytics" {
+  source = "../../modules/azure/log-analytics"
+
+  name                = "ishqnama-prod-logs"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+
+  # The free 5 GB a month of Log Analytics ingestion is per billing account, shared by dev and prod.
+  # Together the two quotas stay under it (dev 0.05 + prod 0.1 GB a day is about 4.5 GB a month).
+  daily_quota_gb = 0.1
+
+  tags = local.tags
+}
+
+# The workspace used to live inside the aca-environment module; keep the existing one
+moved {
+  from = module.api_environment.azurerm_log_analytics_workspace.this
+  to   = module.log_analytics.azurerm_log_analytics_workspace.this
+}
+
 module "api_environment" {
   source = "../../modules/azure/aca-environment"
 
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-  environment_name    = "ishqnama-prod"
+  resource_group_name        = azurerm_resource_group.this.name
+  location                   = azurerm_resource_group.this.location
+  environment_name           = "ishqnama-prod"
+  log_analytics_workspace_id = module.log_analytics.id
+
+  tags = local.tags
+}
+
+# Real-user monitoring and API tracing, stored in the environment's Log Analytics workspace.
+# The connection string is in the public frontend bundle, so the daily caps here and on the
+# workspace are what keep injected telemetry from costing anything.
+module "app_insights" {
+  source = "../../modules/azure/app-insights"
+
+  name                 = "appi-ishqnama-prod"
+  resource_group_name  = azurerm_resource_group.this.name
+  location             = azurerm_resource_group.this.location
+  workspace_id         = module.log_analytics.id
+  daily_data_cap_in_gb = 0.08
 
   tags = local.tags
 }
@@ -75,7 +112,8 @@ module "api" {
         { name = "Auth__ClientId", value = var.entra_api_client_id },
         { name = "Auth__Authority", value = local.api_auth_authority },
         # Container Apps has no platform CORS, so the app must own it
-        { name = "Cors__AllowedOrigins", value = join(",", local.api_cors_allowed_origins) }
+        { name = "Cors__AllowedOrigins", value = join(",", local.api_cors_allowed_origins) },
+        { name = "APPLICATIONINSIGHTS_CONNECTION_STRING", secret_name = "appinsights-connection" }
       ]
       probes = [
         { type = "Startup", transport = "HTTP", port = 8080, path = "/health/ready", interval_seconds = 5, timeout = 3, failure_threshold = 12 },
@@ -105,7 +143,8 @@ module "api" {
   secrets = [
     { name = "quran-db-connection", value = local.api_sidecar_db_connection_string },
     { name = "postgres-password", value = random_password.postgres.result },
-    { name = "cosmosdb-key", value = module.cosmosdb.primary_key }
+    { name = "cosmosdb-key", value = module.cosmosdb.primary_key },
+    { name = "appinsights-connection", value = module.app_insights.connection_string }
   ]
 
   ingress = {
