@@ -13,6 +13,7 @@ import {
   type ShareOutcome,
   type ShareTarget,
 } from "@/lib/share-verse";
+import { trackEvent } from "@/lib/telemetry";
 import type { RukuDto } from "@/types/api";
 import styles from "./share-verse-sheet.module.css";
 
@@ -99,6 +100,12 @@ export default function ShareVerseSheet({
     const text = buildShareText({ target, translation });
     const result = await shareVerse({ title: reference, text, url });
     setBusy(null);
+    if (result === "shared" || result === "copied") {
+      trackEvent("verse-shared", {
+        option: place === "chapter" ? "ayah" : "ruku",
+        method: result === "shared" ? "native" : "clipboard",
+      });
+    }
     if (result === "shared") {
       onClose();
       return;

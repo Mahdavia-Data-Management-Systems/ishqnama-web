@@ -9,6 +9,7 @@ import {
   updateBookmarkPosition,
   deleteBookmark as apiDeleteBookmark,
 } from "@/lib/user-api";
+import { trackEvent } from "@/lib/telemetry";
 import type { UserBookmarkDto } from "@/types/user";
 
 /**
@@ -131,6 +132,7 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
       try {
         const created = await apiCreateBookmark(title, icon, controller.signal);
         setBookmarks((prev) => [...prev, created]);
+        trackEvent("bookmark-created");
         return created;
       } finally {
         clearTimeout(timeoutId);
@@ -143,9 +145,11 @@ export default function BookmarksProvider({ children }: { children: React.ReactN
     (slug: string) => {
       // Optimistic remove
       setBookmarks((prev) => prev.filter((b) => b.slug !== slug));
-      apiDeleteBookmark(slug).catch(() => {
-        void fetchBookmarks();
-      });
+      apiDeleteBookmark(slug)
+        .then(() => trackEvent("bookmark-deleted"))
+        .catch(() => {
+          void fetchBookmarks();
+        });
     },
     [fetchBookmarks],
   );

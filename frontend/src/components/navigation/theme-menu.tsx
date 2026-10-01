@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/ui/icon";
 import { THEME_MENU_LABEL, THEME_OPTIONS } from "@/config/theme-copy";
+import { trackEvent } from "@/lib/telemetry";
 import { useTheme } from "@/lib/theme";
 import styles from "./theme-menu.module.css";
 
@@ -70,6 +71,7 @@ export default function ThemeMenu() {
               aria-checked={preference === option.value}
               className={styles.item}
               onClick={() => {
+                if (option.value !== preference) trackEvent("theme-changed", { theme: option.value });
                 setPreference(option.value);
                 close();
               }}

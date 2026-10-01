@@ -14,6 +14,7 @@ import { InteractionStatus } from "@azure/msal-browser";
 import { loginRequest } from "@/config/auth-config";
 import SignInPromptSheet from "@/components/sign-in-prompt-sheet";
 import type { SignInFeature } from "@/config/sign-in-copy";
+import { trackEvent } from "@/lib/telemetry";
 
 interface SignInPromptContextValue {
   isOpen: boolean;
@@ -41,14 +42,18 @@ export default function SignInPromptProvider({ children }: { children: ReactNode
     if (isAuthenticated) setFeature(null);
   }, [isAuthenticated]);
 
-  const promptSignIn = useCallback((f: SignInFeature) => setFeature(f), []);
+  const promptSignIn = useCallback((f: SignInFeature) => {
+    trackEvent("sign-in-prompt-shown", { feature: f });
+    setFeature(f);
+  }, []);
   const dismiss = useCallback(() => setFeature(null), []);
 
   const signIn = useCallback(() => {
+    if (feature) trackEvent("sign-in-started", { feature });
     // The sheet stays open while the browser navigates away. If the call rejects (for example
     // an interaction is already in progress) it also stays open; MSAL logs the error itself.
     instance.loginRedirect(loginRequest).catch(() => {});
-  }, [instance]);
+  }, [instance, feature]);
 
   // Reading isAuthenticated here means the sheet closes the moment a sign-in completes.
   const isOpen = feature !== null && !isAuthenticated;

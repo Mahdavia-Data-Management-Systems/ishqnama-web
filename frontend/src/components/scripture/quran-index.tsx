@@ -16,6 +16,7 @@ import {
   saveQuranIndexView,
   type QuranIndexView,
 } from "@/lib/quran-index-view";
+import { trackEvent } from "@/lib/telemetry";
 import styles from "./quran-index.module.css";
 
 /** Strip macrons, dots-below, and other combining diacritics for search. */
@@ -53,6 +54,7 @@ export default function QuranIndex() {
     const value = next as QuranIndexView;
     setView(value);
     saveQuranIndexView(value);
+    trackEvent("index-view-changed", { view: value });
   };
 
   const filteredSuras = useMemo(() => {
