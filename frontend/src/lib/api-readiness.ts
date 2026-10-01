@@ -102,7 +102,8 @@ export function getApiReadiness(): ApiReadiness {
   return state;
 }
 
-function subscribe(listener: Listener): () => void {
+/** Calls the listener on every change. Outside React, e.g. for the telemetry observer. */
+export function subscribeApiReadiness(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
@@ -113,7 +114,7 @@ function getServerSnapshot(): ApiReadiness {
 
 /** Re-renders the caller whenever the readiness changes. */
 export function useApiReadiness(): ApiReadiness {
-  return useSyncExternalStore(subscribe, getApiReadiness, getServerSnapshot);
+  return useSyncExternalStore(subscribeApiReadiness, getApiReadiness, getServerSnapshot);
 }
 
 /** Test-only: returns the store to its initial state. */

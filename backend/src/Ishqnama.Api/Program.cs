@@ -1,18 +1,26 @@
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Ishqnama.Api.Contracts;
 using Ishqnama.Api.Endpoints;
+using Ishqnama.Api.Helpers;
 using Ishqnama.Api.Hosting;
 using Ishqnama.Api.Json;
 using Ishqnama.Api.Middleware;
 using Ishqnama.Application.Services;
 using Ishqnama.Infrastructure;
 using Ishqnama.Infrastructure.Data;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
+using Npgsql;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +58,35 @@ builder.Services.AddScoped<VerseService>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<UserDataService>();
 
+// Application Insights through the Azure Monitor OpenTelemetry exporter. Only when a connection
+// string is configured, so local runs and docker-compose need nothing. The pieces are composed by
+// hand rather than through the Azure.Monitor.OpenTelemetry.AspNetCore distro, which produces trim
+// warnings in this trimmed, self-contained image; the exporter and instrumentation packages don't.
+var appInsightsConnectionString = configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+if (!string.IsNullOrEmpty(appInsightsConnectionString))
+{
+    void ConfigureExporter(AzureMonitorExporterOptions options) =>
+        options.ConnectionString = appInsightsConnectionString;
+
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource.AddService("ishqnama-api"))
+        .WithTracing(tracing => tracing
+            .AddAspNetCoreInstrumentation(options => options.Filter = TelemetryFilter.ShouldTrace)
+            .AddHttpClientInstrumentation()
+            .AddSource("Azure.Cosmos.Operation")
+            .AddNpgsql()
+            .AddAzureMonitorTraceExporter(ConfigureExporter))
+        .WithMetrics(metrics => metrics
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddAzureMonitorMetricExporter(ConfigureExporter))
+        .WithLogging(logging => logging.AddAzureMonitorLogExporter(ConfigureExporter));
+
+    // Information logs already reach Log Analytics as container console output; send only
+    // warnings and errors (including GlobalExceptionHandler) to Application Insights.
+    builder.Logging.AddFilter<OpenTelemetryLoggerProvider>(null, LogLevel.Warning);
+}
+
 // CORS — Container Apps has no platform CORS, so the app owns it (mirrors the Functions CorsMiddleware)
 var allowedOrigins = (configuration["Cors:AllowedOrigins"] ?? string.Empty)
     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -57,7 +94,9 @@ var allowedOrigins = (configuration["Cors:AllowedOrigins"] ?? string.Empty)
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(allowedOrigins)
     .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    .WithHeaders("Content-Type", "Accept", "Authorization")
+    // traceparent/tracestate link a signed-in browser call to its API request in Application
+    // Insights; the frontend sends them only on requests that already carry Authorization.
+    .WithHeaders("Content-Type", "Accept", "Authorization", "traceparent", "tracestate")
     // The Authorization header makes every signed-in call preflighted; without a max-age browsers
     // re-send the OPTIONS request almost every time (Chrome caches it for 5 s), doubling the round
     // trips. Two hours is Chrome's cap; Firefox allows up to 24 h.
@@ -85,6 +124,9 @@ builder.Services
                 var userId = principal?.FindFirst("oid")?.Value ?? principal?.FindFirst("sub")?.Value;
                 if (string.IsNullOrWhiteSpace(userId))
                     context.Fail("Token carries no user identifier ('oid' or 'sub').");
+                else
+                    // Recorded as user_AuthenticatedId; a hash, never the raw account ID
+                    Activity.Current?.SetTag("enduser.id", UserHash.From(userId));
                 return Task.CompletedTask;
             },
             // Same 401 bodies as the Functions AuthMiddleware (the default challenge has none)

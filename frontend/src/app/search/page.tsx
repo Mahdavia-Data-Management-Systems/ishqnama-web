@@ -10,6 +10,7 @@ import EmptyState from "@/components/empty-state";
 import SectionHeading from "@/components/navigation/section-heading";
 import SearchResultCard from "@/components/search-result-card";
 import { searchQuran } from "@/lib/api";
+import { trackEvent } from "@/lib/telemetry";
 import type { SearchResultDto } from "@/types/api";
 import styles from "./page.module.css";
 
@@ -114,6 +115,8 @@ export default function SearchPage() {
     searchQuran(q, scope, { translationId, page: p, pageSize }, controller.signal)
       .then((data) => {
         if (p === 1) {
+          // The count only: the query text never leaves the app
+          trackEvent("search-submitted", { resultCount: data.totalCount });
           setResults(data.items);
         } else {
           setResults((prev) => [...prev, ...data.items]);

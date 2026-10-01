@@ -30,10 +30,17 @@ export default function PrivacyPage() {
             Bookmarks, favourites, and reading history are stored to provide a
             personalised experience. This data is not shared with third parties.
           </p>
-          <h2>Analytics</h2>
+          <h2>How the site is used</h2>
           <p>
-            We may collect anonymous usage data to improve the service. No
-            personally identifiable information is included in analytics.
+            To find out what is slow or broken, and which parts of Ishqnama
+            readers use, we record which pages are opened, how quickly they
+            appear, errors that happen, and actions such as sharing a verse or
+            adding a bookmark. When you are signed in, these records carry a
+            scrambled code made from your account, so we can follow a problem
+            you hit without knowing who you are. They never include your name,
+            email address, what you search for, or what you read in the
+            explanations. Two small cookies let us count visits; they are used
+            for nothing else. The records are kept for 30 days.
           </p>
           <h2>Contact</h2>
           <p>

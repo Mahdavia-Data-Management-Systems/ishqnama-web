@@ -10,6 +10,7 @@ import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
 import { DEFAULT_FONT_SIZE_INDEX } from "@/config/reader-config";
 import { getApiReadiness, onReady, useApiReadiness } from "@/lib/api-readiness";
 import { getUserSettings, saveUserSettings } from "@/lib/user-api";
+import { trackEvent } from "@/lib/telemetry";
 import type { UserSettingsDto } from "@/types/user";
 
 /**
@@ -207,6 +208,14 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
       if (patch.showTafseer !== undefined) defined.showTafseer = patch.showTafseer;
       if (patch.showSuraRukuMarks !== undefined) defined.showSuraRukuMarks = patch.showSuraRukuMarks;
       if (patch.showJuzRukuMarks !== undefined) defined.showJuzRukuMarks = patch.showJuzRukuMarks;
+
+      const before = settingsRef.current;
+      if (defined.lang !== undefined && defined.lang !== before.lang) {
+        trackEvent("translation-language-changed", { from: before.lang, to: defined.lang });
+      }
+      if (defined.mode !== undefined && defined.mode !== before.mode) {
+        trackEvent("reading-mode-changed", { mode: defined.mode });
+      }
 
       applySettings({ ...settingsRef.current, ...defined });
 

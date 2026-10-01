@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { canRenderBook } from "@/lib/book-model-support";
+import { trackEvent } from "@/lib/telemetry";
 import type { BookScene, BookVariant } from "./book-scene";
 import styles from "./book-model.module.css";
 
@@ -52,7 +53,10 @@ export default function BookModel({
 
   // The gate runs on the client after mount; until then the poster is all there is.
   useEffect(() => {
-    setEnabled(live && canRenderBook());
+    const supported = canRenderBook();
+    if (live && !supported) trackEvent("book-model-fallback", { variant, reason: "unsupported" });
+    setEnabled(live && supported);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- variant is fixed for a mounted book
   }, [live]);
 
   // Lifecycle: wait for the window to load and the box to come near the viewport, then import
@@ -94,8 +98,10 @@ export default function BookModel({
             scene.resize(box.clientWidth, box.clientHeight);
             scene.setActive(inView && document.visibilityState === "visible");
             setIsLive(true);
+            trackEvent("book-model-shown", { variant });
           })
           .catch((error: unknown) => {
+            trackEvent("book-model-fallback", { variant, reason: "error" });
             // The poster stays. Nothing to show the reader; say why in development only.
             if (process.env.NODE_ENV === "development") console.error("BookModel:", error);
           });
