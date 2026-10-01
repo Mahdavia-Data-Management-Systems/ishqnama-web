@@ -287,12 +287,14 @@ body {
   background-color: var(--surface-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* A column, so a short page's <main> stretches to fill the viewport and the
+     footer sits at its bottom edge instead of floating up mid-screen. */
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 640px) {
-  body {
-    padding-bottom: 56px;
-  }
+body > main {
+  flex: 1 0 auto;
 }
 
 /* ── Links ── */

@@ -1,9 +1,12 @@
 .footer {
+  /* Pushed to the bottom of the body column on short pages, including any
+     page whose content is not a <main> (see body in globals.css). */
+  margin-top: auto;
   border-top: 1px solid var(--tint-ink-10);
   padding: var(--space-8) 0 var(--space-10);
 }
 
-/* The body is a fixed 100% height, so its own bottom padding never clears a
+/* The body is a fixed 100% height, so bottom padding on it would never clear a
    fixed bar on pages that overflow; the footer clears it itself. Reader pages
    carry the ReaderToolbar at every width, every other page only the phone
    bottom nav. */
