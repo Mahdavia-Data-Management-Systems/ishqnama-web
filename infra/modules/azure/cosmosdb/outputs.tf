@@ -24,3 +24,8 @@ output "container_name" {
   description = "The name of the SQL container"
   value       = azurerm_cosmosdb_sql_container.this.name
 }
+
+output "lists_container_name" {
+  description = "The name of the SQL container holding verse lists"
+  value       = azurerm_cosmosdb_sql_container.lists.name
+}

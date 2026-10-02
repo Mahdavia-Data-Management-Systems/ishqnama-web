@@ -109,6 +109,7 @@ module "api" {
         { name = "CosmosDb__Key", secret_name = "cosmosdb-key" },
         { name = "CosmosDb__DatabaseName", value = module.cosmosdb.database_name },
         { name = "CosmosDb__ContainerName", value = module.cosmosdb.container_name },
+        { name = "CosmosDb__ListsContainerName", value = module.cosmosdb.lists_container_name },
         { name = "Auth__ClientId", value = var.entra_api_client_id },
         { name = "Auth__Authority", value = local.api_auth_authority },
         # Container Apps has no platform CORS, so the app must own it

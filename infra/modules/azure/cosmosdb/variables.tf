@@ -25,6 +25,12 @@ variable "container_name" {
   default     = "user-data"
 }
 
+variable "lists_container_name" {
+  description = "Name of the SQL container holding verse lists (partitioned by /id)"
+  type        = string
+  default     = "lists"
+}
+
 variable "partition_key_path" {
   description = "Partition key path for the container"
   type        = string
