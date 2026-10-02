@@ -15,7 +15,7 @@ public sealed class VerseListServiceTests
 
     public VerseListServiceTests() => _service = new VerseListService(_lists, _favorites);
 
-    private Task<VerseListDto> CreateAsync(string title = "Verses to memorize")
+    private Task<VerseListDto> CreateAsync(string title = "Verses to memorise")
         => _service.CreateAsync(Owner, "Noor Mahdi", title, null);
 
     private static VerseListGroupDto Group(int chapter, int from, int to, string? caption = null, string? id = null)
@@ -256,7 +256,7 @@ public sealed class VerseListServiceTests
         await _service.SaveFavoriteAsync(Other, "list", list.Id);
 
         Assert.Equal($"fav_list_{list.Id}", first.Id);
-        Assert.Equal("Verses to memorize", first.Title);
+        Assert.Equal("Verses to memorise", first.Title);
         Assert.Single(await _service.GetFavoritesAsync(Other));
     }
 

@@ -35,7 +35,7 @@ export const LISTS_COPY = {
   // Editor
   editorHeading: "Edit list",
   titleLabel: "Title",
-  titlePlaceholder: 'For example: "Verses to memorize"',
+  titlePlaceholder: 'For example: "Verses to memorise"',
   descriptionLabel: "Description",
   descriptionPlaceholder: "What gathers these ayaat together",
   groupsHeading: "Groups of ayaat",

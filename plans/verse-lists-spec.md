@@ -3,7 +3,7 @@
 ## Context
 
 Readers want to put Quranic verses together by theme or purpose, for example "Related to Mahdi ahs"
-or "Verses to memorize", and share them. Today a reader can only bookmark a reading position or
+or "Verses to memorise", and share them. Today a reader can only bookmark a reading position or
 share a single verse. All user data is private to its owner, in the Cosmos `user-data` container
 partitioned by `/userId`, and the app has no favourites at all, although some docs still mention them.
 
