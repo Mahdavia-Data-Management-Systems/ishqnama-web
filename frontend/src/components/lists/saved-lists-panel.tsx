@@ -26,7 +26,7 @@ async function fetchSummaries(ids: string[], signal: AbortSignal): Promise<Verse
 }
 
 /**
- * The Lists tab of the Saved page: My collection (my drafts and published lists, with New list
+ * The Lists tab of the Library page: My collection (my drafts and published lists, with New list
  * first), Featured (FEATURED_LIST_IDS) and Others (lists I have favourited). Each list shows
  * in one section only; see arrangeSavedLists.
  */

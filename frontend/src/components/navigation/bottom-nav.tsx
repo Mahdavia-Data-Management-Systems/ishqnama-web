@@ -10,7 +10,7 @@ const tabs = [
   { href: "/", icon: "home", label: "Home" },
   { href: "/quran/", icon: "book", label: "Quran" },
   { href: "/search/", icon: "search", label: "Search" },
-  { href: "/saved/", icon: "bookmark", label: "Saved" },
+  { href: "/library/", icon: "library", label: "Library" },
 ];
 
 export default function BottomNav() {

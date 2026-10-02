@@ -32,6 +32,7 @@ const icons: Record<string, string> = {
   listBullet: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
   alignLeft: "M3 6h18M3 12h12M3 18h15",
   trash: "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+  library: "M16 6l4 14M12 6v14M8 8v12M4 4v16",
 };
 
 interface IconProps {

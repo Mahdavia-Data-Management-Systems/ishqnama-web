@@ -73,12 +73,12 @@ export default function UserMenu() {
           <button
             onClick={() => {
               setOpen(false);
-              router.push("/saved/");
+              router.push("/library/");
             }}
             className={styles.menuItem}
           >
-            <Icon name="bookmark" size={18} />
-            <span>Bookmarks</span>
+            <Icon name="library" size={18} />
+            <span>Library</span>
           </button>
           <button
             onClick={async () => {

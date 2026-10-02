@@ -10,16 +10,16 @@ vi.mock("@azure/msal-react", () => ({
 }));
 vi.mock("@/context/reader-settings-context", () => ({ useReaderSettings: () => ({ openSettings: vi.fn() }) }));
 
-describe("Saved navigation for an anonymous reader", () => {
+describe("Library navigation for an anonymous reader", () => {
   afterEach(cleanup);
 
   it("is listed in the app bar", () => {
     render(<AppBar />);
-    expect(screen.getByRole("link", { name: "Saved" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Library" })).toBeTruthy();
   });
 
   it("is listed in the bottom navigation", () => {
     render(<BottomNav />);
-    expect(screen.getByRole("link", { name: /Saved/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Library/ })).toBeTruthy();
   });
 });

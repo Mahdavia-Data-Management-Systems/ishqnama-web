@@ -5,6 +5,11 @@
   },
   "routes": [
     {
+      "route": "/saved/*",
+      "redirect": "/library/",
+      "statusCode": 301
+    },
+    {
       "route": "/models/*",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"

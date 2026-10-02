@@ -93,7 +93,7 @@ export default function Home() {
             <SectionHeading
               eyebrow="Your library"
               title="Bookmarks"
-              action={{ label: "View all", onClick: () => router.push("/saved/") }}
+              action={{ label: "View all", onClick: () => router.push("/library/") }}
             />
             <ul ref={setBookmarkRail} className={styles.rail}>
               {showSkeletons && (

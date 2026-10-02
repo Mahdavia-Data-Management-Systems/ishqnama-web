@@ -29,7 +29,7 @@ const libraryTabs = [
   { label: "History", value: "history" },
 ];
 
-export default function SavedPage() {
+export default function LibraryPage() {
   const [placeTab, setPlaceTab] = useState("bookmarks");
   const [tab, setTab] = useState("lists");
   const router = useRouter();
@@ -85,7 +85,7 @@ export default function SavedPage() {
   return (
     <main className={styles.main}>
       <div className="page-container">
-        <SectionHeading eyebrow="Your library" title="Saved" />
+        <SectionHeading eyebrow="Your collection" title="Library" />
 
         {showBookmarks && (
           <section className={styles.section}>

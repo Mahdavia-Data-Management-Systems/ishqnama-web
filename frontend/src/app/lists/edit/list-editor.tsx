@@ -202,7 +202,7 @@ export default function ListEditor() {
       if (action === "delete") {
         await deleteList(list.id);
         noteListDeleted(list.id);
-        router.push("/saved/");
+        router.push("/library/");
         return;
       }
       await flush();

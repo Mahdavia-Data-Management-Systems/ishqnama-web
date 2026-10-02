@@ -13,7 +13,7 @@ describe("isReaderRoute", () => {
     expect(isReaderRoute("/quran/")).toBe(false);
     expect(isReaderRoute("/")).toBe(false);
     expect(isReaderRoute("/about/")).toBe(false);
-    expect(isReaderRoute("/saved/")).toBe(false);
+    expect(isReaderRoute("/library/")).toBe(false);
   });
 
   it("handles a missing pathname", () => {

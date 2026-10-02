@@ -135,7 +135,7 @@ describe("routePattern", () => {
   it("replaces number-only segments", () => {
     expect(routePattern("/quran/2/ruku/3/")).toBe("/quran/[n]/ruku/[n]/");
     expect(routePattern("/quran/juz/30/")).toBe("/quran/juz/[n]/");
-    expect(routePattern("/saved/")).toBe("/saved/");
+    expect(routePattern("/library/")).toBe("/library/");
     expect(routePattern("/")).toBe("/");
   });
 });

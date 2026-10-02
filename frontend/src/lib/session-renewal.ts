@@ -6,7 +6,7 @@ import { interactiveRequestFor } from "@/lib/account-hints";
  *
  * Refresh tokens issued to a single-page app expire 24 hours after sign-in and cannot be
  * extended. When that happens acquireTokenSilent throws InteractionRequiredAuthError: the hidden
- * iframe found no Entra session, or the browser blocked its cookies. On /saved/ the
+ * iframe found no Entra session, or the browser blocked its cookies. On /library/ the
  * MsalAuthenticationTemplate falls back to a login redirect by itself, but the reader is public,
  * so before this module a signed-in reader kept their name in the menu while the explanations
  * quietly disappeared and nothing sent them back through Entra.

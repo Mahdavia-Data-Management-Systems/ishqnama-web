@@ -10,7 +10,7 @@ import { SIGN_IN_COPY, SIGN_IN_LABEL } from "@/config/sign-in-copy";
 import { useSignInPrompt } from "@/context/sign-in-prompt-context";
 
 /**
- * Wraps /saved/. While MSAL is still starting, shows the spinner. Once settled: an anonymous
+ * Wraps /library/. While MSAL is still starting, shows the spinner. Once settled: an anonymous
  * reader sees the page shell with the sign-in prompt opened once over it (and an inline way to
  * reopen it); a signed-in reader gets ProtectedRoute as before, which keeps silent renewal and
  * the "Sign in again" error state for expired sessions.
@@ -19,7 +19,7 @@ import { useSignInPrompt } from "@/context/sign-in-prompt-context";
  * own redirect the moment inProgress becomes None with no account, which would race the
  * anonymous branch and send the reader away without ever showing the prompt.
  */
-export default function SavedGate({ children }: { children: ReactNode }) {
+export default function LibraryGate({ children }: { children: ReactNode }) {
   const isAuthenticated = useIsAuthenticated();
   const { authSettled, promptSignIn } = useSignInPrompt();
   const anonymous = authSettled && !isAuthenticated;
@@ -37,7 +37,7 @@ export default function SavedGate({ children }: { children: ReactNode }) {
     return (
       <main style={{ padding: "var(--space-8) 0 var(--space-16)" }}>
         <div className="page-container">
-          <SectionHeading eyebrow="Your library" title="Saved" />
+          <SectionHeading eyebrow="Your collection" title="Library" />
           <EmptyState
             icon="bookmark"
             title={SIGN_IN_COPY.saved.title}

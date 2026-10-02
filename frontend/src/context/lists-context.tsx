@@ -15,7 +15,7 @@ import { trackEvent } from "@/lib/telemetry";
 import type { FavoriteDto, VerseListDto, VerseListGroupDto, VerseListSummaryDto } from "@/types/lists";
 
 /**
- * The signed-in reader's own lists (as summaries) and favourites, shared by the Saved page, the
+ * The signed-in reader's own lists (as summaries) and favourites, shared by the Library page, the
  * list pages and "Add to list" in the reader. Loads like the bookmarks: no timeout on the GET
  * (a cold start resolves it by itself), and a failed GET refetches on the next ready transition.
  * Creating a list and adding a group wait for the server, with a long timeout.

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import SavedGate from "@/components/saved-gate";
+import LibraryGate from "@/components/library-gate";
 import SignInPromptProvider from "@/context/sign-in-prompt-context";
 import { SIGN_IN_COPY } from "@/config/sign-in-copy";
 
@@ -22,9 +22,9 @@ vi.mock("@/components/protected-route", () => ({
 function renderGate() {
   return render(
     <SignInPromptProvider>
-      <SavedGate>
-        <p>saved page content</p>
-      </SavedGate>
+      <LibraryGate>
+        <p>library page content</p>
+      </LibraryGate>
     </SignInPromptProvider>,
   );
 }
@@ -32,14 +32,14 @@ function renderGate() {
 function rerenderGate(view: ReturnType<typeof render>) {
   view.rerender(
     <SignInPromptProvider>
-      <SavedGate>
-        <p>saved page content</p>
-      </SavedGate>
+      <LibraryGate>
+        <p>library page content</p>
+      </LibraryGate>
     </SignInPromptProvider>,
   );
 }
 
-describe("SavedGate", () => {
+describe("LibraryGate", () => {
   beforeEach(() => {
     msal.authed = false;
     msal.inProgress = "none";
@@ -52,12 +52,12 @@ describe("SavedGate", () => {
     expect(screen.getByText("One moment")).toBeTruthy();
     expect(screen.queryByTestId("protected")).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.queryByText("saved page content")).toBeNull();
+    expect(screen.queryByText("library page content")).toBeNull();
   });
 
   it("shows the page shell and opens the prompt once for an anonymous reader", () => {
     const view = renderGate();
-    expect(screen.getByRole("heading", { name: "Saved" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Library" })).toBeTruthy();
     expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.saved.title })).toBeTruthy();
     expect(screen.queryByTestId("protected")).toBeNull();
 
@@ -79,7 +79,7 @@ describe("SavedGate", () => {
     msal.authed = true;
     renderGate();
     expect(screen.getByTestId("protected")).toBeTruthy();
-    expect(screen.getByText("saved page content")).toBeTruthy();
+    expect(screen.getByText("library page content")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 

@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/quran/", label: "Quran" },
   { href: "/search/", label: "Search" },
-  { href: "/saved/", label: "Saved" },
+  { href: "/library/", label: "Library" },
 ];
 
 export default function AppBar() {

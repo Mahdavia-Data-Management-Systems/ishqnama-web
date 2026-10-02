@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import SavedPage from "@/app/saved/page";
+import LibraryPage from "@/app/library/page";
 import { useBookmarks } from "@/context/bookmarks-context";
 import type { UserBookmarkDto } from "@/types/user";
 
@@ -30,7 +30,7 @@ function withBookmarks(bookmarks: UserBookmarkDto[], status: "loading" | "loaded
   } as unknown as ReturnType<typeof useBookmarks>);
 }
 
-describe("SavedPage", () => {
+describe("LibraryPage", () => {
   beforeEach(() => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: false,
@@ -46,21 +46,21 @@ describe("SavedPage", () => {
 
   it("leaves the bookmarks section out when only the default bookmark exists", () => {
     withBookmarks([NAZRA], "loaded");
-    render(<SavedPage />);
+    render(<LibraryPage />);
     expect(screen.queryByRole("tab", { name: "Bookmarks" })).toBeNull();
     expect(screen.getByRole("tab", { name: "Lists" })).toBeTruthy();
   });
 
   it("shows the bookmarks section once the reader has their own bookmark", () => {
     withBookmarks([NAZRA, DAILY], "loaded");
-    render(<SavedPage />);
+    render(<LibraryPage />);
     expect(screen.getByRole("tab", { name: "Bookmarks" })).toBeTruthy();
     expect(screen.getByText("Daily")).toBeTruthy();
   });
 
   it("holds the section's place while bookmarks load", () => {
     withBookmarks([], "loading");
-    render(<SavedPage />);
+    render(<LibraryPage />);
     expect(screen.getByRole("tab", { name: "Bookmarks" })).toBeTruthy();
   });
 });

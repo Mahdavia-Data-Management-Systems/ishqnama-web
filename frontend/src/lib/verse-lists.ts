@@ -93,7 +93,7 @@ export interface SavedListsSections {
 }
 
 /**
- * Puts each list in exactly one section of the Saved page's Lists tab. My own lists stay in My
+ * Puts each list in exactly one section of the Library page's Lists tab. My own lists stay in My
  * collection even when featured; a featured list I have also favourited shows only under
  * Featured. `available` holds the published summaries fetched for featured and favourite ids.
  */
