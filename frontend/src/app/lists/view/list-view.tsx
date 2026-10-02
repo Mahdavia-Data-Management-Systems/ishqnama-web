@@ -1,13 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
 import EmptyState from "@/components/empty-state";
 import ListGroupCard from "@/components/lists/list-group-card";
 import OwnerAvatar from "@/components/lists/owner-avatar";
-import Button from "@/components/ui/button";
+import IconButton from "@/components/ui/icon-button";
 import { FEATURED_LIST_IDS } from "@/config/featured-lists";
 import { LISTS_COPY } from "@/config/lists-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
@@ -35,6 +34,7 @@ type LoadState =
  */
 export default function ListView() {
   const id = useSearchParams().get("id") ?? "";
+  const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
   const { authSettled } = useSignInPrompt();
   const readiness = useApiReadiness();
@@ -145,6 +145,28 @@ export default function ListView() {
     <main className={styles.main}>
       <div className="page-container">
         <header className={styles.header}>
+          <div className={styles.toolbar}>
+            <IconButton icon="share" label={LISTS_COPY.share} size="sm" onClick={() => void handleShare()} />
+            {list.isMine ? (
+              <IconButton
+                icon="pencil"
+                label={LISTS_COPY.edit}
+                size="sm"
+                onClick={() => router.push(listEditPath(list.id))}
+              />
+            ) : (
+              !featured && (
+                <IconButton
+                  icon="heart"
+                  label={favorite ? LISTS_COPY.favourited : LISTS_COPY.favourite}
+                  size="sm"
+                  filled={favorite != null}
+                  className={favorite ? styles.favourited : undefined}
+                  onClick={handleFavorite}
+                />
+              )
+            )}
+          </div>
           <div className={styles.intro}>
             <div className={styles.titles}>
               <h1 className={styles.title}>{list.title}</h1>
@@ -159,28 +181,6 @@ export default function ListView() {
             </p>
           </div>
 
-          <div className={styles.actions}>
-            <Button variant="secondary" size="sm" icon="share" onClick={handleShare}>
-              {LISTS_COPY.share}
-            </Button>
-            {list.isMine ? (
-              <Link href={listEditPath(list.id)} className={styles.editLink}>
-                {LISTS_COPY.edit}
-              </Link>
-            ) : (
-              !featured && (
-                <Button
-                  variant={favorite ? "primary" : "secondary"}
-                  size="sm"
-                  icon="heart"
-                  disabled={favBusy}
-                  onClick={handleFavorite}
-                >
-                  {favorite ? LISTS_COPY.favourited : LISTS_COPY.favourite}
-                </Button>
-              )
-            )}
-          </div>
           {shareNote && <p className={styles.note} role="status">{shareNote}</p>}
         </header>
 

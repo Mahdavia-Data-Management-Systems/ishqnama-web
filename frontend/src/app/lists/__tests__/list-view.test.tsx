@@ -130,7 +130,7 @@ describe("a shared list", () => {
     vi.mocked(getPublishedList).mockResolvedValue(list({ isMine: true }));
     renderPage();
 
-    expect(await screen.findByRole("link", { name: LISTS_COPY.edit })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: LISTS_COPY.edit })).toBeTruthy();
     expect(screen.queryByRole("button", { name: LISTS_COPY.favourite })).toBeNull();
   });
 
