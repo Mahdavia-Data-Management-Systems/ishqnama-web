@@ -13,6 +13,9 @@ import { GROUP_PREVIEW_VERSES, groupReaderPath, groupReference } from "@/lib/ver
 import type { VerseListGroupDto } from "@/types/lists";
 import styles from "./list-group-card.module.css";
 
+/** ﷽, "In the name of Allah, the Most Gracious, the Most Merciful", heading every group. */
+const BISMILLAH = "﷽";
+
 /**
  * One group on a list page: its caption and reference, then the Arabic in continuous mode. A
  * group longer than GROUP_PREVIEW_VERSES shows its first verses and "Read more", which opens the
@@ -35,6 +38,10 @@ export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
   return (
     <article className={styles.card}>
       <header className={styles.header}>
+        {/* U+FDFD, drawn by the Quran font itself (PDMS Saleem Quran carries the glyph) */}
+        <p className={styles.bismillah} dir="rtl" lang="ar">
+          {BISMILLAH}
+        </p>
         {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
         <p className={styles.reference}>{reference}</p>
       </header>
