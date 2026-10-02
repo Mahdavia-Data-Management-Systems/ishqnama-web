@@ -17,14 +17,20 @@ import { getUserHistory } from "@/lib/user-api";
 import type { UserHistoryDto } from "@/types/user";
 import styles from "./page.module.css";
 
-const tabOptions = [
-  { label: "Bookmarks", value: "bookmarks" },
+/**
+ * Two sections, each with its own tabs: bookmarks first (a rail; room for more tabs later), then
+ * the reader's lists and reading history below it.
+ */
+const placeTabs = [{ label: "Bookmarks", value: "bookmarks" }];
+
+const libraryTabs = [
   { label: "Lists", value: "lists" },
   { label: "History", value: "history" },
 ];
 
 export default function SavedPage() {
-  const [tab, setTab] = useState("bookmarks");
+  const [placeTab, setPlaceTab] = useState("bookmarks");
+  const [tab, setTab] = useState("lists");
   const router = useRouter();
   const isAuthenticated = useIsAuthenticated();
   const { bookmarks, status, removeBookmark } = useBookmarks();
@@ -76,34 +82,26 @@ export default function SavedPage() {
     },
   };
 
-  const config = emptyConfig[tab as keyof typeof emptyConfig];
-
   const customBookmarks = bookmarks.filter((b) => !b.isDefault);
-
-  const hasItems =
-    (tab === "bookmarks" && bookmarks.length > 0) ||
-    (tab === "history" && history.length > 0);
 
   return (
     <main className={styles.main}>
       <div className="page-container">
         <SectionHeading eyebrow="Your library" title="Saved" />
 
-        <Tabs
-          options={tabOptions}
-          value={tab}
-          onChange={setTab}
-          label="Saved"
-          panelClassName={styles.content}
-        >
-          {tab === "lists" ? (
-            <SavedListsPanel />
-          ) : tab === "bookmarks" ? (
-            !showBookmarkSkeletons && customBookmarks.length === 0 ? (
+        <section className={styles.section}>
+          <Tabs
+            options={placeTabs}
+            value={placeTab}
+            onChange={setPlaceTab}
+            label="Bookmarks"
+            panelClassName={styles.content}
+          >
+            {!showBookmarkSkeletons && customBookmarks.length === 0 ? (
               <EmptyState
-                icon={config.icon}
-                title={config.title}
-                body={config.body}
+                icon={emptyConfig.bookmarks.icon}
+                title={emptyConfig.bookmarks.title}
+                body={emptyConfig.bookmarks.body}
                 action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
               />
             ) : (
@@ -125,41 +123,55 @@ export default function SavedPage() {
                   <p className={styles.waitingCaption}>{waitingCaption}</p>
                 )}
               </>
-            )
-          ) : loading ? (
-            <>
-              <div className={styles.skeletonList}>
-                <BookmarkTileSkeleton variant="row" />
-                <BookmarkTileSkeleton variant="row" />
-                <BookmarkTileSkeleton variant="row" />
-              </div>
-              {waitingCaption && <p className={styles.waitingCaption}>{waitingCaption}</p>}
-            </>
-          ) : !hasItems ? (
-            <EmptyState
-              icon={config.icon}
-              title={config.title}
-              body={config.body}
-              action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
-            />
-          ) : (
-            <ul className={styles.list}>
-              {history.map((h, i) => (
-                <li key={`${h.url}-${h.timestamp}-${i}`} className={styles.item}>
-                  <button
-                    className={styles.itemButton}
-                    onClick={() => router.push(h.url)}
-                  >
-                    <span className={styles.itemTitle}>{h.title}</span>
-                    <span className={styles.itemMeta}>
-                      {new Date(h.timestamp).toLocaleDateString()}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Tabs>
+            )}
+          </Tabs>
+        </section>
+
+        <section className={styles.section}>
+          <Tabs
+            options={libraryTabs}
+            value={tab}
+            onChange={setTab}
+            label="Lists and history"
+            panelClassName={styles.content}
+          >
+            {tab === "lists" ? (
+              <SavedListsPanel />
+            ) : loading ? (
+              <>
+                <div className={styles.skeletonList}>
+                  <BookmarkTileSkeleton variant="row" />
+                  <BookmarkTileSkeleton variant="row" />
+                  <BookmarkTileSkeleton variant="row" />
+                </div>
+                {waitingCaption && <p className={styles.waitingCaption}>{waitingCaption}</p>}
+              </>
+            ) : history.length === 0 ? (
+              <EmptyState
+                icon={emptyConfig.history.icon}
+                title={emptyConfig.history.title}
+                body={emptyConfig.history.body}
+                action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
+              />
+            ) : (
+              <ul className={styles.list}>
+                {history.map((h, i) => (
+                  <li key={`${h.url}-${h.timestamp}-${i}`} className={styles.item}>
+                    <button
+                      className={styles.itemButton}
+                      onClick={() => router.push(h.url)}
+                    >
+                      <span className={styles.itemTitle}>{h.title}</span>
+                      <span className={styles.itemMeta}>
+                        {new Date(h.timestamp).toLocaleDateString()}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Tabs>
+        </section>
       </div>
     </main>
   );

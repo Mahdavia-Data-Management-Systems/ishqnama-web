@@ -6,6 +6,11 @@
   margin-top: var(--space-6);
 }
 
+/* Bookmarks, then lists and history, each under its own tabs. */
+.section + .section {
+  margin-top: var(--space-12);
+}
+
 .skeletonList {
   display: flex;
   flex-direction: column;

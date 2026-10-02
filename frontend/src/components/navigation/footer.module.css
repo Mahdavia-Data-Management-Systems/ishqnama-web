@@ -2,6 +2,7 @@
   /* Pushed to the bottom of the body column on short pages, including any
      page whose content is not a <main> (see body in globals.css). */
   margin-top: auto;
+  flex-shrink: 0;
   border-top: 1px solid var(--tint-ink-10);
   padding: var(--space-8) 0 var(--space-10);
 }

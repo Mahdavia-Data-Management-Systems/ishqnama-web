@@ -3,6 +3,7 @@
   top: 0;
   z-index: 100;
   height: var(--header-height);
+  flex-shrink: 0; /* body is a flex column; a long page would squash the bar */
   background: var(--surface-chrome);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
