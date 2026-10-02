@@ -6,4 +6,7 @@
     <Project Path="src/Ishqnama.Functions/Ishqnama.Functions.csproj" />
     <Project Path="src/Ishqnama.Api/Ishqnama.Api.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ishqnama.Application.Tests/Ishqnama.Application.Tests.csproj" />
+  </Folder>
 </Solution>

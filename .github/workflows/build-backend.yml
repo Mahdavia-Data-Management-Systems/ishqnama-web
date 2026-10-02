@@ -37,6 +37,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
 
+      - name: Test
+        run: dotnet test --no-build -c Release
+
   publish-api-image:
     name: Build and Push API Image
     runs-on: ubuntu-latest

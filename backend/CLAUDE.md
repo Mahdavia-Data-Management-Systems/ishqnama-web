@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ishqnama is a .NET 9 API serving Quranic data (verses, translations, tafseer) in Arabic, English, Urdu, and Hindi, plus authenticated user data (settings, bookmarks, favorites, history). Uses Clean Architecture with two interchangeable presentation layers: Azure Functions (`Ishqnama.Functions`, deployed today) and an ASP.NET Core Minimal API (`Ishqnama.Api`, destined for Azure Container Apps). Both expose the same routes under `/api`. Two data stores: PostgreSQL (read-only Quran data) and Cosmos DB (read-write user data).
+Ishqnama is a .NET 9 API serving Quranic data (verses, translations, tafseer) in Arabic, English, Urdu, and Hindi, plus authenticated user data (settings, bookmarks, favorites, history) and verse lists (owned by a reader, readable by anyone once published). Uses Clean Architecture with two interchangeable presentation layers: Azure Functions (`Ishqnama.Functions`, deployed today) and an ASP.NET Core Minimal API (`Ishqnama.Api`, destined for Azure Container Apps). Both expose the same routes under `/api`. Two data stores: PostgreSQL (read-only Quran data) and Cosmos DB (read-write user data).
 
 ## Build & Run Commands
 
@@ -43,9 +43,9 @@ Api ───────┘──>  Infrastructure  ──>  Application
                                  ──>  Domain
 ```
 
-- **`Ishqnama.Domain`** — Sealed entity POCOs. Quran entities (10: Chapter, Verse, Juz, etc.) + user data entities (4: UserSettings, UserBookmark, UserFavorite, UserHistoryEntry). Zero dependencies.
-- **`Ishqnama.Application`** — DTOs, interfaces (`IQuranReadOnlyRepository`, `IUserDataRepository`), `DtoMappings`, service classes (5 Quran services + `UserDataService`). Depends only on Domain.
-- **`Ishqnama.Infrastructure`** — EF Core `QuranDbContext` + 10 entity configurations, `CachedQuranReadOnlyRepository` (singleton, loads all Quran data into memory), `CosmosUserDataRepository` (Cosmos DB SDK), `DependencyInjection.cs`. Depends on Domain + Application.
+- **`Ishqnama.Domain`** — Sealed entity POCOs. Quran entities (10: Chapter, Verse, Juz, etc.) + user data entities (UserSettings, UserBookmark, UserFavorite, UserHistoryEntry, VerseList with its VerseListGroup). Zero dependencies.
+- **`Ishqnama.Application`** — DTOs, interfaces (`IQuranReadOnlyRepository`, `IUserDataRepository`, `IVerseListRepository`), `DtoMappings`, service classes (5 Quran services + `UserDataService` + `VerseListService`), `QuranShape` (chapter verse counts, used for every range check). Depends only on Domain.
+- **`Ishqnama.Infrastructure`** — EF Core `QuranDbContext` + 10 entity configurations, `CachedQuranReadOnlyRepository` (singleton, loads all Quran data into memory), `CosmosUserDataRepository` and `CosmosVerseListRepository` (Cosmos DB SDK), `DependencyInjection.cs`. Depends on Domain + Application.
 - **`Ishqnama.Functions`** — Azure Functions isolated worker (presentation layer). 8 function classes: 12 Quran/health HTTP triggers + 8 user data triggers, 4 middleware (CORS, auth, exception handling, cache headers). Composition root. Depends on Application + Infrastructure.
 - **`Ishqnama.Api`** — ASP.NET Core Minimal API (presentation layer, same 20 routes). `Endpoints/*Endpoints.cs` one static class per resource, `Middleware/CacheHeaderMiddleware` + `GlobalExceptionHandler`, `Json/IshqnamaJsonContext` (source-generated STJ), `Contracts/` (request records, `ErrorResponse`). Framework CORS, JwtBearer auth, response compression, health checks, OpenAPI + Scalar (Development only). Composition root. Depends on Application + Infrastructure. Reads the **same configuration keys** as Functions (`ConnectionStrings:QuranDb`, `CosmosDb:*`, `Auth:*`, `Cors:AllowedOrigins`) from `appsettings.Development.json` / environment variables.
 
@@ -65,11 +65,12 @@ Connection string: `ConnectionStrings:QuranDb` in `local.settings.json` (Functio
 
 ### Cosmos DB (User Data — Read-Write)
 
-NoSQL API, single container `user-data` in database `ishqnama-userdata`, partitioned by `/userId`. Free tier (1000 RU/s + 25 GB).
+NoSQL API, database `ishqnama-userdata` (shared 400 RU/s, free tier: 1000 RU/s + 25 GB) with two containers:
 
-Document types (discriminated by `type` field): `settings`, `bookmark`, `favorite`, `history`. All operations scoped to a single partition (userId).
+- **`user-data`**, partitioned by `/userId`. Document types (discriminated by `type`): `settings`, `bookmark`, `favorite`, `history`. All operations scoped to a single partition (userId). A favourite's id is derived from what it points at (`fav_list_<listId>` today; `fav_chapter_<c>`, `fav_verses_<c>_<from>_<to>` later), so saving it twice is an upsert. `kind` says what it points at; only `list` exists, and a new kind needs a validator in `VerseListService.SaveFavoriteAsync` and its target fields on `UserFavorite`, not new endpoints or storage.
+- **`lists`**, partitioned by `/id`, because a published list is read by people other than its owner: a shared link is a point read, and an owner's lists are a small cross-partition query on `ownerId`. One document per list with its groups inline (`/groups/*` is excluded from indexing). Ids are 12 random base62 characters; group ids 4. Every write goes through `IVerseListRepository.UpdateAsync`, a read, mutate and `IfMatchEtag` replace that retries on 412, so "Add to list" from the reader never overwrites an editor's save. Limits (in `VerseListService`): title 100, description 1000, caption 300, 200 groups, 100 lists per owner. A group is always within one chapter. `ownerName` is the token's `name` claim, refreshed on every owner save.
 
-Config: `CosmosDb__Endpoint`, `CosmosDb__Key`, `CosmosDb__DatabaseName`, `CosmosDb__ContainerName` (`local.settings.json` for Functions, `CosmosDb` section of `appsettings.Development.json` for the API). Cosmos DB registration is **conditional** in both hosts — they start without it if config values are empty (existing Quran endpoints still work).
+Config: `CosmosDb__Endpoint`, `CosmosDb__Key`, `CosmosDb__DatabaseName`, `CosmosDb__ContainerName`, `CosmosDb__ListsContainerName` (default `lists`; the Functions host does not register lists) (`local.settings.json` for Functions, `CosmosDb` section of `appsettings.Development.json` for the API). A local emulator whose data volume predates the `lists` container skips `cosmos-init/` on start; create it with `docker exec ishqnama-cosmos cosmoshell.sh -c "mkcon lists /id --database=ishqnama-userdata"`. Cosmos DB registration is **conditional** in both hosts — they start without it if config values are empty (existing Quran endpoints still work).
 
 ## Authentication
 
@@ -93,7 +94,7 @@ JWT bearer auth protects `/api/user/*` and `/api/search`. Other Quran endpoints 
 3. `ExceptionHandlingMiddleware` — Catches unhandled exceptions, returns 500 JSON
 4. `CacheHeaderMiddleware` — Sets `Cache-Control: public, max-age=2592000, immutable` + ETag; 304 short-circuit on `If-None-Match` match
 
-**API** — order: `UseResponseCompression` → `UseExceptionHandler` (`GlobalExceptionHandler`, same 500 body) → `UseCors` (default policy from `Cors:AllowedOrigins`) → `UseAuthentication` → `UseAuthorization` → `CacheHeaderMiddleware` → endpoints. The cache middleware applies to `/api/*` except `/api/user/*` and `/api/healthz`; `/health/live` and `/health/ready` sit outside `/api` and are never cached. The CORS policy sets `Access-Control-Max-Age: 7200` (Chrome's cap), because the `Authorization` header preflights every signed-in call and without it browsers re-send the `OPTIONS` almost every time.
+**API** — order: `UseResponseCompression` → `UseExceptionHandler` (`GlobalExceptionHandler`, same 500 body) → `UseCors` (default policy from `Cors:AllowedOrigins`) → `UseAuthentication` → `UseAuthorization` → `CacheHeaderMiddleware` → endpoints. The cache middleware applies to `/api/*` except `/api/user/*`, `/api/lists*` (published lists are edited live) and `/api/healthz`; `/health/live` and `/health/ready` sit outside `/api` and are never cached. The CORS policy sets `Access-Control-Max-Age: 7200` (Chrome's cap), because the `Authorization` header preflights every signed-in call and without it browsers re-send the `OPTIONS` almost every time.
 
 **Telemetry** — `Program.cs` sends traces, metrics and warning-or-worse logs to Application Insights only when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set (a Container App secret from Terraform; unset locally, so nothing changes there). The OpenTelemetry pieces are composed by hand (`AddAspNetCoreInstrumentation`, `AddHttpClientInstrumentation`, the `Azure.Cosmos.Operation` source, `AddNpgsql`, and the `AddAzureMonitor*Exporter` calls) instead of the `Azure.Monitor.OpenTelemetry.AspNetCore` distro, because the distro adds a trim warning (IL2104) to the trimmed image. Treat any new trim warning from a telemetry package as a blocker. `Hosting/TelemetryFilter` keeps `OPTIONS`, `/health/*` and `/api/healthz` out of request telemetry. Cosmos spans need `CosmosClientTelemetryOptions.DisableDistributedTracing = false` (set in `AddUserDataInfrastructure`), because tracing is off by default in the GA SDK. A validated token tags the request activity with `enduser.id` = `Helpers/UserHash.From(oid)` (first 16 hex characters of SHA-256), which the frontend computes the same way. CORS allows `traceparent`/`tracestate`, which the frontend sends only on signed-in requests. Design in `plans/app-insights-observability-spec.md`
 
@@ -123,7 +124,7 @@ All under `/api/` (route prefix set in `host.json` for Functions, `app.MapGroup(
 
 ### Quran Endpoints (Anonymous)
 
-`/chapters?lang=`, `/chapters/{num}`, `/chapters/{num}/verses`, `/chapters/{num}/verses/{verseNum}`, `/juz`, `/juz/{num}/verses`, `/rukus?chapterNum=&juzNum=`, `/rukus/{id}/verses`, `/translations`, `/verses?from=&to=`, `/healthz`. Verse endpoints support `translationId`, `page`, `pageSize` query params. Default page size 50, max 200. The API additionally exposes `/health/live` and `/health/ready` (EF Core `CanConnect` check) for container probes.
+`/chapters?lang=`, `/chapters/{num}`, `/chapters/{num}/verses`, `/chapters/{num}/verses/{verseNum}`, `/chapters/{num}/arabic?from=&to=` (API only: `[{verseNumber, arabicText, hasSajdah}]` and nothing else, for verse lists; whole chapter without bounds, 400 for a range outside the chapter), `/juz`, `/juz/{num}/verses`, `/rukus?chapterNum=&juzNum=`, `/rukus/{id}/verses`, `/translations`, `/verses?from=&to=`, `/healthz`. Verse endpoints support `translationId`, `page`, `pageSize` query params. Default page size 50, max 200. The API additionally exposes `/health/live` and `/health/ready` (EF Core `CanConnect` check) for container probes.
 
 ### Search Endpoint (Authenticated — Bearer token required)
 
@@ -146,7 +147,31 @@ Query params: `q` (required, min 2 chars), `scope` (both/tarjuma/tafseer, defaul
 | GET | `/user/history?limit=` | List reading history (default/fallback limit 50) |
 | POST | `/user/history` | Record reading history (`{ title, url }`) |
 
-Bookmarks are slug-keyed. There are no favorites endpoints. Error bodies are `{ "error": "..." }` on user routes; `/search` and `/verses` return a bare JSON string on 400.
+Bookmarks are slug-keyed.
+
+### Verse List and Favorite Endpoints (API only)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/user/lists` | My lists as `VerseListSummaryDto[]`, newest change first |
+| POST | `/user/lists` | Create a draft (`{ title, description? }`) → 201, 409 past 100 lists |
+| GET | `/user/lists/{id}` | My list in full (draft or published) |
+| PUT | `/user/lists/{id}` | Update title and description |
+| PUT | `/user/lists/{id}/groups` | Replace every group (`{ groups: [{ id?, chapter, fromVerse, toVerse, caption? }] }`) |
+| POST | `/user/lists/{id}/groups` | Append one group (`{ chapter, fromVerse, toVerse, caption? }`) |
+| POST | `/user/lists/{id}/publish` · `/unpublish` | Change status; `publishedAt` keeps the first publish |
+| DELETE | `/user/lists/{id}` | Delete |
+| GET | `/lists/{id}` | **Anonymous.** A published list (`isMine` true when the caller's token owns it); 404 for drafts, unknown or malformed ids |
+| GET | `/lists?ids=a,b,c` | **Anonymous.** Summaries of the published lists among up to 50 ids, in the order asked; others are left out |
+| GET | `/user/favorites` | My favourites |
+| PUT | `/user/favorites` | Save (`{ kind: "list", listId }`); 404 unless the list is published, 409 for my own list |
+| DELETE | `/user/favorites/{id}` | Remove |
+
+Someone else's list is always reported as 404, never 403, so the API never reveals that a draft exists. The owner's account id never leaves the API. Error bodies are `{ "error": "..." }` on user routes; `/search` and `/verses` return a bare JSON string on 400.
+
+## Tests
+
+`tests/Ishqnama.Application.Tests` (xUnit, in the solution) tests the Application services against in-memory fakes of the repositories (`Fakes.cs`): verse list validation, ownership, visibility and favourites, and the Arabic range checks. `dotnet test` runs it, and so do `pr-validation.yml` and `build-backend.yml`.
 
 ## NuGet Packages
 

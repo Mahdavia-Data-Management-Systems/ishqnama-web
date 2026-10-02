@@ -230,4 +230,67 @@ public sealed partial class CosmosUserDataRepository(
         };
         await _container.UpsertItemAsync(doc, new PartitionKey(userId));
     }
+
+    // Favorites
+
+    public async Task<IReadOnlyList<FavoriteDto>> GetFavoritesAsync(string userId)
+    {
+        var query = new QueryDefinition(
+            "SELECT * FROM c WHERE c.type = 'favorite' ORDER BY c.createdAt DESC");
+
+        var results = new List<FavoriteDto>();
+        using var feed = _container.GetItemQueryIterator<UserFavorite>(query,
+            requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(userId) });
+
+        while (feed.HasMoreResults)
+        {
+            var page = await feed.ReadNextAsync();
+            results.AddRange(page.Select(ToDto));
+        }
+
+        return results;
+    }
+
+    public async Task<FavoriteDto> SaveFavoriteAsync(string userId, string id, string kind, string? listId, string title)
+    {
+        var pk = new PartitionKey(userId);
+        DateTimeOffset createdAt;
+        try
+        {
+            // Saving an existing favourite again keeps its place in the list
+            var existing = await _container.ReadItemAsync<UserFavorite>(id, pk);
+            createdAt = existing.Resource.CreatedAt;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            createdAt = DateTimeOffset.UtcNow;
+        }
+
+        var doc = new UserFavorite
+        {
+            Id = id,
+            UserId = userId,
+            Type = "favorite",
+            Kind = kind,
+            ListId = listId,
+            Title = title,
+            CreatedAt = createdAt
+        };
+        await _container.UpsertItemAsync(doc, pk);
+        return ToDto(doc);
+    }
+
+    public async Task DeleteFavoriteAsync(string userId, string id)
+    {
+        try
+        {
+            await _container.DeleteItemAsync<UserFavorite>(id, new PartitionKey(userId));
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            // Already removed — no-op
+        }
+    }
+
+    private static FavoriteDto ToDto(UserFavorite f) => new(f.Id, f.Kind, f.ListId, f.Title, f.CreatedAt);
 }

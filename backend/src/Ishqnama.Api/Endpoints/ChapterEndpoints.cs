@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Ishqnama.Api.Contracts;
 using Ishqnama.Api.Helpers;
 using Ishqnama.Application.Dtos;
 using Ishqnama.Application.Services;
@@ -16,6 +17,7 @@ internal static class ChapterEndpoints
         group.MapGet("/{num:int}", GetChapter);
         group.MapGet("/{num:int}/verses", GetChapterVerses);
         group.MapGet("/{num:int}/verses/{verseNum:int}", GetVerse);
+        group.MapGet("/{num:int}/arabic", GetArabicVerses);
 
         return api;
     }
@@ -51,5 +53,21 @@ internal static class ChapterEndpoints
         return verse is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(user.IsAuthenticated() ? verse : verse.StripExplanations());
+    }
+
+    // The text alone, for verse lists: no translations or tafseer, so no token is ever needed
+    // and every caller shares the same cached response.
+    private static async Task<Results<Ok<List<ArabicVerseDto>>, NotFound, BadRequest<ErrorResponse>>> GetArabicVerses(
+        ChapterService chapterService, int num, int? from = null, int? to = null)
+    {
+        try
+        {
+            var verses = await chapterService.GetArabicVersesAsync(num, from, to);
+            return verses is null ? TypedResults.NotFound() : TypedResults.Ok(verses);
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return TypedResults.BadRequest(new ErrorResponse(ex.Message));
+        }
     }
 }

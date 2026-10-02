@@ -7,7 +7,8 @@ namespace Ishqnama.Api.Middleware;
 /// Long-lived immutable caching for the read-only Quran routes: assembly-version ETag,
 /// <c>Vary: Authorization</c> (tafseer is stripped for anonymous callers, so the two audiences
 /// must never share a cache entry) and a 304 short-circuit on <c>If-None-Match</c>.
-/// User-data routes and health probes are excluded.
+/// User-data routes, published verse lists (edited live by their owners) and health probes are
+/// excluded.
 /// </summary>
 public sealed class CacheHeaderMiddleware(RequestDelegate next)
 {
@@ -26,6 +27,7 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
         var path = context.Request.Path;
         var isQuranRoute = path.StartsWithSegments("/api")
             && !path.StartsWithSegments("/api/user")
+            && !path.StartsWithSegments("/api/lists")
             && !path.StartsWithSegments("/api/healthz");
 
         if (!isQuranRoute)

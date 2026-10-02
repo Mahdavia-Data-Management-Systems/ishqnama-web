@@ -19,6 +19,13 @@ internal static class AuthExtensions
            ?? user.FindFirstValue("sub")
            ?? throw new InvalidOperationException("Authenticated principal has no 'oid' or 'sub' claim.");
 
+    /// <summary>
+    /// The account's display name from the <c>name</c> claim, or null when the token has none.
+    /// Shown on the lists a reader publishes.
+    /// </summary>
+    public static string? GetUserName(this ClaimsPrincipal user)
+        => user.FindFirstValue("name");
+
     public static VerseDto StripExplanations(this VerseDto verse)
         => verse.Translations is null
             ? verse

@@ -43,10 +43,12 @@ var cosmosEndpoint = configuration["CosmosDb:Endpoint"];
 var cosmosKey = configuration["CosmosDb:Key"];
 var cosmosDatabase = configuration["CosmosDb:DatabaseName"] ?? "ishqnama-userdata";
 var cosmosContainer = configuration["CosmosDb:ContainerName"] ?? "user-data";
+var cosmosListsContainer = configuration["CosmosDb:ListsContainerName"] ?? "lists";
 
 if (!string.IsNullOrEmpty(cosmosEndpoint) && !string.IsNullOrEmpty(cosmosKey))
 {
-    builder.Services.AddUserDataInfrastructure(cosmosEndpoint, cosmosKey, cosmosDatabase, cosmosContainer);
+    builder.Services.AddUserDataInfrastructure(
+        cosmosEndpoint, cosmosKey, cosmosDatabase, cosmosContainer, cosmosListsContainer);
 }
 
 // Application services
@@ -57,6 +59,7 @@ builder.Services.AddScoped<TranslationService>();
 builder.Services.AddScoped<VerseService>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<UserDataService>();
+builder.Services.AddScoped<VerseListService>();
 
 // Application Insights through the Azure Monitor OpenTelemetry exporter. Only when a connection
 // string is configured, so local runs and docker-compose need nothing. The pieces are composed by
@@ -194,6 +197,7 @@ api.MapTranslationEndpoints();
 api.MapVerseEndpoints();
 api.MapSearchEndpoints();
 api.MapUserDataEndpoints();
+api.MapVerseListEndpoints();
 api.MapHealthEndpoints();
 
 // Probe targets (outside /api so they never pick up cache headers)

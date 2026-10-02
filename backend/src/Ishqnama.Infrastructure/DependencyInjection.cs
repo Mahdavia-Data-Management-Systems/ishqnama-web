@@ -25,7 +25,7 @@ public static class DependencyInjection
 
     public static IServiceCollection AddUserDataInfrastructure(
         this IServiceCollection services, string endpoint, string key,
-        string databaseName, string containerName)
+        string databaseName, string containerName, string listsContainerName = "lists")
     {
         services.AddSingleton(_ =>
         {
@@ -66,6 +66,10 @@ public static class DependencyInjection
         services.AddSingleton<IUserDataRepository>(sp =>
             new CosmosUserDataRepository(
                 sp.GetRequiredService<CosmosClient>(), databaseName, containerName));
+
+        services.AddSingleton<IVerseListRepository>(sp =>
+            new CosmosVerseListRepository(
+                sp.GetRequiredService<CosmosClient>(), databaseName, listsContainerName));
 
         return services;
     }

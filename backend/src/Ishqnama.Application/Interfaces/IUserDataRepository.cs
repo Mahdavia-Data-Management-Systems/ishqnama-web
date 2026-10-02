@@ -18,4 +18,9 @@ public interface IUserDataRepository
     // History
     Task<IReadOnlyList<UserHistoryDto>> GetHistoryAsync(string userId, int limit = 50);
     Task AddHistoryEntryAsync(string userId, string title, string url);
+
+    // Favorites
+    Task<IReadOnlyList<FavoriteDto>> GetFavoritesAsync(string userId);
+    Task<FavoriteDto> SaveFavoriteAsync(string userId, string id, string kind, string? listId, string title);
+    Task DeleteFavoriteAsync(string userId, string id);
 }

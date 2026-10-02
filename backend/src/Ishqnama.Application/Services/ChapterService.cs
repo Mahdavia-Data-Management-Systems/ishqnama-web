@@ -24,4 +24,25 @@ public sealed class ChapterService(IQuranReadOnlyRepository repository)
 
     public Task<VerseDto?> GetVerseAsync(int chapterNumber, int verseNumber)
         => repository.GetVerseAsync(chapterNumber, verseNumber);
+
+    /// <summary>
+    /// The Arabic of verses <paramref name="from"/> to <paramref name="to"/> of a chapter (the whole
+    /// chapter when both are omitted), for pages that print the text alone. Returns null for an
+    /// unknown chapter and throws <see cref="ArgumentOutOfRangeException"/> for a bad range.
+    /// </summary>
+    public async Task<List<ArabicVerseDto>?> GetArabicVersesAsync(int chapterNumber, int? from, int? to)
+    {
+        if (!QuranShape.IsChapter(chapterNumber))
+            return null;
+
+        var verseCount = QuranShape.VerseCount(chapterNumber);
+        var first = from ?? 1;
+        var last = to ?? verseCount;
+        ArgumentOutOfRangeException.ThrowIfLessThan(first, 1, nameof(from));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(last, verseCount, nameof(to));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(first, last, nameof(from));
+
+        var verses = await repository.GetVerseRangeAsync(chapterNumber, first, chapterNumber, last);
+        return verses.Select(v => new ArabicVerseDto(v.VerseNumber, v.ArabicText, v.HasSajdah)).ToList();
+    }
 }

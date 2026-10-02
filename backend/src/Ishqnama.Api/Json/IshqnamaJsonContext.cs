@@ -24,6 +24,8 @@ namespace Ishqnama.Api.Json;
 [JsonSerializable(typeof(List<VerseDto>))]
 [JsonSerializable(typeof(TranslationSegmentDto))]
 [JsonSerializable(typeof(PagedResponse<VerseDto>))]
+[JsonSerializable(typeof(ArabicVerseDto))]
+[JsonSerializable(typeof(List<ArabicVerseDto>))]
 [JsonSerializable(typeof(SearchResultDto))]
 [JsonSerializable(typeof(PagedResponse<SearchResultDto>))]
 // User data
@@ -37,6 +39,18 @@ namespace Ishqnama.Api.Json;
 [JsonSerializable(typeof(CreateBookmarkRequest))]
 [JsonSerializable(typeof(UpdatePositionRequest))]
 [JsonSerializable(typeof(HistoryRequest))]
+// Verse lists and favorites
+[JsonSerializable(typeof(VerseListDto))]
+[JsonSerializable(typeof(VerseListGroupDto))]
+[JsonSerializable(typeof(List<VerseListGroupDto>))]
+[JsonSerializable(typeof(IReadOnlyList<VerseListGroupDto>))]
+[JsonSerializable(typeof(VerseListSummaryDto))]
+[JsonSerializable(typeof(IReadOnlyList<VerseListSummaryDto>))]
+[JsonSerializable(typeof(FavoriteDto))]
+[JsonSerializable(typeof(IReadOnlyList<FavoriteDto>))]
+[JsonSerializable(typeof(VerseListDetailsRequest))]
+[JsonSerializable(typeof(VerseListGroupsRequest))]
+[JsonSerializable(typeof(FavoriteRequest))]
 // Envelopes
 [JsonSerializable(typeof(ErrorResponse))]
 [JsonSerializable(typeof(HealthResponse))]
