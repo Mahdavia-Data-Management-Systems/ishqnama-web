@@ -13,7 +13,7 @@ interface ListRowProps {
   mine?: boolean;
 }
 
-/** One list on the Saved page: title, description and who compiled it. */
+/** One list on the Saved page: title, description and, for other readers' lists, who compiled it. */
 export default function ListRow({ list, mine = false }: ListRowProps) {
   const owner = list.ownerName || LISTS_COPY.aReader;
   // A draft has no public page yet, so the row goes straight to the editor
@@ -31,10 +31,13 @@ export default function ListRow({ list, mine = false }: ListRowProps) {
           )}
         </span>
         {list.description && <span className={styles.description}>{list.description}</span>}
-        <span className={styles.owner}>
-          <OwnerAvatar name={owner} />
-          <span>{owner}</span>
-        </span>
+        {/* My own lists all carry my name, so only other readers' lists show who compiled them */}
+        {!mine && (
+          <span className={styles.owner}>
+            <OwnerAvatar name={owner} />
+            <span>{owner}</span>
+          </span>
+        )}
       </Link>
       {mine && (
         <Link href={listEditPath(list.id)} className={styles.edit}>

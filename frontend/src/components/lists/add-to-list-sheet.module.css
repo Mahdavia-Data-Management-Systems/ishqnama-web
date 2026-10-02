@@ -102,12 +102,15 @@
   outline-offset: 2px;
 }
 
-.optionChosen {
-  background: var(--surface-selection);
+/* The chosen list is outlined in gold, like the rest of the sheet's accents. */
+.optionChosen,
+.optionChosen:hover {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--gold);
 }
 
 .radio {
-  accent-color: var(--fill-primary);
+  accent-color: var(--gold);
 }
 
 .optionTitle {
