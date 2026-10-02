@@ -5,6 +5,7 @@ import {
   groupReference,
   idsToFetch,
   initials,
+  showsBismillah,
   isValidGroup,
   listViewPath,
   rukuEndsInChapter,
@@ -44,6 +45,18 @@ describe("groups", () => {
     expect(ends.has(7)).toBe(true); // al-Baqarah's first ruku is 7 verses
     expect(ends.has(286)).toBe(true);
     expect(ends.has(8)).toBe(false);
+  });
+});
+
+describe("showsBismillah", () => {
+  it("leaves ﷽ off a group that opens at-Tawbah, which has no bismillah", () => {
+    expect(showsBismillah({ chapter: 9, fromVerse: 1 })).toBe(false);
+  });
+
+  it("shows ﷽ on every other group, including later ayaat of at-Tawbah", () => {
+    expect(showsBismillah({ chapter: 9, fromVerse: 2 })).toBe(true);
+    expect(showsBismillah({ chapter: 2, fromVerse: 255 })).toBe(true);
+    expect(showsBismillah({ chapter: 1, fromVerse: 1 })).toBe(true);
   });
 });
 

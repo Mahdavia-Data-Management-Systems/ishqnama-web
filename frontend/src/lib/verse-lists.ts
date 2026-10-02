@@ -52,6 +52,14 @@ export function groupReaderPath(group: Pick<VerseListGroupDto, "chapter" | "from
   return `/quran/${group.chapter}/?verse=${group.fromVerse}`;
 }
 
+/**
+ * Whether a group's header carries ﷽. Sura at-Tawbah (9) opens without the bismillah, so a group
+ * starting at its first ayah leaves it off; every other group shows it.
+ */
+export function showsBismillah(group: Pick<VerseListGroupDto, "chapter" | "fromVerse">): boolean {
+  return !(group.chapter === 9 && group.fromVerse === 1);
+}
+
 /** Verse numbers in `chapter` that close a ruku, where the reader prints the ruku mark. */
 export function rukuEndsInChapter(chapter: number): Map<number, number> {
   const ends = new Map<number, number>();

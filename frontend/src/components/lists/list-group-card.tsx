@@ -9,7 +9,7 @@ import { LISTS_COPY } from "@/config/lists-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useArabicVerses } from "@/hooks/use-arabic-verses";
 import { useApiReadiness } from "@/lib/api-readiness";
-import { GROUP_PREVIEW_VERSES, groupReaderPath, groupReference } from "@/lib/verse-lists";
+import { GROUP_PREVIEW_VERSES, groupReaderPath, groupReference, showsBismillah } from "@/lib/verse-lists";
 import type { VerseListGroupDto } from "@/types/lists";
 import styles from "./list-group-card.module.css";
 
@@ -39,9 +39,11 @@ export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
     <article className={styles.card}>
       <header className={styles.header}>
         {/* U+FDFD, drawn by the Quran font itself (PDMS Saleem Quran carries the glyph) */}
-        <p className={styles.bismillah} dir="rtl" lang="ar">
-          {BISMILLAH}
-        </p>
+        {showsBismillah(group) && (
+          <p className={styles.bismillah} dir="rtl" lang="ar">
+            {BISMILLAH}
+          </p>
+        )}
         <div className={styles.titles}>
           {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
           <p className={styles.reference}>{reference}</p>
