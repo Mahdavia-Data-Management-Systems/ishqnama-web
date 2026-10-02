@@ -145,14 +145,19 @@ export default function ListView() {
     <main className={styles.main}>
       <div className="page-container">
         <header className={styles.header}>
-          <h1 className={styles.title}>{list.title}</h1>
-          {list.description && <p className={styles.description}>{list.description}</p>}
-          <p className={styles.owner}>
-            <OwnerAvatar name={owner} size="md" />
-            <span>
-              {LISTS_COPY.compiledBy} <strong>{owner}</strong>
-            </span>
-          </p>
+          <div className={styles.intro}>
+            <div className={styles.titles}>
+              <h1 className={styles.title}>{list.title}</h1>
+              {list.description && <p className={styles.description}>{list.description}</p>}
+            </div>
+            <p className={styles.owner}>
+              <OwnerAvatar name={owner} size="md" />
+              <span className={styles.ownerText}>
+                <span>{LISTS_COPY.compiledBy}</span>
+                <strong>{owner}</strong>
+              </span>
+            </p>
+          </div>
 
           <div className={styles.actions}>
             <Button variant="secondary" size="sm" icon="share" onClick={handleShare}>

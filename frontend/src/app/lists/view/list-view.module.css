@@ -24,18 +24,61 @@
   white-space: pre-line;
 }
 
+/* Phones: who compiled the list sits under the title and description. From 600 px it moves to
+   the right of the same block. */
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.titles {
+  min-width: 0;
+}
+
 .owner {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin: var(--space-4) 0 0;
+  margin: 0;
   font-size: var(--text-sm);
   color: var(--text-secondary);
+}
+
+.ownerText {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.3em;
+  min-width: 0;
 }
 
 .owner strong {
   font-weight: 600;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 600px) {
+  .intro {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .titles {
+    flex: 1;
+  }
+
+  .owner {
+    flex: none;
+    max-width: 14rem;
+    margin-top: var(--space-2);
+  }
+
+  .ownerText {
+    flex-direction: column;
+    text-align: left;
+  }
 }
 
 .actions {
