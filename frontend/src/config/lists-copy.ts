@@ -44,7 +44,7 @@ export const LISTS_COPY = {
   fromLabel: "From ayah",
   toLabel: "To ayah",
   captionLabel: "Caption",
-  captionPlaceholder: "Optional note for this group",
+  captionPlaceholder: "Optional note for these verses",
   moveUp: "Move up",
   moveDown: "Move down",
   removeGroup: "Remove group",
