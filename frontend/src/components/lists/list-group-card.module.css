@@ -7,17 +7,27 @@
   border-top: none;
 }
 
+/* Caption and reference on the left; a quiet ﷽ on the same line at the right, where the Arabic begins. */
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-3);
 }
 
-/* A quiet ﷽ over each group, set to the right where the Arabic text begins. */
+.titles {
+  min-width: 0;
+}
+
+/* First in the markup so it is read first; drawn at the end of the row. */
 .bismillah {
-  margin: 0 0 var(--space-1);
+  flex: none;
+  order: 2;
+  margin: 0;
   font-family: var(--font-arabic);
   font-size: 1.25rem;
   line-height: 1.5;
-  text-align: right;
   color: var(--text-tertiary);
 }
 

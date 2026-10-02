@@ -42,8 +42,10 @@ export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
         <p className={styles.bismillah} dir="rtl" lang="ar">
           {BISMILLAH}
         </p>
-        {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
-        <p className={styles.reference}>{reference}</p>
+        <div className={styles.titles}>
+          {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
+          <p className={styles.reference}>{reference}</p>
+        </div>
       </header>
 
       {verses ? (
