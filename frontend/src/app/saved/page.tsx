@@ -19,7 +19,8 @@ import styles from "./page.module.css";
 
 /**
  * Two sections, each with its own tabs: bookmarks first (a rail; room for more tabs later), then
- * the reader's lists and reading history below it.
+ * the reader's lists and reading history below it. The bookmarks section is left out entirely
+ * until the reader has saved a bookmark of their own.
  */
 const placeTabs = [{ label: "Bookmarks", value: "bookmarks" }];
 
@@ -70,11 +71,6 @@ export default function SavedPage() {
   }, [isAuthenticated, tab]);
 
   const emptyConfig = {
-    bookmarks: {
-      icon: "bookmark",
-      title: "No bookmarks yet",
-      body: "Bookmark verses while reading to find them here.",
-    },
     history: {
       icon: "clock",
       title: "No reading history",
@@ -83,49 +79,42 @@ export default function SavedPage() {
   };
 
   const customBookmarks = bookmarks.filter((b) => !b.isDefault);
+  // While they load, the skeletons hold the section's place; once loaded, none means no section
+  const showBookmarks = showBookmarkSkeletons || customBookmarks.length > 0;
 
   return (
     <main className={styles.main}>
       <div className="page-container">
         <SectionHeading eyebrow="Your library" title="Saved" />
 
-        <section className={styles.section}>
-          <Tabs
-            options={placeTabs}
-            value={placeTab}
-            onChange={setPlaceTab}
-            label="Bookmarks"
-            panelClassName={styles.content}
-          >
-            {!showBookmarkSkeletons && customBookmarks.length === 0 ? (
-              <EmptyState
-                icon={emptyConfig.bookmarks.icon}
-                title={emptyConfig.bookmarks.title}
-                body={emptyConfig.bookmarks.body}
-                action={{ label: "Start reading", onClick: () => router.push("/quran/") }}
-              />
-            ) : (
-              <>
-                <ul ref={setBookmarkRail} className={styles.rail}>
-                  {showBookmarkSkeletons && (
-                    <>
-                      <li className={styles.railItem}><BookmarkTileSkeleton /></li>
-                      <li className={styles.railItem}><BookmarkTileSkeleton /></li>
-                    </>
-                  )}
-                  {customBookmarks.map((b) => (
-                    <li key={b.slug} className={styles.railItem}>
-                      <BookmarkTile bookmark={b} onDelete={removeBookmark} />
-                    </li>
-                  ))}
-                </ul>
-                {showBookmarkSkeletons && waitingCaption && (
-                  <p className={styles.waitingCaption}>{waitingCaption}</p>
+        {showBookmarks && (
+          <section className={styles.section}>
+            <Tabs
+              options={placeTabs}
+              value={placeTab}
+              onChange={setPlaceTab}
+              label="Bookmarks"
+              panelClassName={styles.content}
+            >
+              <ul ref={setBookmarkRail} className={styles.rail}>
+                {showBookmarkSkeletons && (
+                  <>
+                    <li className={styles.railItem}><BookmarkTileSkeleton /></li>
+                    <li className={styles.railItem}><BookmarkTileSkeleton /></li>
+                  </>
                 )}
-              </>
-            )}
-          </Tabs>
-        </section>
+                {customBookmarks.map((b) => (
+                  <li key={b.slug} className={styles.railItem}>
+                    <BookmarkTile bookmark={b} onDelete={removeBookmark} />
+                  </li>
+                ))}
+              </ul>
+              {showBookmarkSkeletons && waitingCaption && (
+                <p className={styles.waitingCaption}>{waitingCaption}</p>
+              )}
+            </Tabs>
+          </section>
+        )}
 
         <section className={styles.section}>
           <Tabs
