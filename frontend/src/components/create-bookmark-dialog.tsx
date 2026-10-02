@@ -79,7 +79,7 @@ export default function CreateBookmarkDialog({ isOpen, onClose, onCreate }: Crea
               id="bookmark-title"
               type="text"
               className={`${styles.input} ${error ? styles.inputError : ""}`}
-              placeholder="e.g. Eesal e Sawab, Daily Session"
+              placeholder="For example: Eesal e Sawab, Daily Session"
               maxLength={50}
               value={title}
               onChange={(e) => { setTitle(e.target.value); setError(""); }}
