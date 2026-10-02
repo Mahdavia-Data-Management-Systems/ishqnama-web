@@ -44,8 +44,21 @@ export default function GroupEditorRow({ group, index, count, onChange, onMove, 
       <div className={styles.top}>
         <span className={styles.index} aria-hidden="true">{index + 1}</span>
         <div className={styles.tools}>
-          <IconButton icon="chevronDown" label={LISTS_COPY.moveUp} size="sm" className={styles.up} onClick={() => index > 0 && onMove(-1)} />
-          <IconButton icon="chevronDown" label={LISTS_COPY.moveDown} size="sm" onClick={() => index < count - 1 && onMove(1)} />
+          {/* A move that cannot happen keeps its place but is hidden, so the tools never shift */}
+          <IconButton
+            icon="chevronDown"
+            label={LISTS_COPY.moveUp}
+            size="sm"
+            className={`${styles.up} ${index === 0 ? styles.unavailable : ""}`}
+            onClick={() => index > 0 && onMove(-1)}
+          />
+          <IconButton
+            icon="chevronDown"
+            label={LISTS_COPY.moveDown}
+            size="sm"
+            className={index === count - 1 ? styles.unavailable : ""}
+            onClick={() => index < count - 1 && onMove(1)}
+          />
           <IconButton icon="trash" label={LISTS_COPY.removeGroup} size="sm" onClick={onRemove} />
         </div>
       </div>

@@ -429,7 +429,7 @@ export default function QuranReaderClient({
                 />
                 {verse.number > 0 && (
                   <IconButton
-                    icon="listBullet"
+                    icon="listPlus"
                     label="Add to list"
                     size="sm"
                     onClick={() => handleAddToList(selectedVerse.chapter, verse.number)}

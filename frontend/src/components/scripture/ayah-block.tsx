@@ -120,7 +120,7 @@ export default function AyahBlock({
             onClick={onShare}
           />
           <IconButton
-            icon="listBullet"
+            icon="listPlus"
             label="Add to list"
             size="sm"
             onClick={onAddToList}

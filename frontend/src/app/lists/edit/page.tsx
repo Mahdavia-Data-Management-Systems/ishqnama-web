@@ -33,7 +33,7 @@ function EditGate() {
       <main style={{ padding: "var(--space-8) 0 var(--space-16)" }}>
         <div className="page-container">
           <EmptyState
-            icon="listBullet"
+            icon="listPlus"
             title={SIGN_IN_COPY.lists.title}
             body={SIGN_IN_COPY.lists.body}
             action={{ label: SIGN_IN_LABEL, onClick: () => promptSignIn("lists") }}

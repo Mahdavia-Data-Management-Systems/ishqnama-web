@@ -103,7 +103,7 @@ export default function ListView() {
       }
       setFavBusy(true);
       addFavorite(list.id)
-        .catch(() => setShareNote(LISTS_COPY.addFailed))
+        .catch(() => setShareNote(LISTS_COPY.favouriteFailed))
         .finally(() => setFavBusy(false));
     });
   };
@@ -113,7 +113,7 @@ export default function ListView() {
       <main className={styles.main}>
         <div className="page-container">
           <EmptyState
-            icon="listBullet"
+            icon="listPlus"
             title={LISTS_COPY.notAvailableTitle}
             body={LISTS_COPY.notAvailableBody}
           />

@@ -229,7 +229,7 @@ export default function ListEditor() {
     return (
       <main className={styles.main}>
         <div className="page-container">
-          <EmptyState icon="listBullet" title={LISTS_COPY.notAvailableTitle} body={LISTS_COPY.notAvailableBody} />
+          <EmptyState icon="listPlus" title={LISTS_COPY.notAvailableTitle} body={LISTS_COPY.notAvailableBody} />
         </div>
       </main>
     );
