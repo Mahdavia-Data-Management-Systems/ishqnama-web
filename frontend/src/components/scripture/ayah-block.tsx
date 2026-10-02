@@ -59,6 +59,7 @@ interface AyahBlockProps {
   juzQuarter?: JuzQuarter;
   onToggleBookmark?: () => void;
   onShare?: () => void;
+  onAddToList?: () => void;
   fontScale?: number;
   highlightQuery?: string;
 }
@@ -79,6 +80,7 @@ export default function AyahBlock({
   juzQuarter,
   onToggleBookmark,
   onShare,
+  onAddToList,
   fontScale = 1,
   highlightQuery,
 }: AyahBlockProps) {
@@ -116,6 +118,12 @@ export default function AyahBlock({
             label="Share verse"
             size="sm"
             onClick={onShare}
+          />
+          <IconButton
+            icon="listBullet"
+            label="Add to list"
+            size="sm"
+            onClick={onAddToList}
           />
           <IconButton
             icon={isBookmarked ? "bookmarkFilled" : "bookmark"}

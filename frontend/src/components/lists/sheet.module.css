@@ -1,0 +1,128 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: var(--surface-overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  background: var(--surface-card);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-modal);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  animation: rise var(--duration-slow) var(--ease-out);
+}
+
+.tall {
+  max-width: 720px;
+  height: 90vh;
+  height: 90dvh;
+}
+
+.sheet:focus {
+  outline: none;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (min-width: 600px) {
+  .overlay {
+    align-items: center;
+    padding: var(--space-6);
+  }
+
+  .sheet {
+    border-radius: var(--radius-lg);
+    padding-bottom: var(--space-2);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-3);
+}
+
+.headings {
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-style: italic;
+  color: var(--gold-label);
+}
+
+.closeButton {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -6px 0 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--tint-teal-6);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--space-5) var(--space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
+
+/* Ruku and sajdah marks float into the left gutter of an Arabic passage; leave them room. */
+.tall .body {
+  padding-left: 2.75rem;
+}

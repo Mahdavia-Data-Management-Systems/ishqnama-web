@@ -14,6 +14,7 @@ import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import ShareVerseSheet from "@/components/scripture/share-verse-sheet";
+import AddToListSheet from "@/components/lists/add-to-list-sheet";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
@@ -55,6 +56,7 @@ export default function QuranReaderClient({
   } = useReaderSettings();
   const { bookmarks, savePosition, addBookmark } = useBookmarks();
   const gateBookmark = useSignInGate("bookmark");
+  const gateLists = useSignInGate("lists");
   const readiness = useApiReadiness();
   const placeholderText =
     readiness === "warming"
@@ -176,6 +178,13 @@ export default function QuranReaderClient({
     : undefined;
   const sharedTranslation = sharedVerse?.segments?.map((seg) => seg.text).filter(Boolean).join(" ");
 
+  // "Add to list": the verse starts a group in one of the reader's lists
+  const [listTarget, setListTarget] = useState<{ chapter: number; verse: number } | null>(null);
+  const handleAddToList = useCallback((chapterNum: number, verseNum: number) => {
+    gateLists(() => setListTarget({ chapter: chapterNum, verse: verseNum }));
+  }, [gateLists]);
+  const closeAddToList = useCallback(() => setListTarget(null), []);
+
   // Anonymous readers get the sign-in prompt instead of a click that does nothing.
   const handleBookmarkVerse = useCallback((chapterNum: number, verseNum: number) => {
     gateBookmark(() => {
@@ -263,6 +272,7 @@ export default function QuranReaderClient({
                       juzQuarter={JUZ_QUARTER_BY_VERSE.get(bookmarkKey)}
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number)}
+                      onAddToList={() => handleAddToList(verse.chapterNumber, verse.number)}
                       highlightQuery={highlightQuery}
                     />
                   )}
@@ -417,6 +427,14 @@ export default function QuranReaderClient({
                   size="sm"
                   onClick={() => handleShare(selectedVerse.chapter, verse.number)}
                 />
+                {verse.number > 0 && (
+                  <IconButton
+                    icon="listBullet"
+                    label="Add to list"
+                    size="sm"
+                    onClick={() => handleAddToList(selectedVerse.chapter, verse.number)}
+                  />
+                )}
                 <IconButton
                   icon="close"
                   label="Close"
@@ -499,6 +517,10 @@ export default function QuranReaderClient({
           translation={sharedTranslation}
           ruku={sharedVerse ? RUKU_BY_ID.get(sharedVerse.rukuId) : undefined}
         />
+      )}
+
+      {listTarget && (
+        <AddToListSheet chapter={listTarget.chapter} verse={listTarget.verse} onClose={closeAddToList} />
       )}
 
       <BookmarkPicker

@@ -1,0 +1,26 @@
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: var(--gold-wash);
+  color: var(--gold-label);
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 0.625rem;
+}
+
+.md {
+  width: 36px;
+  height: 36px;
+  font-size: var(--text-xs);
+}

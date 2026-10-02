@@ -1,0 +1,42 @@
+/* Mirrors the reader's continuous mode (quran-reader-client.module.css). */
+.passage {
+  font-family: var(--font-arabic);
+  font-size: var(--text-arabic);
+  line-height: var(--leading-arabic);
+  color: var(--text-primary);
+  text-align: justify;
+  direction: rtl;
+}
+
+.verse {
+  border-radius: 4px;
+}
+
+.sajdahUnderline {
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 0.08em;
+}
+
+.separator {
+  position: relative;
+  display: inline-block;
+  color: var(--gold);
+  font-size: 2.5em;
+  line-height: 0;
+  padding-left: 0.5em;
+  padding-right: 0.05em;
+}
+
+.separatorNumber {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 0.18em;
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1;
+  padding-top: 2.2em;
+  pointer-events: none;
+}

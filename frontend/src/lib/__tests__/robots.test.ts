@@ -23,6 +23,10 @@ describe("robotsFor", () => {
     expect(DISALLOWED_PATHS).toContain("/redirect/");
   });
 
+  it("keeps readers' verse lists out of search", () => {
+    expect(DISALLOWED_PATHS).toContain("/lists/");
+  });
+
   it("keeps search engines and link previews out of the AI list", () => {
     const lower = AI_CRAWLERS.map((a) => a.toLowerCase());
     for (const agent of ["googlebot", "bingbot", "facebookexternalhit", "whatsapp", "twitterbot", "slackbot"]) {

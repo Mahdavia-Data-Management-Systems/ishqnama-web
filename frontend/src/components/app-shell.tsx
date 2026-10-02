@@ -6,6 +6,7 @@ import AuthProvider from "@/components/auth-provider";
 import SignInPromptProvider from "@/context/sign-in-prompt-context";
 import ReaderSettingsProvider from "@/context/reader-settings-context";
 import BookmarksProvider from "@/context/bookmarks-context";
+import ListsProvider from "@/context/lists-context";
 import AppBar from "@/components/navigation/app-bar";
 import Footer from "@/components/navigation/footer";
 import BottomNav from "@/components/navigation/bottom-nav";
@@ -39,11 +40,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <SignInPromptProvider>
           <ReaderSettingsProvider>
             <BookmarksProvider>
-              <AppBar />
-              {children}
-              <Footer />
-              <BottomNav />
-              <PwaInstallPrompt />
+              <ListsProvider>
+                <AppBar />
+                {children}
+                <Footer />
+                <BottomNav />
+                <PwaInstallPrompt />
+              </ListsProvider>
             </BookmarksProvider>
           </ReaderSettingsProvider>
         </SignInPromptProvider>

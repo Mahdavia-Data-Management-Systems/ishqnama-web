@@ -1,0 +1,159 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
+import CreateListDialog from "@/components/lists/create-list-dialog";
+import ListRow, { UnavailableListRow } from "@/components/lists/list-row";
+import Icon from "@/components/ui/icon";
+import { FEATURED_LIST_IDS } from "@/config/featured-lists";
+import { LISTS_COPY } from "@/config/lists-copy";
+import { useLists } from "@/context/lists-context";
+import { onReady, useApiReadiness } from "@/lib/api-readiness";
+import { getPublishedSummaries } from "@/lib/lists-api";
+import { arrangeSavedLists, idsToFetch, listEditPath } from "@/lib/verse-lists";
+import type { VerseListSummaryDto } from "@/types/lists";
+import styles from "./saved-lists-panel.module.css";
+
+/** The API answers up to 50 ids per request. */
+const BATCH = 50;
+
+async function fetchSummaries(ids: string[], signal: AbortSignal): Promise<VerseListSummaryDto[]> {
+  const batches: string[][] = [];
+  for (let i = 0; i < ids.length; i += BATCH) batches.push(ids.slice(i, i + BATCH));
+  const results = await Promise.all(batches.map((b) => getPublishedSummaries(b, signal)));
+  return results.flat();
+}
+
+/**
+ * The Lists tab of the Saved page: My collection (my drafts and published lists, with New list
+ * first), Featured (FEATURED_LIST_IDS) and Others (lists I have favourited). Each list shows
+ * in one section only; see arrangeSavedLists.
+ */
+export default function SavedListsPanel() {
+  const router = useRouter();
+  const { myLists, favorites, status, createList, removeFavorite } = useLists();
+  const readiness = useApiReadiness();
+  const [available, setAvailable] = useState<VerseListSummaryDto[] | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  const wanted = useMemo(() => idsToFetch(FEATURED_LIST_IDS, favorites), [favorites]);
+  const wantedKey = wanted.join(",");
+
+  useEffect(() => {
+    const ids = wantedKey ? wantedKey.split(",") : [];
+    if (ids.length === 0) {
+      setAvailable([]);
+      return;
+    }
+    const controller = new AbortController();
+    let unregister: (() => void) | null = null;
+    const load = () => {
+      fetchSummaries(ids, controller.signal).then(setAvailable, () => {
+        if (controller.signal.aborted) return;
+        unregister = onReady(() => {
+          unregister = null;
+          load();
+        });
+      });
+    };
+    load();
+    return () => {
+      controller.abort();
+      unregister?.();
+    };
+  }, [wantedKey]);
+
+  const sections = arrangeSavedLists({
+    mine: myLists,
+    featuredIds: FEATURED_LIST_IDS,
+    favorites,
+    available: available ?? [],
+  });
+
+  const loadingMine = myLists.length === 0 && (status === "loading" || status === "failed");
+  const waitingCaption =
+    readiness === "warming" ? LISTS_COPY.listsWarming : readiness === "unreachable" ? LISTS_COPY.listsUnreachable : null;
+  const skeletons = (
+    <>
+      <BookmarkTileSkeleton variant="row" />
+      <BookmarkTileSkeleton variant="row" />
+    </>
+  );
+
+  return (
+    <div className={styles.panel}>
+      <section aria-labelledby="lists-mine">
+        <h3 id="lists-mine" className={styles.heading}>{LISTS_COPY.myCollection}</h3>
+        <button type="button" className={styles.newList} onClick={() => setCreating(true)}>
+          <span className={styles.newIcon} aria-hidden="true">
+            <Icon name="plus" size={18} />
+          </span>
+          <span className={styles.newText}>
+            <span className={styles.newTitle}>{LISTS_COPY.newList}</span>
+            <span className={styles.newHint}>{LISTS_COPY.newListHint}</span>
+          </span>
+        </button>
+        {loadingMine ? (
+          <div className={styles.skeletons}>{skeletons}</div>
+        ) : sections.mine.length === 0 ? (
+          <p className={styles.empty}>{LISTS_COPY.emptyBody}</p>
+        ) : (
+          <ul className={styles.list}>
+            {sections.mine.map((l) => (
+              <li key={l.id}>
+                <ListRow list={l} mine />
+              </li>
+            ))}
+          </ul>
+        )}
+        {loadingMine && waitingCaption && <p className={styles.waiting}>{waitingCaption}</p>}
+      </section>
+
+      {(sections.featured.length > 0 || (available == null && FEATURED_LIST_IDS.length > 0)) && (
+        <section aria-labelledby="lists-featured">
+          <h3 id="lists-featured" className={styles.heading}>{LISTS_COPY.featured}</h3>
+          {available == null ? (
+            <div className={styles.skeletons}>{skeletons}</div>
+          ) : (
+            <ul className={styles.list}>
+              {sections.featured.map((l) => (
+                <li key={l.id}>
+                  <ListRow list={l} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {sections.others.length > 0 && (
+        <section aria-labelledby="lists-others">
+          <h3 id="lists-others" className={styles.heading}>{LISTS_COPY.others}</h3>
+          {available == null ? (
+            <div className={styles.skeletons}>{skeletons}</div>
+          ) : (
+            <ul className={styles.list}>
+              {sections.others.map(({ favorite, summary }) => (
+                <li key={favorite.id}>
+                  {summary ? (
+                    <ListRow list={summary} />
+                  ) : (
+                    <UnavailableListRow title={favorite.title} onRemove={() => removeFavorite(favorite.id)} />
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      <CreateListDialog
+        isOpen={creating}
+        onClose={() => setCreating(false)}
+        onCreate={createList}
+        onCreated={(list) => router.push(listEditPath(list.id))}
+      />
+    </div>
+  );
+}

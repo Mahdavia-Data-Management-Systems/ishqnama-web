@@ -5,10 +5,11 @@ import { siteUrl } from "@/lib/page-metadata";
 const PRODUCTION_HOSTS = new Set(["ishqnama.com", "www.ishqnama.com"]);
 
 /**
- * Routes with nothing worth indexing: the MSAL redirect bridge, the signed-in Saved page, and
- * search, whose results need an account and whose empty shell would only be a thin page.
+ * Routes with nothing worth indexing: the MSAL redirect bridge, the signed-in Saved page,
+ * search, whose results need an account and whose empty shell would only be a thin page, and
+ * readers' verse lists, which are their own content shared by link, not pages of the site.
  */
-export const DISALLOWED_PATHS = ["/redirect/", "/saved/", "/search/"];
+export const DISALLOWED_PATHS = ["/redirect/", "/saved/", "/search/", "/lists/"];
 
 /**
  * AI crawlers kept out of the whole site: model training, AI search and answer engines, and the

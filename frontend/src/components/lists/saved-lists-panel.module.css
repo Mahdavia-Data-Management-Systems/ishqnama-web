@@ -1,0 +1,95 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.heading {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* New list sits at the head of My collection, drawn as an open slot rather than a list. */
+.newList {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+  border: none;
+  border-bottom: 1px solid var(--tint-ink-12);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.newList:hover {
+  background: var(--gold-wash);
+}
+
+.newList:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+}
+
+.newIcon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px dashed var(--gold);
+  border-radius: 50%;
+  color: var(--gold-label);
+}
+
+.newText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.newTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.newHint {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.empty {
+  margin: var(--space-3) var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.waiting {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

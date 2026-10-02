@@ -8,6 +8,7 @@ import Tabs from "@/components/ui/tabs";
 import EmptyState from "@/components/empty-state";
 import BookmarkTile from "@/components/bookmark-tile";
 import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
+import SavedListsPanel from "@/components/lists/saved-lists-panel";
 import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useApiReadiness } from "@/lib/api-readiness";
@@ -18,6 +19,7 @@ import styles from "./page.module.css";
 
 const tabOptions = [
   { label: "Bookmarks", value: "bookmarks" },
+  { label: "Lists", value: "lists" },
   { label: "History", value: "history" },
 ];
 
@@ -94,7 +96,9 @@ export default function SavedPage() {
           label="Saved"
           panelClassName={styles.content}
         >
-          {tab === "bookmarks" ? (
+          {tab === "lists" ? (
+            <SavedListsPanel />
+          ) : tab === "bookmarks" ? (
             !showBookmarkSkeletons && customBookmarks.length === 0 ? (
               <EmptyState
                 icon={config.icon}
