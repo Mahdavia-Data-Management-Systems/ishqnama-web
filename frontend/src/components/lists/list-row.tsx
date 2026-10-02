@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import OwnerAvatar from "@/components/lists/owner-avatar";
+import Icon from "@/components/ui/icon";
 import { LISTS_COPY } from "@/config/lists-copy";
 import { listEditPath, listViewPath } from "@/lib/verse-lists";
 import type { VerseListSummaryDto } from "@/types/lists";
@@ -13,7 +14,7 @@ interface ListRowProps {
   mine?: boolean;
 }
 
-/** One list on the Saved page: title, description and, for other readers' lists, who compiled it. */
+/** One list on the Library page: title, description and, for other readers' lists, who compiled it. */
 export default function ListRow({ list, mine = false }: ListRowProps) {
   const owner = list.ownerName || LISTS_COPY.aReader;
   // A draft has no public page yet, so the row goes straight to the editor
@@ -40,8 +41,13 @@ export default function ListRow({ list, mine = false }: ListRowProps) {
         )}
       </Link>
       {mine && (
-        <Link href={listEditPath(list.id)} className={styles.edit}>
-          {LISTS_COPY.edit}
+        <Link
+          href={listEditPath(list.id)}
+          className={`${styles.edit} ${styles.editIcon}`}
+          aria-label={LISTS_COPY.edit}
+          title={LISTS_COPY.edit}
+        >
+          <Icon name="pencil" size={18} />
         </Link>
       )}
     </div>

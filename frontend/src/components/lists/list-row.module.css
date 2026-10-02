@@ -87,6 +87,16 @@ a.main:hover {
   cursor: pointer;
 }
 
+/* The pencil glyph: a round target the size of a fingertip */
+.editIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
 .edit:hover {
   background: var(--tint-teal-6);
 }

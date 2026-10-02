@@ -20,13 +20,13 @@ describe("ListRow", () => {
   it("shows who compiled another reader's list", () => {
     render(<ListRow list={{ ...list, status: "published" }} />);
     expect(screen.getByText("Noor Mahdi")).toBeTruthy();
-    expect(screen.queryByText(LISTS_COPY.edit)).toBeNull();
+    expect(screen.queryByRole("link", { name: LISTS_COPY.edit })).toBeNull();
   });
 
   it("leaves my own name off my lists and offers Edit with the status instead", () => {
     render(<ListRow list={list} mine />);
     expect(screen.queryByText("Noor Mahdi")).toBeNull();
     expect(screen.getByText(LISTS_COPY.draft)).toBeTruthy();
-    expect(screen.getByText(LISTS_COPY.edit)).toBeTruthy();
+    expect(screen.getByRole("link", { name: LISTS_COPY.edit })).toBeTruthy();
   });
 });
