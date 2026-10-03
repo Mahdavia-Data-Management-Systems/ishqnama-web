@@ -1,8 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/page-metadata";
-
-/** Hosts search engines may crawl. Every other environment (dev.ishqnama.com) is kept out. */
-const PRODUCTION_HOSTS = new Set(["ishqnama.com", "www.ishqnama.com"]);
+import { isProductionSite, siteUrl } from "@/lib/page-metadata";
 
 /**
  * Routes with nothing worth indexing: the MSAL redirect bridge, the signed-in Library page,
@@ -70,7 +67,7 @@ export const AI_CRAWLERS = [
  * robots.txt only asks well-behaved crawlers to stay away; it is not access control.
  */
 export function robotsFor(origin: URL = siteUrl()): MetadataRoute.Robots {
-  if (!PRODUCTION_HOSTS.has(origin.hostname)) {
+  if (!isProductionSite(origin)) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {

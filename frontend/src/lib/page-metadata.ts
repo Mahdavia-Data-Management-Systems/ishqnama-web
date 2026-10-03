@@ -27,6 +27,14 @@ export function siteUrl(value = process.env.NEXT_PUBLIC_SITE_URL): URL {
   return new URL(DEFAULT_SITE_URL);
 }
 
+/** Hosts of the production site. Every other origin (dev.ishqnama.com, localhost) is not production. */
+const PRODUCTION_HOSTS = new Set(["ishqnama.com", "www.ishqnama.com"]);
+
+/** Whether the build is served from the production site rather than dev or a local build. */
+export function isProductionSite(origin: URL = siteUrl()): boolean {
+  return PRODUCTION_HOSTS.has(origin.hostname);
+}
+
 /** Rendered by `npm run og:image` (scripts/render-og-image.mjs). */
 export const OG_IMAGE = {
   url: "/images/og-ishqnama.jpg",
