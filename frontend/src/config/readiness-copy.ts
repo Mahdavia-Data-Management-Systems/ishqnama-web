@@ -16,6 +16,9 @@ export const TRY_AGAIN_LABEL = "Try again";
 export const BOOKMARKS_WARMING_MESSAGE = "Your bookmarks will appear shortly";
 export const BOOKMARKS_UNREACHABLE_MESSAGE = "Couldn't load your bookmarks yet";
 
+export const HISTORY_WARMING_MESSAGE = "Your reading history will appear shortly";
+export const HISTORY_UNREACHABLE_MESSAGE = "Couldn't load your reading history yet";
+
 export const CREATE_BOOKMARK_HELPER =
   "Noor e Imaan is getting ready, this may take up to a minute";
 export const CREATE_BOOKMARK_WAITING_LABEL = "Creating, please wait";

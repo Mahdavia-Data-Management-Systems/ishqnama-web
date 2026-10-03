@@ -9,7 +9,12 @@ import EmptyState from "@/components/empty-state";
 import BookmarkTile from "@/components/bookmark-tile";
 import BookmarkTileSkeleton from "@/components/bookmark-tile-skeleton";
 import SavedListsPanel from "@/components/lists/saved-lists-panel";
-import { BOOKMARKS_UNREACHABLE_MESSAGE, BOOKMARKS_WARMING_MESSAGE } from "@/config/readiness-copy";
+import {
+  BOOKMARKS_UNREACHABLE_MESSAGE,
+  BOOKMARKS_WARMING_MESSAGE,
+  HISTORY_UNREACHABLE_MESSAGE,
+  HISTORY_WARMING_MESSAGE,
+} from "@/config/readiness-copy";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useApiReadiness } from "@/lib/api-readiness";
 import { useDragToScroll } from "@/lib/use-drag-to-scroll";
@@ -40,11 +45,17 @@ export default function LibraryPage() {
   useDragToScroll(bookmarkRail);
 
   const showBookmarkSkeletons = bookmarks.length === 0 && (status === "loading" || status === "failed");
-  const waitingCaption =
+  const bookmarksWaitingCaption =
     readiness === "warming"
       ? BOOKMARKS_WARMING_MESSAGE
       : readiness === "unreachable"
         ? BOOKMARKS_UNREACHABLE_MESSAGE
+        : null;
+  const historyWaitingCaption =
+    readiness === "warming"
+      ? HISTORY_WARMING_MESSAGE
+      : readiness === "unreachable"
+        ? HISTORY_UNREACHABLE_MESSAGE
         : null;
 
   const [history, setHistory] = useState<UserHistoryDto[]>([]);
@@ -109,8 +120,8 @@ export default function LibraryPage() {
                   </li>
                 ))}
               </ul>
-              {showBookmarkSkeletons && waitingCaption && (
-                <p className={styles.waitingCaption}>{waitingCaption}</p>
+              {showBookmarkSkeletons && bookmarksWaitingCaption && (
+                <p className={styles.waitingCaption}>{bookmarksWaitingCaption}</p>
               )}
             </Tabs>
           </section>
@@ -133,7 +144,7 @@ export default function LibraryPage() {
                   <BookmarkTileSkeleton variant="row" />
                   <BookmarkTileSkeleton variant="row" />
                 </div>
-                {waitingCaption && <p className={styles.waitingCaption}>{waitingCaption}</p>}
+                {historyWaitingCaption && <p className={styles.waitingCaption}>{historyWaitingCaption}</p>}
               </>
             ) : history.length === 0 ? (
               <EmptyState
