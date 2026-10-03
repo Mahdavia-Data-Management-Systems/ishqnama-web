@@ -89,7 +89,7 @@ export interface FavoriteRow {
 export interface SavedListsSections {
   mine: VerseListSummaryDto[];
   featured: VerseListSummaryDto[];
-  others: FavoriteRow[];
+  saved: FavoriteRow[];
 }
 
 /**
@@ -117,12 +117,12 @@ export function arrangeSavedLists({
     .filter((l): l is VerseListSummaryDto => l != null);
   const featuredShown = new Set(featured.map((l) => l.id));
 
-  const others = favorites
+  const saved = favorites
     .filter((f) => f.kind === "list" && f.listId != null)
     .filter((f) => !mineIds.has(f.listId!) && !featuredShown.has(f.listId!))
     .map((favorite) => ({ favorite, summary: byId.get(favorite.listId!) ?? null }));
 
-  return { mine: [...mine], featured, others };
+  return { mine: [...mine], featured, saved };
 }
 
 /** The ids whose published summaries the Lists tab needs: featured first, then favourites. */

@@ -27,7 +27,7 @@ async function fetchSummaries(ids: string[], signal: AbortSignal): Promise<Verse
 
 /**
  * The Lists tab of the Library page: My collection (my drafts and published lists, with New list
- * first), Featured (FEATURED_LIST_IDS) and Others (lists I have favourited). Each list shows
+ * first), Featured (FEATURED_LIST_IDS) and Saved (lists I have favourited). Each list shows
  * in one section only; see arrangeSavedLists.
  */
 export default function SavedListsPanel() {
@@ -124,14 +124,14 @@ export default function SavedListsPanel() {
         </section>
       )}
 
-      {sections.others.length > 0 && (
-        <section aria-labelledby="lists-others">
-          <h3 id="lists-others" className={styles.heading}>{LISTS_COPY.others}</h3>
+      {sections.saved.length > 0 && (
+        <section aria-labelledby="lists-saved">
+          <h3 id="lists-saved" className={styles.heading}>{LISTS_COPY.savedLists}</h3>
           {available == null ? (
             <div className={styles.skeletons}>{skeletons}</div>
           ) : (
             <ul className={styles.list}>
-              {sections.others.map(({ favorite, summary }) => (
+              {sections.saved.map(({ favorite, summary }) => (
                 <li key={favorite.id}>
                   {summary ? (
                     <ListRow list={summary} />

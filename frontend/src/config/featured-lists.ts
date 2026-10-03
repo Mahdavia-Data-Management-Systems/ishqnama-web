@@ -15,7 +15,7 @@ export const PRODUCTION_FEATURED_LIST_IDS: readonly string[] = [];
 
 export const DEV_FEATURED_LIST_IDS: readonly string[] = [];
 
-export const LOCAL_FEATURED_LIST_IDS: readonly string[] = [];
+export const LOCAL_FEATURED_LIST_IDS: readonly string[] = ['UGPmNzg2tP3q'];
 
 /** Hosts of a build run on the developer's own machine (`npm run dev`, or a local static build). */
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);

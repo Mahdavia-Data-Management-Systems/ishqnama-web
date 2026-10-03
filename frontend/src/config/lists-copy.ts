@@ -7,7 +7,7 @@ export const LISTS_COPY = {
   tab: "Lists",
   myCollection: "My collection",
   featured: "Featured",
-  others: "Others",
+  savedLists: "Saved",
   newList: "New list",
   draft: "Draft",
   published: "Published",

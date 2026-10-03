@@ -93,7 +93,7 @@ describe("arrangeSavedLists", () => {
     // My own list stays mine even when featured; a featured list that is gone is left out
     expect(sections.featured.map((l) => l.id)).toEqual(["feat00000001"]);
     // A featured favourite shows only under Featured; an unavailable one stays, without a summary
-    expect(sections.others.map((o) => [o.favorite.listId, o.summary?.id ?? null])).toEqual([
+    expect(sections.saved.map((o) => [o.favorite.listId, o.summary?.id ?? null])).toEqual([
       ["othr00000001", "othr00000001"],
       ["lost00000001", null],
     ]);
