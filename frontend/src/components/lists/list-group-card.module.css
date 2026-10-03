@@ -7,17 +7,17 @@
   border-top: none;
 }
 
-/* Caption and reference on the left; a quiet ﷽ on the same line at the right, where the Arabic begins. */
+/* The caption across the full width; under it the reference on the left and a quiet ﷽ on the
+   same line at the right, where the Arabic begins. */
 .header {
+  margin-bottom: var(--space-3);
+}
+
+.meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.titles {
-  min-width: 0;
 }
 
 /* First in the markup so it is read first; drawn at the end of the row. */

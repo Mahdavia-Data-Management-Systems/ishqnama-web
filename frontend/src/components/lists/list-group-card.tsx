@@ -38,14 +38,14 @@ export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
   return (
     <article className={styles.card}>
       <header className={styles.header}>
-        {/* U+FDFD, drawn by the Quran font itself (PDMS Saleem Quran carries the glyph) */}
-        {showsBismillah(group) && (
-          <p className={styles.bismillah} dir="rtl" lang="ar">
-            {BISMILLAH}
-          </p>
-        )}
-        <div className={styles.titles}>
-          {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
+        {group.caption && <h3 className={styles.caption}>{group.caption}</h3>}
+        <div className={styles.meta}>
+          {/* U+FDFD, drawn by the Quran font itself (PDMS Saleem Quran carries the glyph) */}
+          {showsBismillah(group) && (
+            <p className={styles.bismillah} dir="rtl" lang="ar">
+              {BISMILLAH}
+            </p>
+          )}
           <p className={styles.reference}>{reference}</p>
         </div>
       </header>
