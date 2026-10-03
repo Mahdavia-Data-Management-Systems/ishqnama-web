@@ -4,7 +4,7 @@ import Link from "next/link";
 import OwnerAvatar from "@/components/lists/owner-avatar";
 import Icon from "@/components/ui/icon";
 import { LISTS_COPY } from "@/config/lists-copy";
-import { listEditPath, listViewPath } from "@/lib/verse-lists";
+import { listEditPath, listOwnerName, listViewPath } from "@/lib/verse-lists";
 import type { VerseListSummaryDto } from "@/types/lists";
 import styles from "./list-row.module.css";
 
@@ -18,7 +18,7 @@ interface ListRowProps {
 
 /** One list on the Library page: title, description and, for other readers' lists, who compiled it. */
 export default function ListRow({ list, mine = false, featured = false }: ListRowProps) {
-  const owner = list.ownerName || LISTS_COPY.aReader;
+  const owner = listOwnerName(list);
   // A draft has no public page yet, so the row goes straight to the editor
   const href = mine && list.status === "draft" ? listEditPath(list.id) : listViewPath(list.id);
 

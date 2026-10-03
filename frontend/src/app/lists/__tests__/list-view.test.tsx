@@ -28,7 +28,10 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/context/reader-settings-context", () => ({
   useReaderSettings: () => ({ lang: "english", fontScale: 2 }),
 }));
-vi.mock("@/config/featured-lists", () => ({ FEATURED_LIST_IDS: ["fEatured0001"] }));
+vi.mock("@/config/featured-lists", () => ({
+  FEATURED_LIST_IDS: ["fEatured0001", "byAdmin00001"],
+  ADMIN_LIST_IDS: new Set(["byAdmin00001"]),
+}));
 vi.mock("@/lib/lists-api", () => ({
   getPublishedList: vi.fn(),
   getChapterArabic: vi.fn(),
@@ -145,6 +148,14 @@ describe("a shared list", () => {
     vi.mocked(getPublishedList).mockResolvedValue(list({ id: "fEatured0001", isMine: true }));
     renderPage();
     expect(await screen.findByText(LISTS_COPY.featured)).toBeTruthy();
+  });
+
+  it("credits a list marked by admin to Admin instead of its owner", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list({ id: "byAdmin00001" }));
+    renderPage();
+    expect(await screen.findByText(LISTS_COPY.admin)).toBeTruthy();
+    expect(screen.getByText(LISTS_COPY.compiledBy)).toBeTruthy();
+    expect(screen.queryByText("Noor Mahdi")).toBeNull();
   });
 
   it("leaves the featured badge off a list that is not featured", async () => {

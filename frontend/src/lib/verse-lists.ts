@@ -1,3 +1,5 @@
+import { ADMIN_LIST_IDS } from "@/config/featured-lists";
+import { LISTS_COPY } from "@/config/lists-copy";
 import { rukusInChapter } from "@/data/rukus";
 import { suras } from "@/data/suras";
 import { chapterName } from "@/lib/share-verse";
@@ -5,6 +7,18 @@ import type { FavoriteDto, VerseListGroupDto, VerseListSummaryDto } from "@/type
 
 /** Verses a group shows on the list page before "Read more" opens the rest. */
 export const GROUP_PREVIEW_VERSES = 10;
+
+/**
+ * Who a list is credited to: "Admin" for a featured list marked `byAdmin`, otherwise its owner's
+ * name, or "A reader" when the owner has none.
+ */
+export function listOwnerName(
+  list: Pick<VerseListSummaryDto, "id" | "ownerName">,
+  adminIds: ReadonlySet<string> = ADMIN_LIST_IDS,
+): string {
+  if (adminIds.has(list.id)) return LISTS_COPY.admin;
+  return list.ownerName || LISTS_COPY.aReader;
+}
 
 /** Same limits the API enforces in VerseListService. */
 export const LIST_LIMITS = {

@@ -18,6 +18,7 @@ export const LISTS_COPY = {
   remove: "Remove",
   compiledBy: "Compiled by",
   aReader: "A reader",
+  admin: "Admin",
   openInReader: "Open in reader",
   readMore: "Read more",
   share: "Share",

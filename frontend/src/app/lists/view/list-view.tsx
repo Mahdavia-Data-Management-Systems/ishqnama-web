@@ -17,7 +17,7 @@ import { onReady, useApiReadiness } from "@/lib/api-readiness";
 import { getPublishedList } from "@/lib/lists-api";
 import { shareList } from "@/lib/share-list";
 import { trackEvent } from "@/lib/telemetry";
-import { listEditPath } from "@/lib/verse-lists";
+import { listEditPath, listOwnerName } from "@/lib/verse-lists";
 import type { VerseListDto } from "@/types/lists";
 import styles from "./list-view.module.css";
 
@@ -139,7 +139,7 @@ export default function ListView() {
     );
   }
 
-  const owner = list.ownerName || LISTS_COPY.aReader;
+  const owner = listOwnerName(list);
 
   return (
     <main className={styles.main}>

@@ -7,9 +7,11 @@ import {
   initials,
   showsBismillah,
   isValidGroup,
+  listOwnerName,
   listViewPath,
   rukuEndsInChapter,
 } from "../verse-lists";
+import { LISTS_COPY } from "@/config/lists-copy";
 import { buildListShareText } from "../share-list";
 import type { FavoriteDto, VerseListSummaryDto } from "@/types/lists";
 
@@ -101,5 +103,18 @@ describe("arrangeSavedLists", () => {
 
   it("fetches each featured or favourite id once", () => {
     expect(idsToFetch(["a", "b"], [favorite("b"), favorite("c")])).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("listOwnerName", () => {
+  const admin = new Set(["admin0000001"]);
+
+  it("credits a list marked by admin to Admin, hiding its owner", () => {
+    expect(listOwnerName({ id: "admin0000001", ownerName: "Noor Mahdi" }, admin)).toBe(LISTS_COPY.admin);
+  });
+
+  it("names the owner of any other list, or a reader when there is no name", () => {
+    expect(listOwnerName({ id: "list00000001", ownerName: "Noor Mahdi" }, admin)).toBe("Noor Mahdi");
+    expect(listOwnerName({ id: "list00000001", ownerName: "" }, admin)).toBe(LISTS_COPY.aReader);
   });
 });
