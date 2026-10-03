@@ -84,16 +84,13 @@ export default function SavedListsPanel() {
   return (
     <div className={styles.panel}>
       <section aria-labelledby="lists-mine">
-        <h3 id="lists-mine" className={styles.heading}>{LISTS_COPY.myCollection}</h3>
-        <button type="button" className={styles.newList} onClick={() => setCreating(true)}>
-          <span className={styles.newIcon} aria-hidden="true">
-            <Icon name="plus" size={18} />
-          </span>
-          <span className={styles.newText}>
-            <span className={styles.newTitle}>{LISTS_COPY.newList}</span>
-            <span className={styles.newHint}>{LISTS_COPY.newListHint}</span>
-          </span>
-        </button>
+        <div className={styles.headingRow}>
+          <h3 id="lists-mine" className={styles.heading}>{LISTS_COPY.myCollection}</h3>
+          <button type="button" className={styles.newList} onClick={() => setCreating(true)}>
+            <Icon name="plus" size={16} />
+            {LISTS_COPY.newList}
+          </button>
+        </div>
         {loadingMine ? (
           <div className={styles.skeletons}>{skeletons}</div>
         ) : sections.mine.length === 0 ? (

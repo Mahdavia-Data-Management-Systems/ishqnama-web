@@ -9,7 +9,6 @@ export const LISTS_COPY = {
   featured: "Featured",
   others: "Others",
   newList: "New list",
-  newListHint: "Gather ayaat on a theme, or to memorise",
   draft: "Draft",
   published: "Published",
   edit: "Edit",
