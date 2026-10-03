@@ -53,6 +53,13 @@ a.main:hover {
   color: var(--gold-label);
 }
 
+/* Filled, so it reads as more than Published: the list is on every reader's Library page. */
+.badgeFeatured {
+  border-color: var(--fill-primary);
+  background: var(--fill-primary);
+  color: var(--text-on-dark);
+}
+
 .description {
   display: -webkit-box;
   -webkit-line-clamp: 2;

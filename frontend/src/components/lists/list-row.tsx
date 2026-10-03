@@ -12,10 +12,12 @@ interface ListRowProps {
   list: VerseListSummaryDto;
   /** My own list: shows its Draft/Published badge and an Edit link, and opens the editor while a draft. */
   mine?: boolean;
+  /** One of the site's featured lists: on my own published list, a Featured badge says everyone sees it. */
+  featured?: boolean;
 }
 
 /** One list on the Library page: title, description and, for other readers' lists, who compiled it. */
-export default function ListRow({ list, mine = false }: ListRowProps) {
+export default function ListRow({ list, mine = false, featured = false }: ListRowProps) {
   const owner = list.ownerName || LISTS_COPY.aReader;
   // A draft has no public page yet, so the row goes straight to the editor
   const href = mine && list.status === "draft" ? listEditPath(list.id) : listViewPath(list.id);
@@ -29,6 +31,10 @@ export default function ListRow({ list, mine = false }: ListRowProps) {
             <span className={`${styles.badge} ${list.status === "published" ? styles.badgePublished : ""}`}>
               {list.status === "published" ? LISTS_COPY.published : LISTS_COPY.draft}
             </span>
+          )}
+          {/* A featured draft is shown to no one, so the badge waits until the list is published */}
+          {mine && featured && list.status === "published" && (
+            <span className={`${styles.badge} ${styles.badgeFeatured}`}>{LISTS_COPY.featured}</span>
           )}
         </span>
         {list.description && <span className={styles.description}>{list.description}</span>}

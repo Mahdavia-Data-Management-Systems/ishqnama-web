@@ -146,6 +146,8 @@ export default function ListView() {
       <div className="page-container">
         <header className={styles.header}>
           <div className={styles.toolbar}>
+            {/* Shown to everyone: the owner learns every reader sees it, others why it has no Favourite */}
+            {featured && list.status === "published" && <p className={styles.featuredBadge}>{LISTS_COPY.featured}</p>}
             <IconButton icon="share" label={LISTS_COPY.share} size="sm" onClick={() => void handleShare()} />
             {list.isMine ? (
               <IconButton

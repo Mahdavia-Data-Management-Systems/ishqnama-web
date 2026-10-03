@@ -102,7 +102,7 @@ export default function SavedListsPanel() {
           <ul className={styles.list}>
             {sections.mine.map((l) => (
               <li key={l.id}>
-                <ListRow list={l} mine />
+                <ListRow list={l} mine featured={FEATURED_LIST_IDS.includes(l.id)} />
               </li>
             ))}
           </ul>

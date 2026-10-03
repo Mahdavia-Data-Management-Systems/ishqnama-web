@@ -28,6 +28,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/context/reader-settings-context", () => ({
   useReaderSettings: () => ({ lang: "english", fontScale: 2 }),
 }));
+vi.mock("@/config/featured-lists", () => ({ FEATURED_LIST_IDS: ["fEatured0001"] }));
 vi.mock("@/lib/lists-api", () => ({
   getPublishedList: vi.fn(),
   getChapterArabic: vi.fn(),
@@ -132,6 +133,25 @@ describe("a shared list", () => {
 
     expect(await screen.findByRole("button", { name: LISTS_COPY.edit })).toBeTruthy();
     expect(screen.queryByRole("button", { name: LISTS_COPY.favourite })).toBeNull();
+  });
+
+  it("marks a featured list as featured, for its owner and everyone else", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list({ id: "fEatured0001" }));
+    renderPage();
+    expect(await screen.findByText(LISTS_COPY.featured)).toBeTruthy();
+    cleanup();
+
+    msal.authed = true;
+    vi.mocked(getPublishedList).mockResolvedValue(list({ id: "fEatured0001", isMine: true }));
+    renderPage();
+    expect(await screen.findByText(LISTS_COPY.featured)).toBeTruthy();
+  });
+
+  it("leaves the featured badge off a list that is not featured", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list());
+    renderPage();
+    await screen.findByRole("heading", { name: "Verses to memorise" });
+    expect(screen.queryByText(LISTS_COPY.featured)).toBeNull();
   });
 
   it("says a draft or missing list isn't available", async () => {

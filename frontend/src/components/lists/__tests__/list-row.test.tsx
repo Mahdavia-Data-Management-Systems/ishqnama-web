@@ -29,4 +29,18 @@ describe("ListRow", () => {
     expect(screen.getByText(LISTS_COPY.draft)).toBeTruthy();
     expect(screen.getByRole("link", { name: LISTS_COPY.edit })).toBeTruthy();
   });
+
+  it("marks my published list as featured when it is one of the site's featured lists", () => {
+    render(<ListRow list={{ ...list, status: "published" }} mine featured />);
+    expect(screen.getByText(LISTS_COPY.published)).toBeTruthy();
+    expect(screen.getByText(LISTS_COPY.featured)).toBeTruthy();
+  });
+
+  it("leaves the featured badge off a draft and off a list that is not featured", () => {
+    render(<ListRow list={list} mine featured />);
+    expect(screen.queryByText(LISTS_COPY.featured)).toBeNull();
+    cleanup();
+    render(<ListRow list={{ ...list, status: "published" }} mine />);
+    expect(screen.queryByText(LISTS_COPY.featured)).toBeNull();
+  });
 });
