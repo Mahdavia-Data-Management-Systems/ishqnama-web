@@ -170,10 +170,8 @@ export default function ListView() {
             )}
           </div>
           <div className={styles.intro}>
-            <div className={styles.titles}>
-              <h1 className={styles.title}>{list.title}</h1>
-              {list.description && <p className={styles.description}>{list.description}</p>}
-            </div>
+            <h1 className={styles.title}>{list.title}</h1>
+            {list.description && <p className={styles.description}>{list.description}</p>}
             <p className={styles.owner}>
               <OwnerAvatar name={owner} size="md" />
               <span className={styles.ownerText}>

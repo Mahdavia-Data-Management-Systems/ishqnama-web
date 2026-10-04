@@ -7,6 +7,8 @@
 }
 
 .title {
+  grid-area: title;
+  min-width: 0;
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-3xl);
@@ -16,24 +18,27 @@
   overflow-wrap: anywhere;
 }
 
+/* Justified, and across the full width: under the owner as well as the title from 600 px. */
 .description {
-  margin: var(--space-3) 0 0;
+  grid-area: description;
+  margin: 0;
+  text-align: justify;
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   color: var(--text-secondary);
   white-space: pre-line;
 }
 
-/* Phones: who compiled the list sits under the title and description. From 600 px it moves to
-   the right of the same block. */
+/* Phones: title, description, then who compiled the list. From 600 px the owner moves to the
+   right of the title and the description runs under both. */
 .intro {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.titles {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "title"
+    "description"
+    "owner";
+  gap: var(--space-3) var(--space-4);
 }
 
 /* Same pill as the Featured badge on the Library page's list rows, at the start of the toolbar
@@ -51,6 +56,7 @@
 }
 
 .owner {
+  grid-area: owner;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -74,17 +80,14 @@
 
 @media (min-width: 600px) {
   .intro {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-
-  .titles {
-    flex: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "title owner"
+      "description description";
   }
 
   .owner {
-    flex: none;
+    align-self: start;
     max-width: 14rem;
     margin-top: var(--space-2);
   }

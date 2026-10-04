@@ -33,6 +33,7 @@
 
 .caption {
   margin: 0 0 var(--space-1);
+  text-align: justify;
   font-family: var(--font-display);
   font-size: var(--text-lg);
   font-weight: 500;
