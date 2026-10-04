@@ -1,19 +1,8 @@
-.range {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
 .field {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   margin-bottom: var(--space-3);
-}
-
-.range .field {
-  margin-bottom: 0;
 }
 
 .label {
@@ -39,19 +28,233 @@
   border-color: var(--gold);
 }
 
-.input[readonly] {
+/* The chosen ayaat, one line each: the first opens on its beginning, the last on its ending. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--tint-ink-6);
+}
+
+.previewLine {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-arabic);
+  font-size: 1.375rem;
+  line-height: 2.2;
+  color: var(--text-primary);
+}
+
+/* Holds the last ayah's place, at its height, until the reader slides to one. */
+.previewHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(1.375rem * 2.2);
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
-.invalid {
-  border-color: var(--color-error);
+.previewLine + .previewLine,
+.previewLine + .previewHint {
+  border-top: 1px solid var(--tint-ink-12);
 }
 
-.error {
-  margin: 0 0 var(--space-3);
+.previewNumber {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--gold-label);
+}
+
+/*
+ * Each ayah stays on one line and scrolls sideways, the scrollbar hidden as on the other rails.
+ * The box is LTR (the Arabic inside is an RTL <bdi>), so short ayaat are pushed to the right.
+ * Where more of the ayah lies off the edge, that edge fades.
+ */
+.previewScroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  direction: ltr;
+  text-align: right;
+  white-space: nowrap;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  cursor: grab;
+}
+
+.previewScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.previewScroll[data-dragging],
+.previewScroll[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.previewScroll[data-overflow="end"] {
+  mask-image: linear-gradient(to right, transparent, black 1.5rem);
+}
+
+.previewScroll[data-overflow="start"] {
+  mask-image: linear-gradient(to left, transparent, black 1.5rem);
+}
+
+.previewPlaceholder {
+  display: block;
+  height: calc(1.375rem * 2.2);
+}
+
+/*
+ * The slider: a native range input whose own thumb is invisible, under a drawn thumb, the ayah
+ * marker ۝ with the chosen number inside. Both sit at (100% - thumb) * p, the browser's formula.
+ */
+.sliderWrap,
+.sliderEnds {
+  --thumb: 2.75rem;
+}
+
+.sliderWrap {
+  position: relative;
+  height: var(--thumb);
+}
+
+.track {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--thumb) / 2);
+  right: calc(var(--thumb) / 2);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--tint-ink-12);
+  transform: translateY(-50%);
+}
+
+.trackFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--p) * 100%);
+  border-radius: inherit;
+  background: var(--gold);
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.slider:focus {
+  outline: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+}
+
+.slider::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: none;
+  background: transparent;
+  -webkit-appearance: none;
+}
+
+.slider::-moz-range-track {
+  height: 100%;
+  background: transparent;
+}
+
+.slider::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.thumb {
+  position: absolute;
+  top: 0;
+  left: calc((100% - var(--thumb)) * var(--p));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--thumb);
+  height: var(--thumb);
+  border-radius: 50%;
+  background: var(--surface-card);
+  pointer-events: none;
+}
+
+.slider:focus-visible + .thumb {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * The font draws ۝ left of its origin and above its baseline (ink centre at -0.165em, 0.1875em
+ * up). With line-height 0 the baseline sits 0.37em below the box top, so this shift puts the
+ * ink centre on the thumb centre.
+ */
+.thumbGlyph {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 0;
+  height: 0;
+  direction: ltr;
+  font-family: var(--font-arabic);
+  font-size: 5.25rem;
+  line-height: 0;
+  color: var(--gold);
+  transform: translate(0.165em, -0.1825em);
+}
+
+.thumbNumber {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--gold-label);
+}
+
+/* Each end number sits under the thumb's centre at that end. */
+.sliderEnds {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-error);
+  color: var(--text-secondary);
+}
+
+.sliderEnds span {
+  width: var(--thumb);
+  text-align: center;
 }
 
 .lists {

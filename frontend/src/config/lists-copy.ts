@@ -76,6 +76,8 @@ export const LISTS_COPY = {
   addedTo: "Added to",
   addFailed: "Couldn't add it yet. Please try again.",
   listFull: "This list is full.",
+  ayahValue: "Ayah",
+  stretchHint: "Slide to include the ayaat that follow",
 } as const;
 
 export type ListsCopyKey = keyof typeof LISTS_COPY;
