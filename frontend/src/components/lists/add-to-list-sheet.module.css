@@ -248,6 +248,75 @@
   color: var(--gold-label);
 }
 
+/*
+ * A quiet − and + either side of the slider, level with its track, for one ayah at a time.
+ * The end numbers sit in the middle column, under the slider alone.
+ */
+.stepper {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: var(--space-2);
+  align-items: center;
+}
+
+.stepper .sliderWrap,
+.stepper .sliderEnds {
+  grid-column: 2;
+}
+
+.stepDown {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.stepUp {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--tint-ink-12);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.step:hover:not(:disabled) {
+  background: var(--tint-teal-8);
+  color: var(--teal-primary);
+}
+
+.step:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.step:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+}
+
+.step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step {
+    transition: none;
+  }
+}
+
 /* Each end number sits under the thumb's centre at that end. */
 .sliderEnds {
   display: flex;

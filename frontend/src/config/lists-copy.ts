@@ -77,6 +77,8 @@ export const LISTS_COPY = {
   addFailed: "Couldn't add it yet. Please try again.",
   listFull: "This list is full.",
   ayahValue: "Ayah",
+  stepDown: "One ayah fewer",
+  stepUp: "One ayah more",
   stretchHint: "Slide to include the ayaat that follow",
 } as const;
 

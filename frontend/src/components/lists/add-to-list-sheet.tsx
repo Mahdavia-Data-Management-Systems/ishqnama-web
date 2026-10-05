@@ -148,29 +148,51 @@ export default function AddToListSheet({ chapter, verse, onClose }: AddToListShe
             <label htmlFor={sliderId} className={styles.label}>
               {LISTS_COPY.toLabel}
             </label>
-            <div className={styles.sliderWrap} style={{ "--p": position } as CSSProperties}>
-              <span className={styles.track} aria-hidden="true">
-                <span className={styles.trackFill} />
-              </span>
-              <input
-                id={sliderId}
-                className={styles.slider}
-                type="range"
-                min={fromVerse}
-                max={verseCount}
-                step={1}
-                value={toVerse}
-                aria-valuetext={`${LISTS_COPY.ayahValue} ${toVerse}`}
-                onChange={(e) => setToVerse(Number(e.target.value))}
-              />
-              <span className={styles.thumb} aria-hidden="true">
-                <span className={styles.thumbGlyph}>&#1757;</span>
-                <span className={styles.thumbNumber}>{localizeNumber(toVerse, lang)}</span>
-              </span>
-            </div>
-            <div className={styles.sliderEnds} aria-hidden="true">
-              <span>{localizeNumber(fromVerse, lang)}</span>
-              <span>{localizeNumber(verseCount, lang)}</span>
+            <div className={styles.stepper}>
+              <button
+                type="button"
+                className={`${styles.step} ${styles.stepDown}`}
+                aria-label={LISTS_COPY.stepDown}
+                aria-controls={sliderId}
+                disabled={toVerse <= fromVerse}
+                onClick={() => setToVerse((v) => Math.max(fromVerse, v - 1))}
+              >
+                <Icon name="minus" size={16} />
+              </button>
+              <div className={styles.sliderWrap} style={{ "--p": position } as CSSProperties}>
+                <span className={styles.track} aria-hidden="true">
+                  <span className={styles.trackFill} />
+                </span>
+                <input
+                  id={sliderId}
+                  className={styles.slider}
+                  type="range"
+                  min={fromVerse}
+                  max={verseCount}
+                  step={1}
+                  value={toVerse}
+                  aria-valuetext={`${LISTS_COPY.ayahValue} ${toVerse}`}
+                  onChange={(e) => setToVerse(Number(e.target.value))}
+                />
+                <span className={styles.thumb} aria-hidden="true">
+                  <span className={styles.thumbGlyph}>&#1757;</span>
+                  <span className={styles.thumbNumber}>{localizeNumber(toVerse, lang)}</span>
+                </span>
+              </div>
+              <button
+                type="button"
+                className={`${styles.step} ${styles.stepUp}`}
+                aria-label={LISTS_COPY.stepUp}
+                aria-controls={sliderId}
+                disabled={toVerse >= verseCount}
+                onClick={() => setToVerse((v) => Math.min(verseCount, v + 1))}
+              >
+                <Icon name="plus" size={16} />
+              </button>
+              <div className={styles.sliderEnds} aria-hidden="true">
+                <span>{localizeNumber(fromVerse, lang)}</span>
+                <span>{localizeNumber(verseCount, lang)}</span>
+              </div>
             </div>
           </div>
         )}

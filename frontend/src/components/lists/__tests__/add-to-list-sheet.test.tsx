@@ -72,6 +72,26 @@ describe("AddToListSheet", () => {
     );
   });
 
+  it("steps the slider one ayah at a time, stopping at either end", async () => {
+    render(<AddToListSheet chapter={112} verse={2} onClose={() => {}} />);
+    await screen.findByText("آية 2");
+    const slider = screen.getByRole("slider") as HTMLInputElement;
+    const down = screen.getByRole("button", { name: LISTS_COPY.stepDown }) as HTMLButtonElement;
+    const up = screen.getByRole("button", { name: LISTS_COPY.stepUp }) as HTMLButtonElement;
+    expect(down.disabled).toBe(true);
+
+    fireEvent.click(up);
+    expect(slider.value).toBe("3");
+    expect(screen.getByText("آية 3")).toBeTruthy();
+    fireEvent.click(up);
+    expect(slider.value).toBe("4");
+    expect(up.disabled).toBe(true);
+
+    fireEvent.click(down);
+    expect(slider.value).toBe("3");
+    expect(down.disabled).toBe(false);
+  });
+
   it("leaves the slider out on the last ayah of a sura", async () => {
     render(<AddToListSheet chapter={112} verse={4} onClose={() => {}} />);
     expect(await screen.findByText("آية 4")).toBeTruthy();
