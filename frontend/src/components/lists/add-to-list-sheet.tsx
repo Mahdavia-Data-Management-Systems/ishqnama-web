@@ -12,6 +12,7 @@ import { useArabicVerses } from "@/hooks/use-arabic-verses";
 import { ApiError } from "@/lib/api-client";
 import { localizeNumber } from "@/lib/translation-map";
 import { useDragToScroll } from "@/lib/use-drag-to-scroll";
+import { useWheelToHorizontal } from "@/lib/use-wheel-to-horizontal";
 import { LIST_LIMITS, groupReference, verseCountOf } from "@/lib/verse-lists";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 import type { ArabicVerseDto } from "@/types/lists";
@@ -88,6 +89,9 @@ export default function AddToListSheet({ chapter, verse, onClose }: AddToListShe
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; done: boolean } | null>(null);
+  const [rail, setRail] = useState<HTMLUListElement | null>(null);
+  useWheelToHorizontal(rail);
+  useDragToScroll(rail);
 
   // Preselect the list changed most recently, which is first
   useEffect(() => {
@@ -212,7 +216,13 @@ export default function AddToListSheet({ chapter, verse, onClose }: AddToListShe
         <fieldset className={styles.lists}>
           <legend className={styles.label}>{LISTS_COPY.chooseList}</legend>
           {status === "loading" && myLists.length === 0 && <p className={styles.hint}>{LISTS_COPY.listsWarming}</p>}
-          <ul className={styles.options}>
+          <ul ref={setRail} className={styles.options}>
+            <li className={styles.newItem}>
+              <button type="button" className={`${styles.option} ${styles.optionNew}`} onClick={() => setCreating(true)}>
+                <Icon name="plus" size={20} />
+                <span className={styles.optionNewLabel}>{LISTS_COPY.newList}</span>
+              </button>
+            </li>
             {myLists.map((l) => (
               <li key={l.id}>
                 <label className={`${styles.option} ${listId === l.id ? styles.optionChosen : ""}`}>
@@ -230,12 +240,6 @@ export default function AddToListSheet({ chapter, verse, onClose }: AddToListShe
                 </label>
               </li>
             ))}
-            <li>
-              <button type="button" className={styles.option} onClick={() => setCreating(true)}>
-                <Icon name="plus" size={16} />
-                <span className={styles.optionTitle}>{LISTS_COPY.newList}</span>
-              </button>
-            </li>
           </ul>
         </fieldset>
 

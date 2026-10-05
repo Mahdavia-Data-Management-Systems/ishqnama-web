@@ -346,7 +346,9 @@
   text-align: center;
 }
 
+/* A fieldset is min-content wide by default, which would let the rail stretch the sheet. */
 .lists {
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: none;
@@ -358,30 +360,60 @@
   color: var(--text-secondary);
 }
 
+/*
+ * The reader's lists as a sideways rail of tiles, New list first so it is always in reach. No
+ * scrollbar: touch swipes it, a mouse drags it (useDragToScroll) and its wheel scrolls it
+ * (useWheelToHorizontal). The padding leaves room for the focus ring and the chosen tile's ring.
+ */
 .options {
+  display: flex;
+  gap: var(--space-2);
   list-style: none;
   margin: var(--space-2) 0 0;
-  padding: 0;
+  padding: 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
+  scrollbar-width: none;
+}
+
+.options::-webkit-scrollbar {
+  display: none;
+}
+
+.options[data-dragging],
+.options[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.options li {
+  display: flex;
+  flex: 0 0 10rem;
+  scroll-snap-align: start;
+}
+
+.options .newItem {
+  flex-basis: 6rem;
 }
 
 .option {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-1);
   width: 100%;
-  padding: var(--space-3) var(--space-2);
-  border: none;
-  border-top: 1px solid var(--tint-ink-12);
-  border-radius: var(--radius-sm);
+  min-height: 4.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--tint-ink-12);
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-primary);
   font: inherit;
   text-align: start;
   cursor: pointer;
-}
-
-.options li:first-child .option {
-  border-top-color: transparent;
 }
 
 .option:hover {
@@ -394,29 +426,55 @@
   outline-offset: 2px;
 }
 
-/* The chosen list is outlined in gold, like the rest of the sheet's accents. */
+/* The chosen list is ringed in gold, like the rest of the sheet's accents. */
 .optionChosen,
 .optionChosen:hover {
-  background: transparent;
+  border-color: var(--gold);
   box-shadow: inset 0 0 0 1px var(--gold);
 }
 
+/* Kept for keyboards and screen readers; the tile itself shows the choice. */
 .radio {
-  accent-color: var(--gold);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .optionTitle {
-  flex: 1;
-  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   line-height: var(--leading-snug);
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .optionMeta {
   font-size: var(--text-xs);
   color: var(--text-secondary);
+}
+
+.optionNew {
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-style: dashed;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.optionNew:hover {
+  color: var(--teal-primary);
+}
+
+.optionNewLabel {
+  font-size: var(--text-sm);
 }
 
 .message {
