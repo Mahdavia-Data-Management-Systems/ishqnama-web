@@ -58,7 +58,7 @@ function PreviewLine({ verse, lang, tail }: { verse: ArabicVerseDto; lang: Trans
       {!tail && number}
       <span
         ref={setScroller}
-        className={styles.previewScroll}
+        className={`${styles.previewScroll} ${tail ? styles.previewScrollTail : ""}`}
         data-overflow={overflows ? (tail ? "start" : "end") : undefined}
       >
         <bdi dir="rtl">{verse.arabicText}</bdi>

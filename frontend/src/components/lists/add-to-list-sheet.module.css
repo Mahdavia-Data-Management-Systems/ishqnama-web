@@ -92,6 +92,11 @@
   cursor: grab;
 }
 
+/* The last ayah sits at the left, beside its number, so it reads as the passage's end. */
+.previewScrollTail {
+  text-align: left;
+}
+
 .previewScroll::-webkit-scrollbar {
   display: none;
 }
