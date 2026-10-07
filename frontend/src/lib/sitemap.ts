@@ -3,7 +3,7 @@ import { RUKUS } from "@/data/rukus";
 import { siteUrl } from "@/lib/page-metadata";
 
 /** Public pages outside the reader. Account-only routes and the MSAL bridge are left out, as in robots.txt. */
-const STATIC_PATHS = ["/", "/quran/", "/about/", "/contact/", "/terms/", "/privacy/"];
+const STATIC_PATHS = ["/", "/quran/", "/nooreimaan/dua/", "/about/", "/contact/", "/terms/", "/privacy/"];
 
 /**
  * Every route path worth indexing, with trailing slashes to match the static export.

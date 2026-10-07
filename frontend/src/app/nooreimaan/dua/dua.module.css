@@ -1,0 +1,105 @@
+.main {
+  max-width: var(--max-width-reader);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6) var(--space-20);
+}
+
+.head {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+.title {
+  font-family: var(--font-urdu);
+  font-size: var(--text-4xl);
+  font-weight: normal;
+  line-height: var(--leading-urdu);
+  color: var(--gold-label);
+}
+
+/* The book's ornate brackets, set in the Quran face because the Nastaleeq font lacks them. */
+.bracket {
+  font-family: var(--font-arabic);
+  font-size: 0.8em;
+  color: var(--gold);
+  margin: 0 var(--space-3);
+}
+
+.subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--text-secondary);
+}
+
+/* A mushaf's closing page: paper inside a double gold rule. The outline is the outer rule, so
+   the margin keeps it clear of its neighbours. */
+.page {
+  background: var(--surface-card);
+  border: 1px solid var(--gold);
+  outline: 1px solid var(--gold);
+  outline-offset: 6px;
+  margin: 7px;
+  padding: var(--space-10) var(--space-10) var(--space-8);
+}
+
+.dua {
+  font-family: var(--font-arabic);
+  font-size: var(--text-arabic);
+  line-height: var(--leading-arabic);
+  color: var(--text-primary);
+  text-align: justify;
+  text-align-last: center;
+}
+
+/* ؀ is a prefix mark that a font stretches under whatever follows it; an inline block shapes it
+   on its own so it stays a mark between phrases. */
+.mark {
+  display: inline-block;
+  color: var(--gold);
+}
+
+/* The pronounced nūn of a tanween, small and lowered as the book sets it. */
+.small {
+  font-size: 0.6em;
+  vertical-align: sub;
+}
+
+.next {
+  margin-top: var(--space-12);
+  text-align: center;
+  font-size: var(--text-md);
+}
+
+.next a {
+  color: var(--teal-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.next a:hover {
+  color: var(--teal-hover);
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: var(--space-8) var(--space-4) var(--space-16);
+  }
+
+  .title {
+    font-size: var(--text-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--text-md);
+  }
+
+  .page {
+    padding: var(--space-6) var(--space-4) var(--space-5);
+  }
+
+  .dua {
+    font-size: 1.5rem;
+  }
+}
