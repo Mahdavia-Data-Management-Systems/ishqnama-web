@@ -9,6 +9,7 @@ import {
 import { MsalProvider } from "@azure/msal-react";
 import { msalConfig } from "@/config/auth-config";
 import { setUser } from "@/lib/telemetry";
+import { isUnfinishedSignUpError, retryUnfinishedSignUp } from "@/lib/unfinished-sign-up";
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
@@ -20,7 +21,17 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       // handleRedirectPromise processes the redirect response and returns
       // the AuthenticationResult if we just came back from a login redirect.
       // This MUST be awaited before checking accounts.
-      const response = await msalInstance.handleRedirectPromise();
+      let response: AuthenticationResult | null = null;
+      try {
+        response = await msalInstance.handleRedirectPromise();
+      } catch (err) {
+        // Entra sent back an error instead of a sign-in. Without this catch the app never renders.
+        if (isUnfinishedSignUpError(err) && retryUnfinishedSignUp(msalInstance)) {
+          // The page is navigating to Entra; render nothing until it does.
+          return;
+        }
+        console.warn("[MSAL] sign-in did not complete:", err);
+      }
 
       if (response?.account) {
         msalInstance.setActiveAccount(response.account);
