@@ -5,6 +5,7 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import { onReady } from "@/lib/api-readiness";
 import {
   appendListGroup,
+  copyList as apiCopyList,
   createList as apiCreateList,
   deleteFavorite,
   getFavorites,
@@ -32,6 +33,8 @@ interface ListsContextValue {
   status: ListsStatus;
   refresh: () => void;
   createList: (title: string, description: string | null) => Promise<VerseListDto>;
+  /** A draft of my own made from someone else's published list. */
+  copyList: (listId: string) => Promise<VerseListDto>;
   addGroup: (listId: string, group: Omit<VerseListGroupDto, "id">) => Promise<VerseListDto>;
   /** Keeps My collection in step after the editor saves a list. */
   noteListChanged: (list: VerseListDto) => void;
@@ -149,6 +152,16 @@ export default function ListsProvider({ children }: { children: React.ReactNode 
     [noteListChanged],
   );
 
+  const copyList = useCallback(
+    async (listId: string) => {
+      const copy = await withTimeout((signal) => apiCopyList(listId, signal));
+      noteListChanged(copy);
+      trackEvent("list-copied");
+      return copy;
+    },
+    [noteListChanged],
+  );
+
   const addGroup = useCallback(
     async (listId: string, group: Omit<VerseListGroupDto, "id">) => {
       const updated = await withTimeout((signal) => appendListGroup(listId, group, signal));
@@ -190,6 +203,7 @@ export default function ListsProvider({ children }: { children: React.ReactNode 
       status,
       refresh,
       createList,
+      copyList,
       addGroup,
       noteListChanged,
       noteListDeleted,
@@ -197,7 +211,7 @@ export default function ListsProvider({ children }: { children: React.ReactNode 
       addFavorite,
       removeFavorite,
     }),
-    [myLists, favorites, status, refresh, createList, addGroup, noteListChanged, noteListDeleted, favoriteFor, addFavorite, removeFavorite],
+    [myLists, favorites, status, refresh, createList, copyList, addGroup, noteListChanged, noteListDeleted, favoriteFor, addFavorite, removeFavorite],
   );
 
   return <ListsContext.Provider value={value}>{children}</ListsContext.Provider>;

@@ -7,11 +7,19 @@ import { LISTS_COPY } from "@/config/lists-copy";
 import { SIGN_IN_COPY } from "@/config/sign-in-copy";
 import { ApiError } from "@/lib/api-client";
 import { clearArabicVersesCache } from "@/hooks/use-arabic-verses";
-import { getChapterArabic, getFavorites, getMyLists, getPublishedList, saveListFavorite } from "@/lib/lists-api";
+import {
+  copyList,
+  getChapterArabic,
+  getFavorites,
+  getMyLists,
+  getPublishedList,
+  saveListFavorite,
+} from "@/lib/lists-api";
 import type { ArabicVerseDto, VerseListDto } from "@/types/lists";
 
 const msal = vi.hoisted(() => ({ authed: false }));
 const query = vi.hoisted(() => ({ id: "k3Jd9QxP2mWa" }));
+const router = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("@azure/msal-react", () => ({
   useIsAuthenticated: () => msal.authed,
@@ -23,7 +31,7 @@ vi.mock("@azure/msal-browser", async (importOriginal) => ({
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(`id=${query.id}`),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => router,
 }));
 vi.mock("@/context/reader-settings-context", () => ({
   useReaderSettings: () => ({ lang: "english", fontScale: 2 }),
@@ -40,6 +48,7 @@ vi.mock("@/lib/lists-api", () => ({
   saveListFavorite: vi.fn(),
   deleteFavorite: vi.fn(),
   createList: vi.fn(),
+  copyList: vi.fn(),
   appendListGroup: vi.fn(),
 }));
 
@@ -85,6 +94,8 @@ describe("a shared list", () => {
     msal.authed = false;
     query.id = "k3Jd9QxP2mWa";
     clearArabicVersesCache();
+    router.push.mockReset();
+    vi.mocked(copyList).mockReset();
     vi.mocked(getMyLists).mockResolvedValue([]);
     vi.mocked(getFavorites).mockResolvedValue([]);
     vi.mocked(getChapterArabic).mockImplementation((_c, from, to) => Promise.resolve(verses(from, to)));
@@ -129,13 +140,45 @@ describe("a shared list", () => {
     expect(saveListFavorite).not.toHaveBeenCalled();
   });
 
-  it("offers its owner Edit instead of Favourite", async () => {
+  it("offers its owner Edit instead of Favourite and Make a copy", async () => {
     msal.authed = true;
     vi.mocked(getPublishedList).mockResolvedValue(list({ isMine: true }));
     renderPage();
 
     expect(await screen.findByRole("button", { name: LISTS_COPY.edit })).toBeTruthy();
     expect(screen.queryByRole("button", { name: LISTS_COPY.favourite })).toBeNull();
+    expect(screen.queryByRole("button", { name: LISTS_COPY.makeCopy })).toBeNull();
+  });
+
+  it("asks an anonymous reader to sign in before making a copy", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list());
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: LISTS_COPY.makeCopy }));
+    expect(screen.getByRole("dialog", { name: SIGN_IN_COPY.lists.title })).toBeTruthy();
+    expect(copyList).not.toHaveBeenCalled();
+  });
+
+  it("copies a featured list into a draft of the reader's own and opens it in the editor", async () => {
+    msal.authed = true;
+    vi.mocked(getPublishedList).mockResolvedValue(list({ id: "fEatured0001" }));
+    vi.mocked(copyList).mockResolvedValue(list({ id: "cOpy00000001", status: "draft", isMine: true }));
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: LISTS_COPY.makeCopy }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/lists/edit/?id=cOpy00000001"));
+    expect(copyList).toHaveBeenCalledWith("fEatured0001", expect.anything());
+  });
+
+  it("says so when a copy could not be made", async () => {
+    msal.authed = true;
+    vi.mocked(getPublishedList).mockResolvedValue(list());
+    vi.mocked(copyList).mockRejectedValue(new ApiError(500, "Server Error"));
+    renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: LISTS_COPY.makeCopy }));
+    expect(await screen.findByText(LISTS_COPY.copyFailed)).toBeTruthy();
+    expect(router.push).not.toHaveBeenCalled();
   });
 
   it("marks a featured list as featured, for its owner and everyone else", async () => {

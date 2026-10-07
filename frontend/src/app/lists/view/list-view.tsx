@@ -29,7 +29,8 @@ type LoadState =
 
 /**
  * A published list, open to everyone: anonymous readers see it like the rest of the reader and
- * get the sign-in prompt when they favourite it. The owner sees Edit instead of Favourite.
+ * get the sign-in prompt when they favourite or copy it. The owner sees Edit instead of Favourite
+ * and Make a copy; a copy is a draft of the reader's own, opened in the editor.
  * Drafts and unknown ids come back as 404 and show "This list isn't available".
  */
 export default function ListView() {
@@ -38,11 +39,13 @@ export default function ListView() {
   const isAuthenticated = useIsAuthenticated();
   const { authSettled } = useSignInPrompt();
   const readiness = useApiReadiness();
-  const { favoriteFor, addFavorite, removeFavorite } = useLists();
+  const { favoriteFor, addFavorite, removeFavorite, copyList } = useLists();
   const gateFavorite = useSignInGate("favorites");
+  const gateLists = useSignInGate("lists");
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [favBusy, setFavBusy] = useState(false);
+  const [copyBusy, setCopyBusy] = useState(false);
 
   // Wait for MSAL to settle so a signed-in owner's request carries their token (for isMine)
   useEffect(() => {
@@ -108,6 +111,21 @@ export default function ListView() {
     });
   };
 
+  const handleCopy = () => {
+    if (!list || copyBusy) return;
+    gateLists(() => {
+      setShareNote(null);
+      setCopyBusy(true);
+      copyList(list.id).then(
+        (copy) => router.push(listEditPath(copy.id)),
+        () => {
+          setShareNote(LISTS_COPY.copyFailed);
+          setCopyBusy(false);
+        },
+      );
+    });
+  };
+
   if (state.kind === "missing") {
     return (
       <main className={styles.main}>
@@ -157,16 +175,24 @@ export default function ListView() {
                 onClick={() => router.push(listEditPath(list.id))}
               />
             ) : (
-              !featured && (
+              <>
                 <IconButton
-                  icon="heart"
-                  label={favorite ? LISTS_COPY.favourited : LISTS_COPY.favourite}
+                  icon="copy"
+                  label={copyBusy ? LISTS_COPY.copying : LISTS_COPY.makeCopy}
                   size="sm"
-                  filled={favorite != null}
-                  className={favorite ? styles.favourited : undefined}
-                  onClick={handleFavorite}
+                  onClick={handleCopy}
                 />
-              )
+                {!featured && (
+                  <IconButton
+                    icon="heart"
+                    label={favorite ? LISTS_COPY.favourited : LISTS_COPY.favourite}
+                    size="sm"
+                    filled={favorite != null}
+                    className={favorite ? styles.favourited : undefined}
+                    onClick={handleFavorite}
+                  />
+                )}
+              </>
             )}
           </div>
           <div className={styles.intro}>

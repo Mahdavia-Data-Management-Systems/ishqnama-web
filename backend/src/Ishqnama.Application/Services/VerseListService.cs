@@ -67,6 +67,46 @@ public sealed partial class VerseListService(IVerseListRepository lists, IUserDa
         return ToDto(list, ownerId);
     }
 
+    /// <summary>
+    /// A new draft owned by the caller with a published list's title, description and groups, so
+    /// a reader can build on someone else's collection. The source is left untouched.
+    /// </summary>
+    public async Task<VerseListDto> CopyPublishedAsync(string ownerId, string? ownerName, string sourceId)
+    {
+        if (!IsListId(sourceId))
+            throw new KeyNotFoundException("List not found.");
+        var source = await lists.GetAsync(sourceId);
+        if (source is not { Status: VerseListStatus.Published })
+            throw new KeyNotFoundException("List not found.");
+
+        if (await lists.CountByOwnerAsync(ownerId) >= MaxListsPerOwner)
+            throw new InvalidOperationException($"You can keep up to {MaxListsPerOwner} lists.");
+
+        var now = DateTimeOffset.UtcNow;
+        var copy = new VerseList
+        {
+            Id = NewId(ListIdLength),
+            OwnerId = ownerId,
+            OwnerName = CleanOwnerName(ownerName),
+            Title = source.Title,
+            Description = source.Description,
+            Status = VerseListStatus.Draft,
+            Groups = source.Groups.Select(g => new VerseListGroup
+            {
+                Id = g.Id,
+                Chapter = g.Chapter,
+                FromVerse = g.FromVerse,
+                ToVerse = g.ToVerse,
+                Caption = g.Caption,
+            }).ToList(),
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+
+        await lists.CreateAsync(copy);
+        return ToDto(copy, ownerId);
+    }
+
     public async Task<VerseListDto> GetMineAsync(string ownerId, string id)
         => ToDto(await GetOwnedAsync(ownerId, id), ownerId);
 

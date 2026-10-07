@@ -244,6 +244,55 @@ public sealed class VerseListServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => _service.GetPublishedSummariesAsync(ids));
     }
 
+    // Copying
+
+    [Fact]
+    public async Task Copying_a_published_list_makes_a_draft_of_my_own()
+    {
+        var source = await _service.CreateAsync(Owner, "Noor Mahdi", "Verses to memorise", "For the month");
+        await _service.ReplaceGroupsAsync(Owner, null, source.Id, [Group(1, 1, 7, "Al-Fatiha"), Group(2, 255, 255)]);
+        await _service.SetPublishedAsync(Owner, null, source.Id, true);
+
+        var copy = await _service.CopyPublishedAsync(Other, "A reader", source.Id);
+
+        Assert.NotEqual(source.Id, copy.Id);
+        Assert.Equal("draft", copy.Status);
+        Assert.Null(copy.PublishedAt);
+        Assert.True(copy.IsMine);
+        Assert.Equal("A reader", copy.OwnerName);
+        Assert.Equal("Verses to memorise", copy.Title);
+        Assert.Equal("For the month", copy.Description);
+        Assert.Equal(
+            [(1, 1, 7, "Al-Fatiha"), (2, 255, 255, (string?)null)],
+            copy.Groups.Select(g => (g.Chapter, g.FromVerse, g.ToVerse, g.Caption)));
+        Assert.Single(await _service.GetMyListsAsync(Other));
+
+        // Editing the copy leaves the original as it was
+        await _service.ReplaceGroupsAsync(Other, null, copy.Id, [Group(3, 1, 5)]);
+        Assert.Equal(2, (await _service.GetPublishedAsync(source.Id, null))!.Groups.Count);
+    }
+
+    [Fact]
+    public async Task Only_published_lists_can_be_copied()
+    {
+        var draft = await CreateAsync();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, draft.Id));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, "Zzzzzzzzzzzz"));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, "../etc"));
+    }
+
+    [Fact]
+    public async Task Copying_stops_at_the_list_limit()
+    {
+        var source = await CreateAsync();
+        await _service.SetPublishedAsync(Owner, null, source.Id, true);
+        for (var i = 0; i < VerseListService.MaxListsPerOwner; i++)
+            await _service.CreateAsync(Other, null, $"List {i}", null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CopyPublishedAsync(Other, null, source.Id));
+    }
+
     // Favourites
 
     [Fact]

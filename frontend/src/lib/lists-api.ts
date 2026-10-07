@@ -66,6 +66,14 @@ export function setListPublished(id: string, published: boolean): Promise<VerseL
   });
 }
 
+/** A new draft of my own with a published list's title, description and groups. */
+export function copyList(id: string, signal?: AbortSignal): Promise<VerseListDto> {
+  return authenticatedApiFetch<VerseListDto>(`/user/lists/${encodeURIComponent(id)}/copy`, {
+    method: "POST",
+    signal,
+  });
+}
+
 export function deleteList(id: string): Promise<void> {
   return authenticatedApiFetch<void>(`/user/lists/${encodeURIComponent(id)}`, { method: "DELETE" });
 }

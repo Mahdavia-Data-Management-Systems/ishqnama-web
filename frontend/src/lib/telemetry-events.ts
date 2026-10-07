@@ -9,6 +9,7 @@ export type TelemetryEvent =
   | "bookmark-created"
   | "bookmark-deleted"
   | "list-created"
+  | "list-copied"
   | "list-published"
   | "list-group-added"
   | "list-favorited"

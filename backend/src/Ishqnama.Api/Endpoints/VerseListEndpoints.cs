@@ -25,6 +25,7 @@ internal static class VerseListEndpoints
         mine.MapPost("/{id}/groups", AppendGroup);
         mine.MapPost("/{id}/publish", PublishList);
         mine.MapPost("/{id}/unpublish", UnpublishList);
+        mine.MapPost("/{id}/copy", CopyList);
         mine.MapDelete("/{id}", DeleteList);
 
         var published = api.MapGroup("/lists").AllowAnonymous().WithTags("Verse lists");
@@ -103,6 +104,24 @@ internal static class VerseListEndpoints
     private static Task<Results<Ok<VerseListDto>, BadRequest<ErrorResponse>, NotFound<ErrorResponse>, Conflict<ErrorResponse>>> UnpublishList(
         VerseListService service, ClaimsPrincipal user, string id)
         => Mutate(() => service.SetPublishedAsync(user.GetUserId(), user.GetUserName(), id, published: false));
+
+    private static async Task<Results<Created<VerseListDto>, NotFound<ErrorResponse>, Conflict<ErrorResponse>>> CopyList(
+        VerseListService service, ClaimsPrincipal user, string id)
+    {
+        try
+        {
+            var list = await service.CopyPublishedAsync(user.GetUserId(), user.GetUserName(), id);
+            return TypedResults.Created($"/user/lists/{list.Id}", list);
+        }
+        catch (KeyNotFoundException)
+        {
+            return ListNotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return TypedResults.Conflict(new ErrorResponse(ex.Message));
+        }
+    }
 
     private static async Task<Results<Ok, NotFound<ErrorResponse>>> DeleteList(
         VerseListService service, ClaimsPrincipal user, string id)

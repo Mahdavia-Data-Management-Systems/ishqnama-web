@@ -32,6 +32,9 @@ export const LISTS_COPY = {
   listsUnreachable: "Couldn't load your lists yet",
   copiedLink: "Link copied. Paste it wherever you like.",
   shareFailed: "Couldn't share from here. Try again.",
+  makeCopy: "Make a copy",
+  copying: "Making a copy",
+  copyFailed: "Couldn't make a copy yet. Please try again.",
   // Editor
   editorHeading: "Edit list",
   titleLabel: "Title",

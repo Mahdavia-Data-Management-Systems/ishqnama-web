@@ -160,6 +160,7 @@ Bookmarks are slug-keyed.
 | PUT | `/user/lists/{id}/groups` | Replace every group (`{ groups: [{ id?, chapter, fromVerse, toVerse, caption? }] }`) |
 | POST | `/user/lists/{id}/groups` | Append one group (`{ chapter, fromVerse, toVerse, caption? }`) |
 | POST | `/user/lists/{id}/publish` · `/unpublish` | Change status; `publishedAt` keeps the first publish |
+| POST | `/user/lists/{id}/copy` | Copy a published list (anyone's) into a new draft of mine with its title, description and groups → 201; 404 unless published, 409 past 100 lists |
 | DELETE | `/user/lists/{id}` | Delete |
 | GET | `/lists/{id}` | **Anonymous.** A published list (`isMine` true when the caller's token owns it); 404 for drafts, unknown or malformed ids |
 | GET | `/lists?ids=a,b,c` | **Anonymous.** Summaries of the published lists among up to 50 ids, in the order asked; others are left out |
