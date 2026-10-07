@@ -260,7 +260,7 @@ public sealed class VerseListServiceTests
         Assert.Null(copy.PublishedAt);
         Assert.True(copy.IsMine);
         Assert.Equal("A reader", copy.OwnerName);
-        Assert.Equal("Verses to memorise", copy.Title);
+        Assert.Equal("Copy of Verses to memorise", copy.Title);
         Assert.Equal("For the month", copy.Description);
         Assert.Equal(
             [(1, 1, 7, "Al-Fatiha"), (2, 255, 255, (string?)null)],
@@ -280,6 +280,19 @@ public sealed class VerseListServiceTests
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, draft.Id));
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, "Zzzzzzzzzzzz"));
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CopyPublishedAsync(Other, null, "../etc"));
+    }
+
+    [Fact]
+    public async Task Copying_a_list_with_a_full_length_title_keeps_the_copy_within_the_limit()
+    {
+        var title = new string('a', VerseListService.MaxTitleLength);
+        var source = await _service.CreateAsync(Owner, null, title, null);
+        await _service.SetPublishedAsync(Owner, null, source.Id, true);
+
+        var copy = await _service.CopyPublishedAsync(Other, null, source.Id);
+
+        Assert.Equal(VerseListService.MaxTitleLength, copy.Title.Length);
+        Assert.StartsWith(VerseListService.CopyTitlePrefix, copy.Title);
     }
 
     [Fact]

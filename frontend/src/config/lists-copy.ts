@@ -34,6 +34,9 @@ export const LISTS_COPY = {
   shareFailed: "Couldn't share from here. Try again.",
   makeCopy: "Make a copy",
   copying: "Making a copy",
+  copyTitle: "Make a copy of this list?",
+  copyMessage:
+    "A draft of your own with the same ayaat will open for you to change. The original stays as it is.",
   copyFailed: "Couldn't make a copy yet. Please try again.",
   // Editor
   editorHeading: "Edit list",

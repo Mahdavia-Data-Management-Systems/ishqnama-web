@@ -6,6 +6,7 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import EmptyState from "@/components/empty-state";
 import ListGroupCard from "@/components/lists/list-group-card";
 import OwnerAvatar from "@/components/lists/owner-avatar";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import IconButton from "@/components/ui/icon-button";
 import { FEATURED_LIST_IDS } from "@/config/featured-lists";
 import { LISTS_COPY } from "@/config/lists-copy";
@@ -30,7 +31,8 @@ type LoadState =
 /**
  * A published list, open to everyone: anonymous readers see it like the rest of the reader and
  * get the sign-in prompt when they favourite or copy it. The owner sees Edit instead of Favourite
- * and Make a copy; a copy is a draft of the reader's own, opened in the editor.
+ * and Make a copy; a copy, made once the reader confirms, is a draft of their own titled
+ * "Copy of" the original, opened in the editor.
  * Drafts and unknown ids come back as 404 and show "This list isn't available".
  */
 export default function ListView() {
@@ -46,6 +48,7 @@ export default function ListView() {
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [favBusy, setFavBusy] = useState(false);
   const [copyBusy, setCopyBusy] = useState(false);
+  const [confirmCopy, setConfirmCopy] = useState(false);
 
   // Wait for MSAL to settle so a signed-in owner's request carries their token (for isMine)
   useEffect(() => {
@@ -113,17 +116,21 @@ export default function ListView() {
 
   const handleCopy = () => {
     if (!list || copyBusy) return;
-    gateLists(() => {
-      setShareNote(null);
-      setCopyBusy(true);
-      copyList(list.id).then(
-        (copy) => router.push(listEditPath(copy.id)),
-        () => {
-          setShareNote(LISTS_COPY.copyFailed);
-          setCopyBusy(false);
-        },
-      );
-    });
+    gateLists(() => setConfirmCopy(true));
+  };
+
+  const runCopy = () => {
+    setConfirmCopy(false);
+    if (!list || copyBusy) return;
+    setShareNote(null);
+    setCopyBusy(true);
+    copyList(list.id).then(
+      (copy) => router.push(listEditPath(copy.id)),
+      () => {
+        setShareNote(LISTS_COPY.copyFailed);
+        setCopyBusy(false);
+      },
+    );
   };
 
   if (state.kind === "missing") {
@@ -218,6 +225,15 @@ export default function ListView() {
           ))}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmCopy}
+        title={LISTS_COPY.copyTitle}
+        message={LISTS_COPY.copyMessage}
+        confirmLabel={LISTS_COPY.makeCopy}
+        onConfirm={runCopy}
+        onCancel={() => setConfirmCopy(false)}
+      />
     </main>
   );
 }

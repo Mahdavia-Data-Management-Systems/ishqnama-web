@@ -22,6 +22,7 @@ public sealed partial class VerseListService(IVerseListRepository lists, IUserDa
     public const int MaxOwnerNameLength = 100;
     public const int MaxBatchIds = 50;
     public const string ListKind = "list";
+    public const string CopyTitlePrefix = "Copy of ";
 
     private const string Base62 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private const int ListIdLength = 12;
@@ -68,8 +69,9 @@ public sealed partial class VerseListService(IVerseListRepository lists, IUserDa
     }
 
     /// <summary>
-    /// A new draft owned by the caller with a published list's title, description and groups, so
-    /// a reader can build on someone else's collection. The source is left untouched.
+    /// A new draft owned by the caller with a published list's description and groups, titled
+    /// "Copy of" its title, so a reader can build on someone else's collection. The source is left
+    /// untouched.
     /// </summary>
     public async Task<VerseListDto> CopyPublishedAsync(string ownerId, string? ownerName, string sourceId)
     {
@@ -88,7 +90,7 @@ public sealed partial class VerseListService(IVerseListRepository lists, IUserDa
             Id = NewId(ListIdLength),
             OwnerId = ownerId,
             OwnerName = CleanOwnerName(ownerName),
-            Title = source.Title,
+            Title = CopyTitle(source.Title),
             Description = source.Description,
             Status = VerseListStatus.Draft,
             Groups = source.Groups.Select(g => new VerseListGroup
@@ -285,6 +287,13 @@ public sealed partial class VerseListService(IVerseListRepository lists, IUserDa
         if (trimmed.Length > MaxTitleLength)
             throw new ArgumentException($"Title must be {MaxTitleLength} characters or less.", nameof(title));
         return trimmed;
+    }
+
+    /// <summary>The source title behind "Copy of ", cut back to the title limit.</summary>
+    private static string CopyTitle(string title)
+    {
+        var copyTitle = $"{CopyTitlePrefix}{title}";
+        return copyTitle.Length > MaxTitleLength ? copyTitle[..MaxTitleLength].TrimEnd() : copyTitle;
     }
 
     private static string? CleanOptional(string? value, int maxLength, string name)
