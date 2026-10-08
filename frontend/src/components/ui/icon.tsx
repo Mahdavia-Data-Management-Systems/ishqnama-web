@@ -33,6 +33,7 @@ const icons: Record<string, string> = {
   alignLeft: "M3 6h18M3 12h12M3 18h15",
   trash: "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
   library: "M16 6l4 14M12 6v14M8 8v12M4 4v16",
+  article: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
 };
 
 interface IconProps {

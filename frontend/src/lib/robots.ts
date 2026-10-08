@@ -4,9 +4,11 @@ import { isProductionSite, siteUrl } from "@/lib/page-metadata";
 /**
  * Routes with nothing worth indexing: the MSAL redirect bridge, the signed-in Library page,
  * search, whose results need an account and whose empty shell would only be a thin page, and
- * readers' verse lists, which are their own content shared by link, not pages of the site.
+ * readers' verse lists, which are their own content shared by link, not pages of the site, and
+ * the articles, which are for signed-in readers, so their pages hold only titles and are not
+ * worth indexing.
  */
-export const DISALLOWED_PATHS = ["/redirect/", "/library/", "/search/", "/lists/"];
+export const DISALLOWED_PATHS = ["/redirect/", "/library/", "/search/", "/lists/", "/articles/"];
 
 /**
  * AI crawlers kept out of the whole site: model training, AI search and answer engines, and the

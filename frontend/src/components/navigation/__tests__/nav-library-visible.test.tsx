@@ -23,3 +23,17 @@ describe("Library navigation for an anonymous reader", () => {
     expect(screen.getByRole("link", { name: /Library/ })).toBeTruthy();
   });
 });
+
+describe("Articles navigation", () => {
+  afterEach(cleanup);
+
+  it("is listed in the app bar for everyone", () => {
+    render(<AppBar />);
+    expect(screen.getByRole("link", { name: "Articles" }).getAttribute("href")).toMatch(/^\/articles\/?$/);
+  });
+
+  it("is listed in the bottom navigation", () => {
+    render(<BottomNav />);
+    expect(screen.getByRole("link", { name: /Articles/ }).getAttribute("href")).toMatch(/^\/articles\/?$/);
+  });
+});
