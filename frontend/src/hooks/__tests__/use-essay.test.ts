@@ -57,11 +57,13 @@ describe("useEssay", () => {
     );
     await flush();
     mockedGet.mockReturnValueOnce(new Promise(() => {}));
+    const before = renders.length;
     rerender({ slug: "hazf" });
     expect(result.current.essay).toBeNull();
-    // Prove no render with slug "hazf" ever showed the naskh essay
-    const hazfRenderIndex = renders.length - 1; // The last rerender push
-    expect(renders[hazfRenderIndex]).toBeNull();
+    // Prove every render from slug change onward returned null (never showed stale naskh essay)
+    const hazfRenders = renders.slice(before);
+    expect(hazfRenders.length).toBeGreaterThan(0);
+    expect(hazfRenders.every((e) => e === null)).toBe(true);
   });
 
   it("retries on the next ready transition after a failure, without caching the failure", async () => {
