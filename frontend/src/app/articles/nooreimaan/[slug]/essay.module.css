@@ -1,0 +1,121 @@
+.main {
+  max-width: var(--max-width-reader);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6) var(--space-20);
+}
+
+.head {
+  text-align: center;
+  margin-bottom: var(--space-10);
+}
+
+/* The dua page's title treatment, so the Noor e Imaan pages read as one book. */
+.title {
+  font-family: var(--font-urdu);
+  font-size: var(--text-4xl);
+  font-weight: normal;
+  line-height: var(--leading-urdu);
+  color: var(--gold-label);
+  text-wrap: balance;
+}
+
+/* The book's ornate brackets, set in the Quran face because the Nastaleeq font lacks them. */
+.bracket {
+  font-family: var(--font-arabic);
+  font-size: 0.8em;
+  color: var(--gold);
+  margin: 0 var(--space-3);
+}
+
+.subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--text-secondary);
+}
+
+.source {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.source a,
+.all {
+  color: var(--teal-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.source a:hover,
+.all:hover {
+  color: var(--teal-hover);
+}
+
+.foot {
+  margin-top: var(--space-16);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--gold);
+  text-align: center;
+}
+
+.neighbours {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.neighbour {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 45%;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.prev {
+  text-align: right;
+}
+
+.next {
+  text-align: left;
+  margin-inline-start: auto;
+}
+
+.direction {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.neighbourTitle {
+  font-family: var(--font-urdu);
+  font-size: var(--text-lg);
+  line-height: 2;
+  color: var(--teal-primary);
+}
+
+.neighbour:hover .neighbourTitle {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.all {
+  font-size: var(--text-md);
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: var(--space-8) var(--space-4) var(--space-16);
+  }
+
+  .title {
+    font-size: var(--text-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--text-md);
+  }
+}

@@ -1,0 +1,102 @@
+.main {
+  max-width: var(--max-width-reader);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6) var(--space-20);
+}
+
+.head {
+  margin-bottom: var(--space-10);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin-top: var(--space-2);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+}
+
+.source {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--gold-label);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--gold);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list li + li {
+  border-top: 1px solid var(--tint-ink-10);
+}
+
+/* A facing row, echoing the book's translation tables: English left, Urdu right. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-3) var(--space-2);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.row:hover {
+  background: var(--tint-teal-4);
+}
+
+.row:hover .english {
+  color: var(--teal-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.english {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.urdu {
+  flex-shrink: 0;
+  max-width: 55%;
+  font-family: var(--font-urdu);
+  font-size: var(--text-xl);
+  line-height: 1.9;
+  color: var(--gold-label);
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: var(--space-8) var(--space-4) var(--space-16);
+  }
+
+  .title {
+    font-size: var(--text-3xl);
+  }
+
+  /* Stacked: the Urdu title above its English one */
+  .row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .urdu {
+    max-width: none;
+  }
+}
