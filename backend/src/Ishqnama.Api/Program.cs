@@ -60,6 +60,7 @@ builder.Services.AddScoped<VerseService>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<UserDataService>();
 builder.Services.AddScoped<VerseListService>();
+builder.Services.AddSingleton<ArticleService>();
 
 // Application Insights through the Azure Monitor OpenTelemetry exporter. Only when a connection
 // string is configured, so local runs and docker-compose need nothing. The pieces are composed by
@@ -198,6 +199,7 @@ api.MapVerseEndpoints();
 api.MapSearchEndpoints();
 api.MapUserDataEndpoints();
 api.MapVerseListEndpoints();
+api.MapArticleEndpoints();
 api.MapHealthEndpoints();
 
 // Probe targets (outside /api so they never pick up cache headers)
