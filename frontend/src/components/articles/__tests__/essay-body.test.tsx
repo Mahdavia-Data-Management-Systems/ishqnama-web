@@ -50,9 +50,21 @@ describe("EssayBody", () => {
 
   it("gives subheadings their ids and lists them in a contents nav", () => {
     render(<EssayBody blocks={BLOCKS} />);
-    expect(screen.getByRole("heading", { level: 2, name: "پہلی آیت" }).id).toBe("section-1");
+    const heading = screen.getByRole("heading", { level: 2, name: "پہلی آیت" });
+    expect(heading.id).toBe("section-1");
     const link = screen.getByRole("link", { name: "پہلی آیت" });
     expect(link.getAttribute("href")).toBe("#section-1");
+    expect(link.querySelector("[aria-hidden]")).toBeNull();
+  });
+
+  it("draws the book's brackets around a subheading without changing its name", () => {
+    render(<EssayBody blocks={BLOCKS} />);
+    const heading = screen.getByRole("heading", { level: 2 });
+    const brackets = heading.querySelectorAll('span[aria-hidden="true"]');
+    expect(Array.from(brackets, (b) => b.textContent?.trim())).toEqual(["﴿", "﴾"]);
+    expect(heading.firstElementChild).toBe(brackets[0]);
+    expect(heading.lastElementChild).toBe(brackets[1]);
+    expect(screen.getByRole("heading", { level: 2, name: "پہلی آیت" })).toBe(heading);
   });
 
   it("has no contents nav for an essay without subheadings", () => {

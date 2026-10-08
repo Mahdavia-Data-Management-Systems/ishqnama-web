@@ -13,11 +13,18 @@ internal static class ArticleEndpoints
         return api;
     }
 
-    private static Results<ContentHttpResult, NotFound> GetNoorEImaanEssay(string slug, ArticleService articles)
+    private static Results<ContentHttpResult, StatusCodeHttpResult, NotFound> GetNoorEImaanEssay(
+        string slug, ArticleService articles, HttpContext context)
     {
-        var json = articles.GetNoorEImaanEssay(slug);
-        return json is null
-            ? TypedResults.NotFound()
-            : TypedResults.Text(json, "application/json", Encoding.UTF8);
+        var essay = articles.GetNoorEImaanEssay(slug);
+        if (essay is null)
+            return TypedResults.NotFound();
+
+        // The ETag follows the essay's text, so a corrected essay reaches readers who have the old one cached.
+        context.Response.Headers.ETag = essay.ETag;
+        if (context.Request.Headers.IfNoneMatch.ToString() == essay.ETag)
+            return TypedResults.StatusCode(StatusCodes.Status304NotModified);
+
+        return TypedResults.Text(essay.Json, "application/json", Encoding.UTF8);
     }
 }

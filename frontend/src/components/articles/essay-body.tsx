@@ -87,7 +87,13 @@ export default function EssayBody({ blocks }: { blocks: Block[] }) {
           case "h2":
             return (
               <h2 key={i} id={block.id} className={styles.heading}>
+                <span className={styles.bracket} aria-hidden="true">
+                  ﴿
+                </span>
                 <Runs runs={block.runs} />
+                <span className={styles.bracket} aria-hidden="true">
+                  ﴾
+                </span>
               </h2>
             );
           case "pair":

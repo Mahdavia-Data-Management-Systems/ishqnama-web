@@ -4,13 +4,13 @@ using Ishqnama.Api.Helpers;
 namespace Ishqnama.Api.Middleware;
 
 /// <summary>
-/// Caching for the read-only routes: assembly-version ETag, <c>Vary: Authorization</c> (tafseer is
-/// stripped for anonymous callers, so the two audiences must never share a cache entry) and a 304
-/// short-circuit on <c>If-None-Match</c>. The Quran routes are long-lived and immutable. The
-/// members-only essays are <c>private, no-cache</c>: only the reader's browser keeps them, and it
-/// rechecks each visit, so a corrected essay arrives with the next deploy (the ETag changes with the
-/// version, the only way their embedded text can change). This runs after UseAuthorization(), so a
-/// request without a valid token gets 401 before the 304 short-circuit can answer it.
+/// Caching for the read-only routes. The Quran routes are long-lived and immutable: assembly-version
+/// ETag (it changes with each deploy), <c>Vary: Authorization</c> (tafseer is stripped for anonymous
+/// callers, so the two audiences must never share a cache entry) and a 304 short-circuit on
+/// <c>If-None-Match</c>. The members-only essays get only <c>private, no-cache</c> and
+/// <c>Vary: Authorization</c> here: their ETag is a hash of each essay's text, set (with its own 304)
+/// by the endpoint, because the assembly version is the same in every deployed image. This runs after
+/// UseAuthorization(), so a request without a valid token gets 401 before any 304 can answer it.
 /// User-data routes, published verse lists (edited live by their owners) and health probes are
 /// excluded.
 /// </summary>
@@ -44,6 +44,21 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
         var cacheControl = CacheControlFor(context.Request.Path);
         if (cacheControl is null)
             return next(context);
+
+        if (context.Request.Path.StartsWithSegments("/api/articles"))
+        {
+            context.Response.OnStarting(static state =>
+            {
+                var (response, control) = ((HttpResponse, string))state;
+                if (response.StatusCode < StatusCodes.Status500InternalServerError)
+                {
+                    response.Headers.CacheControl = control;
+                    response.Headers.Vary = "Authorization";
+                }
+                return Task.CompletedTask;
+            }, (context.Response, cacheControl));
+            return next(context);
+        }
 
         var etag = context.User.IsAuthenticated() ? AuthenticatedEtag : UnauthenticatedEtag;
 

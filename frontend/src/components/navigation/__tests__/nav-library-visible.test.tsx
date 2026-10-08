@@ -3,6 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import AppBar from "@/components/navigation/app-bar";
 import BottomNav from "@/components/navigation/bottom-nav";
 
+// next.config sets trailingSlash; Link reads this flag when it loads, so set it first.
+vi.hoisted(() => {
+  process.env.__NEXT_TRAILING_SLASH = "true";
+});
+
 vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@azure/msal-react", () => ({
   useIsAuthenticated: () => false,
@@ -29,11 +34,11 @@ describe("Articles navigation", () => {
 
   it("is listed in the app bar for everyone", () => {
     render(<AppBar />);
-    expect(screen.getByRole("link", { name: "Articles" }).getAttribute("href")).toMatch(/^\/articles\/?$/);
+    expect(screen.getByRole("link", { name: "Articles" }).getAttribute("href")).toBe("/articles/");
   });
 
   it("is listed in the bottom navigation", () => {
     render(<BottomNav />);
-    expect(screen.getByRole("link", { name: /Articles/ }).getAttribute("href")).toMatch(/^\/articles\/?$/);
+    expect(screen.getByRole("link", { name: /Articles/ }).getAttribute("href")).toBe("/articles/");
   });
 });

@@ -27,6 +27,14 @@
   scroll-margin-top: var(--space-20);
 }
 
+/* The book's ornate brackets around a subheading, in the Quran face because the Nastaleeq font lacks them. */
+.bracket {
+  font-family: var(--font-arabic);
+  font-size: 0.8em;
+  color: var(--gold);
+  margin: 0 var(--space-2);
+}
+
 /* Quran quotations in the mushaf face and teal, so scripture reads apart from the prose at a glance. */
 .quran {
   font-family: var(--font-arabic);
