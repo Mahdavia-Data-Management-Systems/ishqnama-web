@@ -114,6 +114,21 @@ class ConvertTests(unittest.TestCase):
                 '<span class="urdu" lang="ur-PK">x</span></p></td></tr></tbody></table>'
             )
 
+    def test_fails_on_a_row_outside_a_table(self):
+        with self.assertRaisesRegex(ValueError, "<tr> outside a table"):
+            blocks('<tr><td><p class="table-body" lang="ur-PK"><span class="urdu" lang="ur-PK">x</span></p></td></tr>')
+
+    def test_fails_on_a_cell_outside_a_table_row(self):
+        with self.assertRaisesRegex(ValueError, "<td> outside a table row"):
+            blocks('<table><td><p class="table-body" lang="ur-PK"><span class="urdu" lang="ur-PK">x</span></p></td></table>')
+
+    def test_fails_on_a_subheading_inside_a_table(self):
+        with self.assertRaisesRegex(ValueError, "Heading-2 inside a table"):
+            blocks(
+                '<table><tbody><tr><td><p class="Heading-2" lang="ur-PK">'
+                '<span class="urdu" lang="ur-PK">x</span></p></td></tr></tbody></table>'
+            )
+
     def test_fails_when_the_source_and_the_manifest_disagree(self):
         with self.assertRaisesRegex(ValueError, "manifest"):
             convert(doc(heading("حذف")), MANIFEST)

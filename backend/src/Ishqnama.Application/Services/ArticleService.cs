@@ -4,14 +4,14 @@ using System.Text.Json;
 
 namespace Ishqnama.Application.Services;
 
+/// <summary>An essay's JSON with its content ETag (a quoted strong ETag, <c>"a-&lt;16 hex&gt;"</c>).</summary>
+public sealed record EssayResource(string Json, string ETag);
+
 /// <summary>
 /// The Noor e Imaan essays, embedded in this assembly as JSON by
 /// <c>frontend/scripts/build_nooreimaan_articles.py</c>. Each is served verbatim, so the block
 /// shape belongs to the converter and the frontend's <c>src/types/articles.ts</c>, not to C# types.
 /// </summary>
-/// <summary>An essay's JSON with its content ETag (a quoted strong ETag, <c>"a-&lt;16 hex&gt;"</c>).</summary>
-public sealed record EssayResource(string Json, string ETag);
-
 public sealed class ArticleService
 {
     private const string Prefix = "Articles/NoorEImaan/";

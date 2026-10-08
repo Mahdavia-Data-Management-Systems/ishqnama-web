@@ -43,7 +43,7 @@
 
 /* Other Arabic (hadith, the scholars quoted) in Naskh, in the prose colour. */
 .arabic {
-  font-family: 'Nafees Web Naskh', 'Traditional Arabic', serif;
+  font-family: var(--font-naskh);
 }
 
 .english {

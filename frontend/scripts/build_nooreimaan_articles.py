@@ -93,10 +93,16 @@ class ExportParser(HTMLParser):
                 lang = self.para["lang"]  # HTML lang inheritance: the span takes its paragraph's language
             self.spans.append(kind_for(classes, lang))
         elif tag == "table":
+            if self.table is not None:
+                raise ValueError("nested <table>")
             self.table = []
         elif tag == "tr":
+            if self.table is None:
+                raise ValueError("<tr> outside a table")
             self.table.append([])
         elif tag == "td":
+            if not self.table:
+                raise ValueError("<td> outside a table row")
             self.table[-1].append([])
 
     def handle_endtag(self, tag):
@@ -122,6 +128,8 @@ class ExportParser(HTMLParser):
         cls = para["cls"]
         if cls in SKIPPED_CLASSES:
             return
+        if cls.startswith("Heading-") and self.table is not None:
+            raise ValueError(f"{cls} inside a table")
         if cls == "Heading-1":
             title = "".join(text for _, text in para["runs"]).translate(ORNAMENTS)
             self.essays.append({"urduTitle": re.sub(r"\s+", " ", title).strip(), "blocks": [], "sections": 0})

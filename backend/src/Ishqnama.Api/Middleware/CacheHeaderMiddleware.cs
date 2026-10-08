@@ -27,37 +27,39 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
     private static readonly string AuthenticatedEtag = $"\"v2-{BaseVersion}-a\"";
     private static readonly string UnauthenticatedEtag = $"\"v2-{BaseVersion}-u\"";
 
-    /// <summary>The Cache-Control for a request path, or null for routes this middleware leaves alone.</summary>
-    internal static string? CacheControlFor(PathString path)
+    /// <summary>How this middleware treats a route: left alone, long-lived Quran data, or the members-only essays.</summary>
+    internal enum RouteCaching { None, Quran, Members }
+
+    /// <summary>The caching policy for a request path; the one place the path rules live.</summary>
+    internal static RouteCaching CachingFor(PathString path)
     {
         if (!path.StartsWithSegments("/api")
             || path.StartsWithSegments("/api/user")
             || path.StartsWithSegments("/api/lists")
             || path.StartsWithSegments("/api/healthz"))
-            return null;
+            return RouteCaching.None;
 
-        return path.StartsWithSegments("/api/articles") ? MembersCacheControl : QuranCacheControl;
+        return path.StartsWithSegments("/api/articles") ? RouteCaching.Members : RouteCaching.Quran;
     }
 
     public Task InvokeAsync(HttpContext context)
     {
-        var cacheControl = CacheControlFor(context.Request.Path);
-        if (cacheControl is null)
-            return next(context);
-
-        if (context.Request.Path.StartsWithSegments("/api/articles"))
+        switch (CachingFor(context.Request.Path))
         {
-            context.Response.OnStarting(static state =>
-            {
-                var (response, control) = ((HttpResponse, string))state;
-                if (response.StatusCode < StatusCodes.Status500InternalServerError)
+            case RouteCaching.None:
+                return next(context);
+            case RouteCaching.Members:
+                context.Response.OnStarting(static state =>
                 {
-                    response.Headers.CacheControl = control;
-                    response.Headers.Vary = "Authorization";
-                }
-                return Task.CompletedTask;
-            }, (context.Response, cacheControl));
-            return next(context);
+                    var response = (HttpResponse)state;
+                    if (response.StatusCode < StatusCodes.Status500InternalServerError)
+                    {
+                        response.Headers.CacheControl = MembersCacheControl;
+                        response.Headers.Vary = "Authorization";
+                    }
+                    return Task.CompletedTask;
+                }, context.Response);
+                return next(context);
         }
 
         var etag = context.User.IsAuthenticated() ? AuthenticatedEtag : UnauthenticatedEtag;
@@ -66,7 +68,7 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
         if (context.Request.Headers.IfNoneMatch.ToString() == etag)
         {
             context.Response.StatusCode = StatusCodes.Status304NotModified;
-            ApplyHeaders(context.Response, etag, cacheControl);
+            ApplyHeaders(context.Response, etag);
             return Task.CompletedTask;
         }
 
@@ -74,18 +76,18 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
         // skipped so a failure is never cached.
         context.Response.OnStarting(static state =>
         {
-            var (response, tag, control) = ((HttpResponse, string, string))state;
+            var (response, tag) = ((HttpResponse, string))state;
             if (response.StatusCode < StatusCodes.Status500InternalServerError)
-                ApplyHeaders(response, tag, control);
+                ApplyHeaders(response, tag);
             return Task.CompletedTask;
-        }, (context.Response, etag, cacheControl));
+        }, (context.Response, etag));
 
         return next(context);
     }
 
-    private static void ApplyHeaders(HttpResponse response, string etag, string cacheControl)
+    private static void ApplyHeaders(HttpResponse response, string etag)
     {
-        response.Headers.CacheControl = cacheControl;
+        response.Headers.CacheControl = QuranCacheControl;
         response.Headers.ETag = etag;
         response.Headers.Vary = "Authorization";
     }
