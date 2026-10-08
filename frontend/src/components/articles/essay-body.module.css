@@ -1,0 +1,153 @@
+/* The essay is RTL, so logical properties throughout: "inline-start" is the right-hand edge. */
+.body {
+  font-family: var(--font-urdu);
+  font-size: var(--text-urdu);
+  line-height: var(--leading-urdu);
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+}
+
+/* Justified with the last line to the right, as the book sets its paragraphs. */
+.paragraph {
+  margin: 0 0 var(--space-4);
+  text-align: justify;
+  text-align-last: right;
+}
+
+.heading {
+  font-family: var(--font-urdu);
+  font-size: var(--text-2xl);
+  font-weight: normal;
+  line-height: var(--leading-urdu);
+  color: var(--gold-label);
+  margin: var(--space-10) 0 var(--space-3);
+  padding-block-end: var(--space-1);
+  border-block-end: 1px solid var(--gold);
+  /* Clear of the sticky app bar when a contents link jumps here */
+  scroll-margin-top: var(--space-20);
+}
+
+/* Quran quotations in the mushaf face and teal, so scripture reads apart from the prose at a glance. */
+.quran {
+  font-family: var(--font-arabic);
+  color: var(--teal-primary);
+}
+
+/* Other Arabic (hadith, the scholars quoted) in Naskh, in the prose colour. */
+.arabic {
+  font-family: 'Nafees Web Naskh', 'Traditional Arabic', serif;
+}
+
+.english {
+  font-family: var(--font-display);
+  font-size: 0.8em;
+}
+
+.contents {
+  margin: 0 0 var(--space-8);
+  padding: var(--space-3) 0;
+  border-block: 1px solid var(--tint-ink-10);
+  font-size: var(--text-lg);
+  line-height: 2;
+}
+
+.contents ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: var(--space-8);
+}
+
+.contents a {
+  color: var(--teal-primary);
+  text-decoration: none;
+}
+
+.contents a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* The facing quotation: the book's translation table, on the card surface with one gold edge
+   on the quotation's side, the two halves divided by a gold hairline. */
+.pair {
+  margin: var(--space-6) 0;
+  padding: var(--space-1) var(--space-5);
+  background: var(--surface-card);
+  border-inline-start: 3px solid var(--gold);
+}
+
+.pairRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--space-6);
+  padding-block: var(--space-3);
+}
+
+.pairRow + .pairRow {
+  border-block-start: 1px solid var(--tint-ink-10);
+}
+
+.quote {
+  margin: 0;
+  padding-inline-end: var(--space-6);
+  border-inline-end: 1px solid var(--gold);
+}
+
+.rendering {
+  font-size: 0.92em;
+}
+
+.quote p,
+.rendering p {
+  margin: 0;
+  text-align: justify;
+  text-align-last: right;
+}
+
+.quote p + p,
+.rendering p + p {
+  margin-block-start: var(--space-2);
+}
+
+@media (max-width: 600px) {
+  .body {
+    font-size: 1.1875rem; /* 19px */
+  }
+
+  .heading {
+    font-size: var(--text-xl);
+  }
+
+  .contents ol {
+    columns: 1;
+  }
+
+  .pair {
+    padding-inline: var(--space-4);
+  }
+
+  /* Stacked: the quotation above its rendering, divided by a short centred gold rule. */
+  .pairRow {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-3);
+  }
+
+  .quote {
+    position: relative;
+    padding-inline-end: 0;
+    padding-block-end: var(--space-3);
+    border-inline-end: none;
+  }
+
+  .quote::after {
+    content: "";
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: 50%;
+    width: var(--space-12);
+    margin-inline-start: calc(var(--space-12) / -2);
+    border-block-end: 1px solid var(--gold);
+  }
+}
