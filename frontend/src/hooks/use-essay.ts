@@ -31,22 +31,26 @@ export interface EssayState {
 
 /** The essay at `slug`; retries on the next ready transition after a failure. */
 export function useEssay(slug: string): EssayState {
-  const [state, setState] = useState<{ essay: EssayDto | null; failed: boolean }>({ essay: null, failed: false });
+  const [state, setState] = useState<{ slug: string; essay: EssayDto | null; failed: boolean }>({
+    slug,
+    essay: null,
+    failed: false,
+  });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     let unregister: (() => void) | null = null;
-    setState({ essay: null, failed: false });
+    setState({ slug, essay: null, failed: false });
 
     const run = () => {
       load(slug).then(
         (essay) => {
-          if (!cancelled) setState({ essay, failed: false });
+          if (!cancelled) setState({ slug, essay, failed: false });
         },
         () => {
           if (cancelled) return;
-          setState({ essay: null, failed: true });
+          setState({ slug, essay: null, failed: true });
           unregister = onReady(() => {
             unregister = null;
             run();
@@ -63,7 +67,10 @@ export function useEssay(slug: string): EssayState {
   }, [slug, attempt]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
-  return { ...state, retry };
+  // Return essay and failed as null/false when slug has changed (render phase mismatch)
+  const essay = state.slug === slug ? state.essay : null;
+  const failed = state.slug === slug ? state.failed : false;
+  return { essay, failed, retry };
 }
 
 /** For tests. */

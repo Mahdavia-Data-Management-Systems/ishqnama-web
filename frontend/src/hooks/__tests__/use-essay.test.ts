@@ -46,11 +46,22 @@ describe("useEssay", () => {
 
   it("never shows the previous essay while the next one loads", async () => {
     mockedGet.mockResolvedValueOnce(essay("naskh"));
-    const { result, rerender } = renderHook(({ slug }) => useEssay(slug), { initialProps: { slug: "naskh" } });
+    const renders = [] as (EssayDto | null)[];
+    const { result, rerender } = renderHook(
+      ({ slug }) => {
+        const state = useEssay(slug);
+        renders.push(state.essay);
+        return state;
+      },
+      { initialProps: { slug: "naskh" } },
+    );
     await flush();
     mockedGet.mockReturnValueOnce(new Promise(() => {}));
     rerender({ slug: "hazf" });
     expect(result.current.essay).toBeNull();
+    // Prove no render with slug "hazf" ever showed the naskh essay
+    const hazfRenderIndex = renders.length - 1; // The last rerender push
+    expect(renders[hazfRenderIndex]).toBeNull();
   });
 
   it("retries on the next ready transition after a failure, without caching the failure", async () => {
@@ -69,6 +80,7 @@ describe("useEssay", () => {
     mockedGet.mockRejectedValueOnce(new Error("500")).mockResolvedValueOnce(essay("naskh"));
     const { result } = renderHook(() => useEssay("naskh"));
     await flush();
+    expect(result.current.failed).toBe(true);
     act(() => result.current.retry());
     await flush();
     expect(result.current.essay).toEqual(essay("naskh"));
