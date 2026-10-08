@@ -18,7 +18,7 @@ const allStrings: string[] = [
 
 describe("sign-in copy", () => {
   it("covers every feature with a title and a body", () => {
-    for (const feature of ["settings", "saved", "bookmark", "search", "lists", "favorites"] as const) {
+    for (const feature of ["settings", "saved", "bookmark", "search", "lists", "favorites", "articles"] as const) {
       expect(SIGN_IN_COPY[feature].title.length).toBeGreaterThan(0);
       expect(SIGN_IN_COPY[feature].body.length).toBeGreaterThan(0);
     }

@@ -1,0 +1,47 @@
+.placeholder {
+  padding: var(--space-16) 0;
+  text-align: center;
+}
+
+.placeholderText {
+  color: var(--text-tertiary);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-4);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--tint-teal-10);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto var(--space-4);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+.retryButton {
+  background: var(--fill-primary);
+  color: var(--text-on-dark);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-6);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background: var(--fill-primary-hover);
+}

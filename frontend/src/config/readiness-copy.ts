@@ -30,3 +30,6 @@ export const SETTINGS_WARMING_MESSAGE =
 export const SETTINGS_UNREACHABLE_MESSAGE =
   "Your changes apply now but couldn't be saved yet";
 export const SETTINGS_LOADING_MESSAGE = "Loading your saved settings";
+
+export const ESSAY_LOADING_MESSAGE = "Opening the essay";
+export const ESSAY_FAILED_MESSAGE = "Couldn't open this essay yet";
