@@ -4,8 +4,24 @@
   padding: var(--space-12) var(--space-6) var(--space-20);
 }
 
+/* Title on the left, Share on the right, its note right-aligned beneath it */
 .head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-10);
+}
+
+.share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.headText {
+  min-width: 0;
 }
 
 .title {

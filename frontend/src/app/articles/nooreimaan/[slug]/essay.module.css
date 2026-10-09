@@ -4,9 +4,20 @@
   padding: var(--space-12) var(--space-6) var(--space-20);
 }
 
+/* As on the articles index: the titles, then Share in the top right corner */
 .head {
-  text-align: center;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
   margin-bottom: var(--space-10);
+}
+
+/* Padded on the left by the Share button's width and gap, so the titles stay centred on the page */
+.headText {
+  flex: 1;
+  min-width: 0;
+  padding-inline-start: calc(36px + var(--space-4));
+  text-align: center;
 }
 
 /* The dua page's title treatment, so the Noor e Imaan pages read as one book. */
@@ -35,22 +46,12 @@
   color: var(--text-secondary);
 }
 
-.source {
-  margin-top: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.source a,
-.all {
-  color: var(--teal-primary);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.source a:hover,
-.all:hover {
-  color: var(--teal-hover);
+/* Its note right-aligned beneath the button */
+.share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .foot {
@@ -64,7 +65,6 @@
   display: flex;
   justify-content: space-between;
   gap: var(--space-6);
-  margin-bottom: var(--space-8);
 }
 
 .neighbour {
@@ -100,10 +100,6 @@
 .neighbour:hover .neighbourTitle {
   text-decoration: underline;
   text-underline-offset: 4px;
-}
-
-.all {
-  font-size: var(--text-md);
 }
 
 @media (max-width: 600px) {

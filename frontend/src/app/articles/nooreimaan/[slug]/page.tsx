@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
 import {
   NOOR_E_IMAAN_ESSAYS,
@@ -52,15 +53,22 @@ export default async function EssayPage({ params }: EssayPageProps) {
   return (
     <main className={styles.main}>
       <header className={styles.head}>
-        <h1 className={styles.title} lang="ur" dir="rtl">
-          <span className={styles.bracket} aria-hidden="true">﴿</span>
-          {essay.urduTitle}
-          <span className={styles.bracket} aria-hidden="true">﴾</span>
-        </h1>
-        <p className={styles.subtitle}>{essay.title}</p>
-        <p className={styles.source}>
-          From <Link href="/about/">Noor e Imaan</Link>
-        </p>
+        <div className={styles.headText}>
+          <h1 className={styles.title} lang="ur" dir="rtl">
+            <span className={styles.bracket} aria-hidden="true">﴿</span>
+            {essay.urduTitle}
+            <span className={styles.bracket} aria-hidden="true">﴾</span>
+          </h1>
+          <p className={styles.subtitle}>{essay.title}</p>
+        </div>
+        <div className={styles.share}>
+          <ArticleShareButton
+            path={essayPath(slug)}
+            title={essay.title}
+            text={`Noor-e-Imaan | ${essay.urduTitle}\n${essay.title}\n`}
+            page="essay"
+          />
+        </div>
       </header>
 
       <EssayGate slug={slug} />
@@ -71,9 +79,6 @@ export default async function EssayPage({ params }: EssayPageProps) {
           {previous && <Neighbour essay={previous} rel="prev" />}
           {next && <Neighbour essay={next} rel="next" />}
         </div>
-        <Link href="/articles/" className={styles.all}>
-          All articles
-        </Link>
       </nav>
     </main>
   );

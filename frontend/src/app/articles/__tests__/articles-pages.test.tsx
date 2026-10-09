@@ -21,6 +21,7 @@ describe("articles pages", () => {
     expect(links).toHaveLength(23);
     expect(links[0].getAttribute("href")).toBe("/articles/nooreimaan/is-the-quran-connected/");
     expect(links[22].getAttribute("href")).toBe("/nooreimaan/dua/");
+    expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
   });
 
   it("prerenders one page per essay", () => {
@@ -40,6 +41,8 @@ describe("articles pages", () => {
     expect(screen.getByRole("link", { name: /استثناء منقطع/ }).getAttribute("href")).toBe(
       "/articles/nooreimaan/istisna-munqati/",
     );
-    expect(screen.getByRole("link", { name: "All articles" }).getAttribute("href")).toBe("/articles/");
+    expect(screen.queryByRole("link", { name: "All articles" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Noor e Imaan" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
   });
 });

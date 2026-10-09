@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ArticleShareButton from "@/components/articles/article-share-button";
 import { NOOR_E_IMAAN_ESSAYS, essayPath } from "@/data/articles/nooreimaan";
 import { KHATM_DUA_TITLE } from "@/data/khatm-dua";
 import { pageMetadata } from "@/lib/page-metadata";
@@ -26,8 +27,18 @@ export default function ArticlesPage() {
   return (
     <main className={styles.main}>
       <header className={styles.head}>
-        <h1 className={styles.title}>Articles</h1>
-        <p className={styles.subtitle}>Essays from Noor e Imaan</p>
+        <div className={styles.headText}>
+          <h1 className={styles.title}>Articles</h1>
+          <p className={styles.subtitle}>Essays from Noor e Imaan</p>
+        </div>
+        <div className={styles.share}>
+          <ArticleShareButton
+            path="/articles/"
+            title="Articles | Ishqnama"
+            text="Essays from Noor e Imaan"
+            page="index"
+          />
+        </div>
       </header>
 
       {/* One section per source; later sources append below. */}

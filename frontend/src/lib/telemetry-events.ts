@@ -15,6 +15,7 @@ export type TelemetryEvent =
   | "list-favorited"
   | "list-unfavorited"
   | "list-shared"
+  | "article-shared"
   | "sign-in-prompt-shown"
   | "sign-in-started"
   | "translation-language-changed"
