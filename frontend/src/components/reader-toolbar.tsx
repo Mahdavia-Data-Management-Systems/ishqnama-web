@@ -14,10 +14,14 @@ export type TranslationLang = "urdu" | "hindi" | "english";
 interface ReaderToolbarProps {
   prev?: { href: string; name: string } | null;
   next?: { href: string; name: string } | null;
-  mode: ReadingMode;
-  onModeChange: (mode: ReadingMode) => void;
-  lang: TranslationLang;
-  onLangChange: (lang: TranslationLang) => void;
+  /** The mode, language and settings controls belong to the Quran reader; the essay page leaves them out. */
+  mode?: ReadingMode;
+  onModeChange?: (mode: ReadingMode) => void;
+  lang?: TranslationLang;
+  onLangChange?: (lang: TranslationLang) => void;
+  showSettings?: boolean;
+  /** Right to left, as the essays read: next on the left, previous on the right. */
+  rtl?: boolean;
   fontScale: number;
   onFontScaleChange: (scale: number) => void;
 }
@@ -43,6 +47,8 @@ export default function ReaderToolbar({
   onModeChange,
   lang,
   onLangChange,
+  showSettings = true,
+  rtl = false,
   fontScale,
   onFontScaleChange,
 }: ReaderToolbarProps) {
@@ -50,12 +56,17 @@ export default function ReaderToolbar({
   const gateSettings = useSignInGate("settings");
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
 
+  const prevLink = prev && { ...prev, label: `Previous: ${prev.name}` };
+  const nextLink = next && { ...next, label: `Next: ${next.name}` };
+  const left = rtl ? nextLink : prevLink;
+  const right = rtl ? prevLink : nextLink;
+
   return (
     <div className={`${styles.toolbar} ornament-paper-tint`}>
       <div className={styles.inner}>
         <div className={styles.navSide}>
-          {prev ? (
-            <Link href={prev.href} className={styles.navLink} aria-label={`Previous: ${prev.name}`}>
+          {left ? (
+            <Link href={left.href} className={styles.navLink} aria-label={left.label}>
               <Icon name="chevronLeft" size={16} />
             </Link>
           ) : (
@@ -64,19 +75,24 @@ export default function ReaderToolbar({
         </div>
 
         <div className={styles.controls}>
-          <SegmentedControl
-            options={modeOptions}
-            value={mode}
-            onChange={(v) => onModeChange(v as ReadingMode)}
-            size="sm"
-          />
-          <SegmentedControl
-            options={langOptions}
-            value={lang}
-            onChange={(v) => onLangChange(v as TranslationLang)}
-            size="sm"
-          />
-          <div className={styles.fontStepper}>
+          {mode && onModeChange && (
+            <SegmentedControl
+              options={modeOptions}
+              value={mode}
+              onChange={(v) => onModeChange(v as ReadingMode)}
+              size="sm"
+            />
+          )}
+          {lang && onLangChange && (
+            <SegmentedControl
+              options={langOptions}
+              value={lang}
+              onChange={(v) => onLangChange(v as TranslationLang)}
+              size="sm"
+            />
+          )}
+          {/* Alone in the bar, it stays and keeps its label on the narrowest phones */}
+          <div className={`${styles.fontStepper} ${mode || lang ? "" : styles.fontStepperAlone}`}>
             <button
               onClick={() => onFontScaleChange(Math.max(FONT_MIN, fontScale - 1))}
               disabled={fontScale <= FONT_MIN}
@@ -99,11 +115,13 @@ export default function ReaderToolbar({
 
         <div className={styles.navSide}>
           {/* Settings persist for signed-in readers; anonymous readers get the sign-in prompt. */}
-          <button onClick={() => gateSettings(() => openSettings("reader"))} className={styles.settingsBtn} aria-label="Settings">
-            <Icon name="settings" size={18} />
-          </button>
-          {next ? (
-            <Link href={next.href} className={styles.navLink} aria-label={`Next: ${next.name}`}>
+          {showSettings && (
+            <button onClick={() => gateSettings(() => openSettings("reader"))} className={styles.settingsBtn} aria-label="Settings">
+              <Icon name="settings" size={18} />
+            </button>
+          )}
+          {right ? (
+            <Link href={right.href} className={styles.navLink} aria-label={right.label}>
               <Icon name="chevronRight" size={16} />
             </Link>
           ) : (

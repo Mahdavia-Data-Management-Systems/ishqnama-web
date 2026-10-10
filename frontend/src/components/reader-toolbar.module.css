@@ -156,10 +156,14 @@
   .fontLabel {
     display: none;
   }
+
+  .fontStepperAlone .fontLabel {
+    display: inline;
+  }
 }
 
 @media (max-width: 400px) {
-  .fontStepper {
+  .fontStepper:not(.fontStepperAlone) {
     display: none;
   }
 }

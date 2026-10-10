@@ -1,7 +1,8 @@
-/* The essay is RTL, so logical properties throughout: "inline-start" is the right-hand edge. */
+/* The essay is RTL, so logical properties throughout: "inline-start" is the right-hand edge.
+   Sizes are multiplied by --essay-scale, which the toolbar's font stepper sets in EssayReader. */
 .body {
   font-family: var(--font-urdu);
-  font-size: var(--text-urdu);
+  font-size: calc(var(--text-urdu) * var(--essay-scale, 1));
   line-height: var(--leading-urdu);
   color: var(--text-primary);
   overflow-wrap: break-word;
@@ -16,7 +17,7 @@
 
 .heading {
   font-family: var(--font-urdu);
-  font-size: var(--text-2xl);
+  font-size: calc(var(--text-2xl) * var(--essay-scale, 1));
   font-weight: normal;
   line-height: var(--leading-urdu);
   color: var(--gold-label);
@@ -55,7 +56,7 @@
   margin: 0 0 var(--space-8);
   padding: var(--space-3) 0;
   border-block: 1px solid var(--tint-ink-10);
-  font-size: var(--text-lg);
+  font-size: calc(var(--text-lg) * var(--essay-scale, 1));
   line-height: 2;
 }
 
@@ -121,11 +122,11 @@
 
 @media (max-width: 600px) {
   .body {
-    font-size: 1.1875rem; /* 19px */
+    font-size: calc(1.1875rem * var(--essay-scale, 1)); /* 19px at 100% */
   }
 
   .heading {
-    font-size: var(--text-xl);
+    font-size: calc(var(--text-xl) * var(--essay-scale, 1));
   }
 
   .contents ol {

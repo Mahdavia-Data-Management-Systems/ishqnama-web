@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
+import EssayReader from "@/components/articles/essay-reader";
 import {
   NOOR_E_IMAAN_ESSAYS,
   NOOR_E_IMAAN_ESSAY_BY_SLUG,
@@ -71,7 +72,12 @@ export default async function EssayPage({ params }: EssayPageProps) {
         </div>
       </header>
 
-      <EssayGate slug={slug} />
+      <EssayReader
+        prev={previous && { href: essayPath(previous.slug), name: previous.title }}
+        next={next && { href: essayPath(next.slug), name: next.title }}
+      >
+        <EssayGate slug={slug} />
+      </EssayReader>
 
       <nav className={styles.foot} aria-label="More essays">
         {/* RTL, as the book reads: the previous essay on the right, the next on the left */}

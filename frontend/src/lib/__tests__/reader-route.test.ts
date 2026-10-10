@@ -9,6 +9,12 @@ describe("isReaderRoute", () => {
     expect(isReaderRoute("/quran/juz/1/ruku/2/")).toBe(true);
   });
 
+  it("treats an essay page as a reader route, but not the articles index", () => {
+    expect(isReaderRoute("/articles/nooreimaan/naskh/")).toBe(true);
+    expect(isReaderRoute("/articles/")).toBe(false);
+    expect(isReaderRoute("/articles/nooreimaan/")).toBe(false);
+  });
+
   it("excludes the chapter index and every other page", () => {
     expect(isReaderRoute("/quran/")).toBe(false);
     expect(isReaderRoute("/")).toBe(false);

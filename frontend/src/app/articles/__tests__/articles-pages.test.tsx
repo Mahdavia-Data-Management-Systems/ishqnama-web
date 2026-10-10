@@ -12,6 +12,10 @@ vi.mock("@/components/articles/essay-gate", () => ({
   default: ({ slug }: { slug: string }) => <p>gate {slug}</p>,
 }));
 
+vi.mock("@/components/articles/essay-reader", () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="essay-reader">{children}</div>,
+}));
+
 describe("articles pages", () => {
   afterEach(cleanup);
 
@@ -36,7 +40,7 @@ describe("articles pages", () => {
   it("shows the titles and neighbours to everyone and leaves the text to the gate", async () => {
     render(await EssayPage({ params: Promise.resolve({ slug: "harf-e-zaid" }) }));
     expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("حرف زائد");
-    expect(screen.getByText("gate harf-e-zaid")).toBeTruthy();
+    expect(within(screen.getByTestId("essay-reader")).getByText("gate harf-e-zaid")).toBeTruthy();
     expect(screen.getByRole("link", { name: /نسخ/ }).getAttribute("href")).toBe("/articles/nooreimaan/naskh/");
     expect(screen.getByRole("link", { name: /استثناء منقطع/ }).getAttribute("href")).toBe(
       "/articles/nooreimaan/istisna-munqati/",
