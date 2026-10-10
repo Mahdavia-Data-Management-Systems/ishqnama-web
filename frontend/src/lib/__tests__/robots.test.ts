@@ -4,6 +4,7 @@ import { AI_CRAWLERS, DISALLOWED_PATHS, robotsFor } from "../robots";
 describe("robotsFor", () => {
   it("keeps the signed-in readers' articles out of search", () => {
     expect(DISALLOWED_PATHS).toContain("/articles/");
+    expect(DISALLOWED_PATHS).toContain("/test/");
   });
 
   it.each(["https://ishqnama.com", "https://www.ishqnama.com"])(

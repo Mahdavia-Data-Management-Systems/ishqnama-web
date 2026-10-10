@@ -19,6 +19,15 @@
   .footer[data-clears="bottom-nav"] {
     padding-bottom: calc(var(--space-10) + 56px);
   }
+
+  /* With a recording open, its dock runs the full width above that bar on phones */
+  :global(:root[data-audio-dock]) .footer[data-clears="toolbar"] {
+    padding-bottom: calc(var(--space-10) + var(--toolbar-height) + var(--audio-dock-height));
+  }
+
+  :global(:root[data-audio-dock]) .footer[data-clears="bottom-nav"] {
+    padding-bottom: calc(var(--space-10) + 56px + var(--audio-dock-height));
+  }
 }
 
 .inner {

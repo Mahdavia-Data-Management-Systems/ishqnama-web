@@ -1,0 +1,176 @@
+/* The dock sits over the bottom nav (90) and the reader toolbar (50), under the app bar (100),
+   the menus (200) and the sheets (300). On phones it runs the full width, docked on whatever bar
+   runs along the bottom edge (see data-clears); from 641px up it is a card in the corner. */
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border-top: 1px solid var(--tint-ink-12);
+  padding: 0 var(--space-3) var(--space-3);
+  animation: rise var(--duration-slow) var(--ease-out);
+}
+
+/* Sitting on the viewport's own edge (no bar under it), leave room for a phone's home indicator */
+.dock[data-clears="bottom-nav"] {
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+}
+
+.dock[data-clears="toolbar"] {
+  bottom: var(--toolbar-height);
+}
+
+@media (max-width: 640px) {
+  .dock[data-clears="bottom-nav"] {
+    bottom: 56px;
+    padding-bottom: var(--space-3);
+  }
+}
+
+@media (min-width: 641px) {
+  .dock {
+    left: auto;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    width: 360px;
+    max-width: calc(100vw - 2 * var(--space-4));
+    border: 1px solid var(--tint-ink-12);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-modal);
+  }
+
+  .dock[data-clears="toolbar"] {
+    bottom: calc(var(--toolbar-height) + var(--space-4));
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 40px;
+}
+
+/* Set like the sheets' subtitle, so the bar reads as one of ours over Spotify's card */
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-style: italic;
+  line-height: var(--leading-tight);
+  color: var(--gold-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.title:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.subtitle {
+  font-style: normal;
+  color: var(--text-secondary);
+  margin-inline-start: var(--space-2);
+}
+
+.close {
+  flex: none;
+  margin-inline-end: calc(-1 * var(--space-1));
+}
+
+/* Where Spotify's iframe lands. Until it does, the space breathes like the loading rail. */
+.host {
+  min-height: 80px;
+  border-radius: 12px; /* Spotify's own corner radius, so the wait and the embed share a shape */
+  overflow: hidden;
+}
+
+.host[data-state="starting"] {
+  background: var(--tint-ink-6);
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+.host iframe {
+  display: block;
+  border: 0;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.failure {
+  margin: 0;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.outLink {
+  color: var(--teal-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.outLink:hover {
+  color: var(--teal-hover);
+}
+
+.outLink:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock {
+    animation: none;
+  }
+
+  .host[data-state="starting"] {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@media print {
+  .dock {
+    display: none;
+  }
+}

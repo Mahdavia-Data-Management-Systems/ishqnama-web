@@ -46,6 +46,15 @@
   .button[data-clears="bottom-nav"] {
     bottom: calc(56px + var(--space-4));
   }
+
+  /* With a recording open, its dock runs the full width above that bar on phones */
+  :global(:root[data-audio-dock]) .button[data-clears="toolbar"] {
+    bottom: calc(var(--toolbar-height) + var(--audio-dock-height) + var(--space-4));
+  }
+
+  :global(:root[data-audio-dock]) .button[data-clears="bottom-nav"] {
+    bottom: calc(56px + var(--audio-dock-height) + var(--space-4));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

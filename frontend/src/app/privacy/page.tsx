@@ -50,6 +50,13 @@ export default function PrivacyPage() {
             explanations, or what you write in your lists. Two small cookies let us count visits; they are used
             for nothing else. The records are kept for 30 days.
           </p>
+          <h2>Recordings</h2>
+          <p>
+            When you play a recording, the part of the page it plays in comes
+            from Spotify. Spotify sees that the recording was played and may
+            set cookies of its own, under Spotify&apos;s privacy policy. Nothing
+            is sent to Spotify until you press play.
+          </p>
           <h2>Contact</h2>
           <p>
             If you have questions about this privacy policy, please reach out

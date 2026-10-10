@@ -176,6 +176,9 @@
   --max-width-reader: 760px;
   --header-height: 60px;
   --toolbar-height: 56px;
+  /* The recording dock on phones: a 40px title row over Spotify's 80px embed, plus padding.
+     Set as data-audio-dock on <html> while open; the footer and back-to-top clear it. */
+  --audio-dock-height: 132px;
 }
 
 /* ── Dark theme ──
