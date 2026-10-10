@@ -4,6 +4,7 @@ import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
 import EssayReader from "@/components/articles/essay-reader";
 import EssayStickyBar from "@/components/articles/essay-sticky-bar";
+import BackToTop from "@/components/ui/back-to-top";
 import Icon from "@/components/ui/icon";
 import {
   NOOR_E_IMAAN_ESSAYS,
@@ -103,6 +104,8 @@ export default async function EssayPage({ params }: EssayPageProps) {
           {next && <Neighbour essay={next} rel="next" />}
         </div>
       </nav>
+
+      <BackToTop />
     </main>
   );
 }

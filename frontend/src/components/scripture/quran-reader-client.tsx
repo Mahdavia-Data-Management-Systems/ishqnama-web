@@ -10,6 +10,7 @@ import RukuMark from "@/components/scripture/ruku-mark";
 import SajdahMark from "@/components/scripture/sajdah-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
+import BackToTop from "@/components/ui/back-to-top";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
@@ -547,6 +548,9 @@ export default function QuranReaderClient({
         fontScale={fontScale}
         onFontScaleChange={setFontScale}
       />
+
+      {/* Under an open verse popup (z-index 101), which covers the corner while it is up */}
+      <BackToTop />
     </>
   );
 }

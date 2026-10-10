@@ -1,0 +1,62 @@
+/* Bottom left, clear of the bar along the bottom edge (see data-clears), fading and rising
+   into place once the page has scrolled a screen down. */
+.button {
+  position: fixed;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 60; /* over the page and the fixed ReaderToolbar (50), under the app bar (100) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--tint-ink-12);
+  border-radius: 50%;
+  background: var(--surface-card);
+  color: var(--teal-primary);
+  box-shadow: var(--shadow-dropdown);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--space-2));
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    visibility var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+/* Solid on hover too, since the essay text runs underneath */
+.button:hover {
+  color: var(--teal-hover);
+  box-shadow: var(--shadow-modal);
+}
+
+.shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.button[data-clears="toolbar"] {
+  bottom: calc(var(--toolbar-height) + var(--space-4));
+}
+
+@media (max-width: 640px) {
+  .button[data-clears="bottom-nav"] {
+    bottom: calc(56px + var(--space-4));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transform: none;
+    transition: none;
+  }
+}
+
+@media print {
+  .button {
+    display: none;
+  }
+}
