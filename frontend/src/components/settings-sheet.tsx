@@ -11,6 +11,7 @@ import {
   SETTINGS_WARMING_MESSAGE,
 } from "@/config/readiness-copy";
 import type { ReadingMode, TranslationLang } from "./reader-toolbar";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./settings-sheet.module.css";
 
 /** Why a change may not be saved yet; null when nothing needs saying. */
@@ -92,9 +93,9 @@ export default function SettingsSheet({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      const unlockScroll = lockPageScroll();
       return () => {
-        document.body.style.overflow = "";
+        unlockScroll();
       };
     }
   }, [isOpen]);

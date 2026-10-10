@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { suras } from "@/data/suras";
 import type { UserBookmarkDto } from "@/types/user";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./bookmark-picker.module.css";
 
 interface BookmarkPickerProps {
@@ -24,9 +25,9 @@ function getPositionLabel(chapterNumber: number, verseNumber: number): string {
 export default function BookmarkPicker({ isOpen, onClose, bookmarks, onSelect, onCreateNew }: BookmarkPickerProps) {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      const unlockScroll = lockPageScroll();
       return () => {
-        document.body.style.overflow = "";
+        unlockScroll();
       };
     }
   }, [isOpen]);

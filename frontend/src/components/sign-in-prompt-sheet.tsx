@@ -11,6 +11,7 @@ import {
   SIGN_IN_LABEL,
   type SignInFeature,
 } from "@/config/sign-in-copy";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./sign-in-prompt-sheet.module.css";
 
 interface SignInPromptSheetProps {
@@ -34,11 +35,11 @@ export default function SignInPromptSheet({ isOpen, feature, onSignIn, onClose }
   useEffect(() => {
     if (!isOpen || !feature) return;
     const previous = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    const unlockScroll = lockPageScroll();
     // Focus the dialog itself so keyboard users start inside it without a ring on the first button.
     sheetRef.current?.focus();
     return () => {
-      document.body.style.overflow = "";
+      unlockScroll();
       previous?.focus?.();
     };
   }, [isOpen, feature]);

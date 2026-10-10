@@ -7,6 +7,7 @@ import { CREATE_BOOKMARK_HELPER } from "@/config/readiness-copy";
 import { useApiReadiness } from "@/lib/api-readiness";
 import { LIST_LIMITS } from "@/lib/verse-lists";
 import type { VerseListDto } from "@/types/lists";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "@/components/create-bookmark-dialog.module.css";
 
 interface CreateListDialogProps {
@@ -32,9 +33,9 @@ export default function CreateListDialog({ isOpen, onClose, onCreate, onCreated 
     setDescription("");
     setError("");
     setSaving(false);
-    document.body.style.overflow = "hidden";
+    const unlockScroll = lockPageScroll();
     return () => {
-      document.body.style.overflow = "";
+      unlockScroll();
     };
   }, [isOpen]);
 

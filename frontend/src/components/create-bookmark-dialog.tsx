@@ -10,6 +10,7 @@ import {
 } from "@/config/readiness-copy";
 import { ApiError } from "@/lib/api-client";
 import { useApiReadiness } from "@/lib/api-readiness";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./create-bookmark-dialog.module.css";
 
 interface CreateBookmarkDialogProps {
@@ -32,9 +33,9 @@ export default function CreateBookmarkDialog({ isOpen, onClose, onCreate }: Crea
       setSelectedIcon("");
       setError("");
       setSaving(false);
-      document.body.style.overflow = "hidden";
+      const unlockScroll = lockPageScroll();
       return () => {
-        document.body.style.overflow = "";
+        unlockScroll();
       };
     }
   }, [isOpen]);

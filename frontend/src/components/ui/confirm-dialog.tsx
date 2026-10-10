@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Icon from "./icon";
 import Button from "./button";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./confirm-dialog.module.css";
 
 interface ConfirmDialogProps {
@@ -28,9 +29,9 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      const unlockScroll = lockPageScroll();
       return () => {
-        document.body.style.overflow = "";
+        unlockScroll();
       };
     }
   }, [isOpen]);

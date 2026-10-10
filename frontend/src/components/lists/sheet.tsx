@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import Icon from "@/components/ui/icon";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./sheet.module.css";
 
 interface SheetProps {
@@ -25,10 +26,10 @@ export default function Sheet({ onClose, title, subtitle, size = "compact", chil
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    const unlockScroll = lockPageScroll();
     sheetRef.current?.focus();
     return () => {
-      document.body.style.overflow = "";
+      unlockScroll();
       previous?.focus?.();
     };
   }, []);

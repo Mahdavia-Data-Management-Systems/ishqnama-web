@@ -15,6 +15,7 @@ import {
 } from "@/lib/share-verse";
 import { trackEvent } from "@/lib/telemetry";
 import type { RukuDto } from "@/types/api";
+import { lockPageScroll } from "@/lib/page-scroll-lock";
 import styles from "./share-verse-sheet.module.css";
 
 type Place = ShareTarget["kind"];
@@ -55,11 +56,11 @@ export default function ShareVerseSheet({
     setBusy(null);
     setOutcome(null);
     const previous = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = "hidden";
+    const unlockScroll = lockPageScroll();
     // Focus the dialog itself so keyboard users start inside it without a ring on the first option.
     sheetRef.current?.focus();
     return () => {
-      document.body.style.overflow = "";
+      unlockScroll();
       previous?.focus?.();
     };
   }, [isOpen]);

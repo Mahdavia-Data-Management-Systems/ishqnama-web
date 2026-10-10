@@ -15,7 +15,7 @@ function renderSheet(props: Partial<React.ComponentProps<typeof SignInPromptShee
 describe("SignInPromptSheet", () => {
   afterEach(() => {
     cleanup();
-    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
   });
 
   it("is a labelled modal dialog showing the feature's title and body", () => {
@@ -64,11 +64,11 @@ describe("SignInPromptSheet", () => {
     trigger.remove();
   });
 
-  it("locks body scroll while open and releases it on close", () => {
+  it("locks page scroll while open and releases it on close", () => {
     const { view } = renderSheet();
-    expect(document.body.style.overflow).toBe("hidden");
+    expect(document.documentElement.style.overflow).toBe("hidden");
     view.rerender(<SignInPromptSheet isOpen={false} feature="bookmark" onSignIn={() => {}} onClose={() => {}} />);
-    expect(document.body.style.overflow).toBe("");
+    expect(document.documentElement.style.overflow).toBe("");
   });
 
   it("renders nothing when closed or without a feature", () => {
@@ -79,9 +79,9 @@ describe("SignInPromptSheet", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("does not lock body scroll when open without a feature", () => {
+  it("does not lock page scroll when open without a feature", () => {
     renderSheet({ feature: null });
-    expect(document.body.style.overflow).toBe("");
+    expect(document.documentElement.style.overflow).toBe("");
   });
 
   it("keeps Tab inside the dialog", () => {

@@ -30,7 +30,6 @@ const readerPanel = () => document.getElementById(readerToggle().getAttribute("a
 describe("SettingsSheet reader section", () => {
   afterEach(() => {
     cleanup();
-    document.body.style.overflow = "";
   });
 
   it("starts collapsed", () => {
@@ -91,7 +90,6 @@ const generalToggle = () => screen.getByRole("button", { name: "General settings
 describe("SettingsSheet general section", () => {
   afterEach(() => {
     cleanup();
-    document.body.style.overflow = "";
   });
 
   it("starts collapsed, even when the reader section is asked for", () => {
@@ -126,7 +124,6 @@ describe("SettingsSheet general section", () => {
 describe("SettingsSheet sections", () => {
   afterEach(() => {
     cleanup();
-    document.body.style.overflow = "";
   });
 
   it("keeps only one section expanded at a time", () => {
