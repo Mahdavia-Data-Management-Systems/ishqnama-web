@@ -9,13 +9,24 @@
   margin-bottom: var(--space-10);
 }
 
-/* Back to the articles on the left, Share on the right, level with each other above the titles */
+/* Back to the articles on the left, Share on the right, level with each other above the titles,
+   and pinned under the app bar as the essay scrolls (EssayStickyBar sets the measured top). The
+   negative top margin keeps the resting layout while giving the pinned band room above it. */
 .bar {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 50; /* under the app bar (100) and its warm-up ribbon (105) */
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+  margin-top: calc(-1 * var(--space-2));
   margin-bottom: var(--space-2);
+  padding-block: var(--space-2);
+  background: var(--surface-page);
+  /* The page colour across the full width, so text scrolling under the band never shows beside it */
+  box-shadow: 0 0 0 100vmax var(--surface-page);
+  clip-path: inset(0 -100vmax);
 }
 
 /* As tall as the Share button, so the two sit on one line */

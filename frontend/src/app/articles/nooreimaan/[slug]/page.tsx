@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
 import EssayReader from "@/components/articles/essay-reader";
+import EssayStickyBar from "@/components/articles/essay-sticky-bar";
 import Icon from "@/components/ui/icon";
 import {
   NOOR_E_IMAAN_ESSAYS,
@@ -15,6 +16,8 @@ import type { EssayMeta } from "@/types/articles";
 import styles from "./essay.module.css";
 
 export const dynamicParams = false;
+
+const ESSAY_TITLE_ID = "essay-title";
 
 export function generateStaticParams() {
   return NOOR_E_IMAAN_ESSAYS.map(({ slug }) => ({ slug }));
@@ -54,12 +57,18 @@ export default async function EssayPage({ params }: EssayPageProps) {
 
   return (
     <main className={styles.main}>
-      <header className={styles.head}>
-        <div className={styles.bar}>
+      {/* A child of <main>, not the header, so it stays pinned for the whole essay */}
+      <EssayStickyBar
+        className={styles.bar}
+        title={essay.urduTitle}
+        titleId={ESSAY_TITLE_ID}
+        start={
           <Link href="/articles/" className={styles.back}>
             <Icon name="chevronLeft" size={16} />
             Articles
           </Link>
+        }
+        end={
           <div className={styles.share}>
             <ArticleShareButton
               path={essayPath(slug)}
@@ -68,8 +77,11 @@ export default async function EssayPage({ params }: EssayPageProps) {
               page="essay"
             />
           </div>
-        </div>
-        <h1 className={styles.title} lang="ur" dir="rtl">
+        }
+      />
+
+      <header className={styles.head}>
+        <h1 id={ESSAY_TITLE_ID} className={styles.title} lang="ur" dir="rtl">
           <span className={styles.bracket} aria-hidden="true">﴿</span>
           {essay.urduTitle}
           <span className={styles.bracket} aria-hidden="true">﴾</span>

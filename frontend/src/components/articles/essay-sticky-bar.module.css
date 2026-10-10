@@ -1,0 +1,32 @@
+/* The essay's title in small, between the back link and Share. It takes the middle's free
+   width, cut to one line, and fades in only once the page title has scrolled under the row. */
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  align-self: center;
+  font-family: var(--font-urdu);
+  font-size: var(--text-lg);
+  line-height: 2;
+  color: var(--gold-label);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    visibility var(--duration-fast) var(--ease-out);
+}
+
+.shown {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title {
+    transition: none;
+  }
+}
