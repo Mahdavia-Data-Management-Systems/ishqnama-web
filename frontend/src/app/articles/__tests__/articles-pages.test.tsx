@@ -45,7 +45,7 @@ describe("articles pages", () => {
     expect(screen.getByRole("link", { name: /استثناء منقطع/ }).getAttribute("href")).toBe(
       "/articles/nooreimaan/istisna-munqati/",
     );
-    expect(screen.queryByRole("link", { name: "All articles" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Articles" }).getAttribute("href")).toBe("/articles/");
     expect(screen.queryByRole("link", { name: "Noor e Imaan" })).toBeNull();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
   });

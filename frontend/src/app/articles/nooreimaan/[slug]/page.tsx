@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
 import EssayReader from "@/components/articles/essay-reader";
+import Icon from "@/components/ui/icon";
 import {
   NOOR_E_IMAAN_ESSAYS,
   NOOR_E_IMAAN_ESSAY_BY_SLUG,
@@ -54,22 +55,26 @@ export default async function EssayPage({ params }: EssayPageProps) {
   return (
     <main className={styles.main}>
       <header className={styles.head}>
-        <div className={styles.headText}>
-          <h1 className={styles.title} lang="ur" dir="rtl">
-            <span className={styles.bracket} aria-hidden="true">﴿</span>
-            {essay.urduTitle}
-            <span className={styles.bracket} aria-hidden="true">﴾</span>
-          </h1>
-          <p className={styles.subtitle}>{essay.title}</p>
+        <div className={styles.bar}>
+          <Link href="/articles/" className={styles.back}>
+            <Icon name="chevronLeft" size={16} />
+            Articles
+          </Link>
+          <div className={styles.share}>
+            <ArticleShareButton
+              path={essayPath(slug)}
+              title={essay.title}
+              text={`Noor-e-Imaan | ${essay.urduTitle}\n${essay.title}\n`}
+              page="essay"
+            />
+          </div>
         </div>
-        <div className={styles.share}>
-          <ArticleShareButton
-            path={essayPath(slug)}
-            title={essay.title}
-            text={`Noor-e-Imaan | ${essay.urduTitle}\n${essay.title}\n`}
-            page="essay"
-          />
-        </div>
+        <h1 className={styles.title} lang="ur" dir="rtl">
+          <span className={styles.bracket} aria-hidden="true">﴿</span>
+          {essay.urduTitle}
+          <span className={styles.bracket} aria-hidden="true">﴾</span>
+        </h1>
+        <p className={styles.subtitle}>{essay.title}</p>
       </header>
 
       <EssayReader

@@ -4,20 +4,35 @@
   padding: var(--space-12) var(--space-6) var(--space-20);
 }
 
-/* As on the articles index: the titles, then Share in the top right corner */
 .head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  text-align: center;
   margin-bottom: var(--space-10);
 }
 
-/* Padded on the left by the Share button's width and gap, so the titles stay centred on the page */
-.headText {
-  flex: 1;
-  min-width: 0;
-  padding-inline-start: calc(36px + var(--space-4));
-  text-align: center;
+/* Back to the articles on the left, Share on the right, level with each other above the titles */
+.bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+/* As tall as the Share button, so the two sit on one line */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  font-size: var(--text-sm);
+  color: var(--teal-primary);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--teal-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* The dua page's title treatment, so the Noor e Imaan pages read as one book. */
