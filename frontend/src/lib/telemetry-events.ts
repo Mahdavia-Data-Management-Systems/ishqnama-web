@@ -25,8 +25,6 @@ export type TelemetryEvent =
   | "search-submitted"
   | "book-model-shown"
   | "book-model-fallback"
-  | "recording-played"
-  | "recording-failed"
   | "api-unreachable";
 
 export type TelemetryMetric = "api-warmup-ms" | `web-vital-${string}`;

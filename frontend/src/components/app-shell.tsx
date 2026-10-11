@@ -15,7 +15,6 @@ import ApiKeepAlive from "@/components/api-keep-alive";
 import GlobalLoadingIndicator from "@/components/global-loading-indicator";
 import ApiWarmupNotice from "@/components/api-warmup-notice";
 import Telemetry from "@/components/telemetry";
-import AudioPlayerProvider from "@/context/audio-player-context";
 import { isAuthRedirectPath } from "@/lib/auth-redirect";
 
 /**
@@ -37,24 +36,21 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <ApiKeepAlive />
       <GlobalLoadingIndicator />
       <ApiWarmupNotice />
-      {/* Outside AuthProvider: recordings play for everyone, and the dock must outlive navigation */}
-      <AudioPlayerProvider>
-        <AuthProvider>
-          <SignInPromptProvider>
-            <ReaderSettingsProvider>
-              <BookmarksProvider>
-                <ListsProvider>
-                  <AppBar />
-                  {children}
-                  <Footer />
-                  <BottomNav />
-                  <PwaInstallPrompt />
-                </ListsProvider>
-              </BookmarksProvider>
-            </ReaderSettingsProvider>
-          </SignInPromptProvider>
-        </AuthProvider>
-      </AudioPlayerProvider>
+      <AuthProvider>
+        <SignInPromptProvider>
+          <ReaderSettingsProvider>
+            <BookmarksProvider>
+              <ListsProvider>
+                <AppBar />
+                {children}
+                <Footer />
+                <BottomNav />
+                <PwaInstallPrompt />
+              </ListsProvider>
+            </BookmarksProvider>
+          </ReaderSettingsProvider>
+        </SignInPromptProvider>
+      </AuthProvider>
     </>
   );
 }
