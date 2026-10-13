@@ -48,6 +48,21 @@
   }
 }
 
+/* While a recording plays, its bar sits above whichever bar runs along the bottom edge. */
+html[data-audio-bar] .button[data-clears="toolbar"] {
+  bottom: calc(var(--toolbar-height) + var(--audio-bar-height) + var(--space-4));
+}
+
+html[data-audio-bar] .button[data-clears="bottom-nav"] {
+  bottom: calc(var(--audio-bar-height) + var(--space-4));
+}
+
+@media (max-width: 640px) {
+  html[data-audio-bar] .button[data-clears="bottom-nav"] {
+    bottom: calc(56px + var(--audio-bar-height) + var(--space-4));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .button {
     transform: none;

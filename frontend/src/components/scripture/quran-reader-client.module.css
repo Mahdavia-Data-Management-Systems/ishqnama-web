@@ -71,6 +71,12 @@
   overscroll-behavior: contain;
 }
 
+/* While a recording plays, the popup clears its bar as well as the toolbar. */
+html[data-audio-bar] .versePopup {
+  bottom: calc(var(--toolbar-height) + var(--audio-bar-height) + 10px);
+  max-height: calc(100dvh - var(--toolbar-height) - var(--audio-bar-height) - 20px);
+}
+
 .popupHeader {
   display: flex;
   align-items: center;

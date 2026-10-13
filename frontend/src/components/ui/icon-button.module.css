@@ -17,6 +17,11 @@
   transform: scale(0.985);
 }
 
+.iconButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .sm {
   width: 36px;
   height: 36px;

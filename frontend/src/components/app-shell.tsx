@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import AuthProvider from "@/components/auth-provider";
+import AudioPlayerProvider from "@/context/audio-player-context";
 import SignInPromptProvider from "@/context/sign-in-prompt-context";
 import ReaderSettingsProvider from "@/context/reader-settings-context";
 import BookmarksProvider from "@/context/bookmarks-context";
@@ -22,6 +23,9 @@ import { isAuthRedirectPath } from "@/lib/auth-redirect";
  * no MSAL initialisation, no telemetry, keep-alive ping or warm-up notice, no app chrome, so the hidden
  * iframe MSAL opens for silent token renewal loads only the bridge script.
  * See src/lib/auth-redirect.ts.
+ *
+ * The audio player sits outside auth, so a recording plays for every reader, signed in or not,
+ * and outlives every page: the bar and the playing verse survive navigation.
  */
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -36,21 +40,23 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <ApiKeepAlive />
       <GlobalLoadingIndicator />
       <ApiWarmupNotice />
-      <AuthProvider>
-        <SignInPromptProvider>
-          <ReaderSettingsProvider>
-            <BookmarksProvider>
-              <ListsProvider>
-                <AppBar />
-                {children}
-                <Footer />
-                <BottomNav />
-                <PwaInstallPrompt />
-              </ListsProvider>
-            </BookmarksProvider>
-          </ReaderSettingsProvider>
-        </SignInPromptProvider>
-      </AuthProvider>
+      <AudioPlayerProvider>
+        <AuthProvider>
+          <SignInPromptProvider>
+            <ReaderSettingsProvider>
+              <BookmarksProvider>
+                <ListsProvider>
+                  <AppBar />
+                  {children}
+                  <Footer />
+                  <BottomNav />
+                  <PwaInstallPrompt />
+                </ListsProvider>
+              </BookmarksProvider>
+            </ReaderSettingsProvider>
+          </SignInPromptProvider>
+        </AuthProvider>
+      </AudioPlayerProvider>
     </>
   );
 }

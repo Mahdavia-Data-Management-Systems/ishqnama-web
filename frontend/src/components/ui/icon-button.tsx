@@ -11,6 +11,7 @@ interface IconButtonProps {
   filled?: boolean;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function IconButton({
@@ -21,12 +22,14 @@ export default function IconButton({
   filled = false,
   onClick,
   className = "",
+  disabled = false,
 }: IconButtonProps) {
   const iconSize = size === "sm" ? 18 : 20;
 
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       aria-label={label}
       className={`${styles.iconButton} ${styles[size]} ${styles[variant]} ${className}`}
     >
