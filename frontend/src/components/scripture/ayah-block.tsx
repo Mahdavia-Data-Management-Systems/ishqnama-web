@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Icon from "@/components/ui/icon";
 import IconButton from "@/components/ui/icon-button";
+import { AUDIO_COPY } from "@/config/audio-copy";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import JuzQuarterMark from "@/components/scripture/juz-quarter-mark";
 import RukuMark from "@/components/scripture/ruku-mark";
@@ -60,6 +62,10 @@ interface AyahBlockProps {
   onToggleBookmark?: () => void;
   onShare?: () => void;
   onAddToList?: () => void;
+  /** Play this verse's recitation; receives the button so focus can return to it on close. */
+  onPlay?: (trigger: HTMLElement) => void;
+  /** This verse is the one being recited: the block is washed and the play button shows Pause. */
+  isReading?: boolean;
   fontScale?: number;
   highlightQuery?: string;
 }
@@ -81,6 +87,8 @@ export default function AyahBlock({
   onToggleBookmark,
   onShare,
   onAddToList,
+  onPlay,
+  isReading = false,
   fontScale = 1,
   highlightQuery,
 }: AyahBlockProps) {
@@ -110,9 +118,20 @@ export default function AyahBlock({
   const hasExplanations = showTafseer && segments?.some((s) => s.explanation);
 
   return (
-    <div id={`verse-${chapterNumber}-${number}`} className={styles.block}>
+    <div id={`verse-${chapterNumber}-${number}`} className={`${styles.block} ${isReading ? styles.reading : ""}`}>
       <div className={styles.meta}>
         <div className={styles.actions}>
+          {onPlay && (
+            <button
+              type="button"
+              className={styles.playButton}
+              aria-label={isReading ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
+              aria-pressed={isReading}
+              onClick={(e) => onPlay(e.currentTarget)}
+            >
+              <Icon name={isReading ? "pause" : "play"} size={18} />
+            </button>
+          )}
           <IconButton
             icon="share"
             label="Share verse"

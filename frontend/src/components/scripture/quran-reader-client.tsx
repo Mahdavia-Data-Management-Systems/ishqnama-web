@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback, Fragment, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useFollowReading } from "@/components/audio/use-follow-reading";
 import BismillahBlock from "@/components/scripture/bismillah-block";
 import AyahBlock from "@/components/scripture/ayah-block";
 import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
@@ -11,12 +12,15 @@ import SajdahMark from "@/components/scripture/sajdah-mark";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import BackToTop from "@/components/ui/back-to-top";
+import Icon from "@/components/ui/icon";
 import IconButton from "@/components/ui/icon-button";
 import BookmarkPicker from "@/components/bookmark-picker";
 import CreateBookmarkDialog from "@/components/create-bookmark-dialog";
 import ShareVerseSheet from "@/components/scripture/share-verse-sheet";
 import AddToListSheet from "@/components/lists/add-to-list-sheet";
+import { AUDIO_COPY } from "@/config/audio-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
+import { useAudioPlayer } from "@/context/audio-player-context";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { useBookmarks } from "@/context/bookmarks-context";
 import { useSignInGate } from "@/context/sign-in-prompt-context";
@@ -25,6 +29,7 @@ import type { DisplayVerse } from "@/hooks/use-chapter-verses";
 import { JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
 import { RUKU_BY_ID } from "@/data/rukus";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
+import { versePlaylist } from "@/lib/recitation-playlist";
 import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
 import styles from "./quran-reader-client.module.css";
@@ -59,6 +64,21 @@ export default function QuranReaderClient({
   const gateBookmark = useSignInGate("bookmark");
   const gateLists = useSignInGate("lists");
   const readiness = useApiReadiness();
+  const pathname = usePathname() ?? "";
+  const { play: playClip, current: playing, isCurrent } = useAudioPlayer();
+
+  // The whole page is the queue: tap a verse and the recitation runs to the page's end, basmala
+  // included where the page shows one. Chapter 9 has no verse 0, so none is ever asked for.
+  const playlist = useMemo(
+    () => versePlaylist(pathname, verses.map((v) => ({ chapter: v.chapterNumber, verse: v.number })), pathname),
+    [verses, pathname],
+  );
+  const handlePlay = useCallback((chapterNum: number, verseNum: number, trigger: HTMLElement) => {
+    const index = playlist.clips.findIndex((c) => c.ref?.chapter === chapterNum && c.ref.verse === verseNum);
+    if (index >= 0) playClip(playlist, index, trigger);
+  }, [playlist, playClip]);
+  useFollowReading(playing?.ref);
+
   const placeholderText =
     readiness === "warming"
       ? WARMING_MESSAGE
@@ -274,6 +294,8 @@ export default function QuranReaderClient({
                       onToggleBookmark={() => handleBookmarkVerse(verse.chapterNumber, verse.number)}
                       onShare={() => handleShare(verse.chapterNumber, verse.number)}
                       onAddToList={() => handleAddToList(verse.chapterNumber, verse.number)}
+                      onPlay={(trigger) => handlePlay(verse.chapterNumber, verse.number, trigger)}
+                      isReading={isCurrent({ chapter: verse.chapterNumber, verse: verse.number })}
                       highlightQuery={highlightQuery}
                     />
                   )}
@@ -338,7 +360,7 @@ export default function QuranReaderClient({
                             selectedVerse?.chapter === verse.chapterNumber && selectedVerse.verse === verse.number
                               ? styles.verseSelected
                               : ""
-                          }`}
+                          } ${isCurrent({ chapter: verse.chapterNumber, verse: verse.number }) ? styles.verseReading : ""}`}
                           onClick={() => {
                             const cur = selectedVerse;
                             setSelectedVerse(
@@ -415,6 +437,21 @@ export default function QuranReaderClient({
             <div className={styles.popupHeader}>
               <span className={styles.popupRef}>{popupRef}</span>
               <div className={styles.popupActions}>
+                {(() => {
+                  // Verse 0 too (the bismillah entry), except chapter 9's, which has none.
+                  const reading = isCurrent({ chapter: selectedVerse.chapter, verse: verse.number });
+                  return (
+                    <button
+                      type="button"
+                      className={styles.popupPlay}
+                      aria-label={reading ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
+                      aria-pressed={reading}
+                      onClick={(e) => handlePlay(selectedVerse.chapter, verse.number, e.currentTarget)}
+                    >
+                      <Icon name={reading ? "pause" : "play"} size={18} />
+                    </button>
+                  );
+                })()}
                 <IconButton
                   icon={bookmarkedVerses.has(bookmarkKey) ? "bookmarkFilled" : "bookmark"}
                   label="Save to bookmark"
