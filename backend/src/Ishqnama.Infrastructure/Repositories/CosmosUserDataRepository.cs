@@ -26,7 +26,7 @@ public sealed partial class CosmosUserDataRepository(
             var s = response.Resource;
             return new UserSettingsDto(
                 s.Mode, s.Lang, s.FontScale, s.ShowTafseer, s.ShowSuraRukuMarks, s.ShowJuzRukuMarks,
-                s.Reciter, s.ContinueRecitation);
+                s.Reciter, s.ContinueRecitation, s.RecitationSpeed);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
         {
@@ -48,7 +48,8 @@ public sealed partial class CosmosUserDataRepository(
             ShowSuraRukuMarks = settings.ShowSuraRukuMarks,
             ShowJuzRukuMarks = settings.ShowJuzRukuMarks,
             Reciter = settings.Reciter,
-            ContinueRecitation = settings.ContinueRecitation
+            ContinueRecitation = settings.ContinueRecitation,
+            RecitationSpeed = settings.RecitationSpeed
         };
         await _container.UpsertItemAsync(doc, new PartitionKey(userId));
     }

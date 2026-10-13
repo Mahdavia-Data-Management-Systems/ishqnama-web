@@ -12,6 +12,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import AudioPlayerBar from "@/components/audio/audio-player-bar";
+import { nearestRecitationSpeed } from "@/config/recitation";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import type { Clip, Playlist } from "@/lib/recitation-playlist";
 import { routePattern, trackEvent } from "@/lib/telemetry";
@@ -69,7 +70,8 @@ function loadedUrl(audio: HTMLAudioElement): string {
  */
 export default function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { continueRecitation } = useReaderSettings();
+  const { continueRecitation, recitationSpeed } = useReaderSettings();
+  const speed = nearestRecitationSpeed(recitationSpeed);
   const [status, setStatus] = useState<AudioPlayerStatus>("closed");
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [index, setIndex] = useState<number | null>(null);
@@ -89,6 +91,17 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
   useEffect(() => {
     continueRef.current = continueRecitation;
   }, [continueRecitation]);
+  // The speed reaches the element at once, and the default rate too, since a load resets the
+  // rate to the default and the next file would otherwise fall back to normal speed.
+  const speedRef = useRef(speed);
+  useEffect(() => {
+    speedRef.current = speed;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.defaultPlaybackRate = speed;
+      audio.playbackRate = speed;
+    }
+  }, [speed]);
 
   const setStatusBoth = useCallback((s: AudioPlayerStatus) => {
     statusRef.current = s;
@@ -206,6 +219,8 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     if (audioRef.current) return audioRef.current;
     const audio = new Audio();
     audioRef.current = audio;
+    audio.defaultPlaybackRate = speedRef.current;
+    audio.playbackRate = speedRef.current;
     audio.addEventListener("playing", () => setStatusBoth("playing"));
     audio.addEventListener("pause", () => {
       if (statusRef.current === "playing") setStatusBoth("paused");

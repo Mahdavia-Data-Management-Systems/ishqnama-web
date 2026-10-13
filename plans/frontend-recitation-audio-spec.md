@@ -72,12 +72,12 @@ can never ship as a silently shifted highlight.
 ## Non-goals
 
 - Word-by-word highlighting. The raw export keeps the word segments for later.
-- Repeat, playback speed, remembering where a recitation stopped, or downloading for
-  offline. (A reciter setting and a "continue to the next verse" switch were added later, in the
+- Repeat, remembering where a recitation stopped, or downloading for offline. (A reciter
+  setting, a speed stepper and a "continue to the next verse" switch were added later, in the
   sheet's "Recitation settings" section, saved with the reader's other settings; see CLAUDE.md.)
 - The essays' recordings. The provider accepts a whole-file clip today; hosting and wiring
   those files is its own piece of work.
-- Any backend change beyond the two settings fields. Audio and timings are static.
+- Any backend change beyond the three settings fields. Audio and timings are static.
 - Terraforming R2. The Cloudflare workspace pins provider `~> 4.0`, which has no R2 custom
   domain or CORS resource; v5 breaks the zone resource. The bucket is hand-managed and
   documented, as the API custom domain and the Entra registrations are.

@@ -26,6 +26,20 @@ export const RECITATIONS: readonly RecitationOption[] = [
 /** The recitation for readers with no saved choice; its id is also the backend's default for the setting. */
 export const RECITATION: RecitationOption = RECITATIONS[0];
 
+/** The speeds the settings sheet steps through, as multiples of the recording's own pace. */
+export const RECITATION_SPEEDS = [1, 1.2, 1.5, 1.7, 2, 2.5] as const;
+
+export const DEFAULT_RECITATION_SPEED: (typeof RECITATION_SPEEDS)[number] = 1;
+
+/**
+ * The offered speed nearest a saved `recitationSpeed`, so a value from another version of the
+ * steps still lands on one of them; normal speed for anything unusable.
+ */
+export function nearestRecitationSpeed(speed: number | undefined): number {
+  if (speed == null || !Number.isFinite(speed)) return DEFAULT_RECITATION_SPEED;
+  return RECITATION_SPEEDS.reduce((best, s) => (Math.abs(s - speed) < Math.abs(best - speed) ? s : best));
+}
+
 /** The recitation a saved `reciter` setting names; the default for one no longer offered. */
 export function recitationById(id: string | undefined): RecitationOption {
   return RECITATIONS.find((r) => r.timings.id === id) ?? RECITATION;

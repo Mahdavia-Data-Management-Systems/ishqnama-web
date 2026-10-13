@@ -233,6 +233,14 @@
   user-select: none;
 }
 
+/* The speed reads "1×" to "2.5×"; the widest value sets the width, so the stepper never
+   shifts as the value gains or loses a decimal. */
+.speedLabel {
+  min-width: 4ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 /* A native select dressed like the font stepper, with the chevron drawn over its end. */
 .selectWrap {
   position: relative;

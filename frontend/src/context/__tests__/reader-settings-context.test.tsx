@@ -33,6 +33,7 @@ const SERVER: UserSettingsDto = {
   showJuzRukuMarks: false,
   reciter: "abdul-basit-murattal",
   continueRecitation: false,
+  recitationSpeed: 1.5,
 };
 
 function deferred<T>() {
@@ -76,16 +77,17 @@ describe("mergeSettings", () => {
     expect(DEFAULT_SETTINGS).toMatchObject({ showSuraRukuMarks: false, showJuzRukuMarks: true });
   });
 
-  it("continues the recitation with the one reciter by default", () => {
-    expect(DEFAULT_SETTINGS).toMatchObject({ reciter: "abdul-basit-murattal", continueRecitation: true });
+  it("continues the recitation with the one reciter at normal speed by default", () => {
+    expect(DEFAULT_SETTINGS).toMatchObject({ reciter: "abdul-basit-murattal", continueRecitation: true, recitationSpeed: 1 });
   });
 
   it("fills the recitation settings from defaults when the server predates them", () => {
-    const { reciter: _r, continueRecitation: _c, ...older } = SERVER;
+    const { reciter: _r, continueRecitation: _c, recitationSpeed: _s, ...older } = SERVER;
     expect(mergeSettings(older as UserSettingsDto, {})).toEqual({
       ...older,
       reciter: "abdul-basit-murattal",
       continueRecitation: true,
+      recitationSpeed: 1,
     });
   });
 

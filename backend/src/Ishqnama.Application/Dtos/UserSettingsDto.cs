@@ -10,4 +10,5 @@ public sealed record UserSettingsDto(
     bool ShowJuzRukuMarks = true,
     // The recitation settings came later still: the one reciter, running on past the verse.
     string Reciter = "abdul-basit-murattal",
-    bool ContinueRecitation = true);
+    bool ContinueRecitation = true,
+    double RecitationSpeed = 1);

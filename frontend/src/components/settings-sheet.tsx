@@ -5,7 +5,7 @@ import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
 import Switch from "@/components/ui/switch";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
-import { RECITATIONS } from "@/config/recitation";
+import { RECITATIONS, RECITATION_SPEEDS, nearestRecitationSpeed } from "@/config/recitation";
 import {
   SETTINGS_LOADING_MESSAGE,
   SETTINGS_UNREACHABLE_MESSAGE,
@@ -48,6 +48,8 @@ interface SettingsSheetProps {
   onReciterChange: (reciter: string) => void;
   continueRecitation: boolean;
   onContinueRecitationChange: (continueRecitation: boolean) => void;
+  recitationSpeed: number;
+  onRecitationSpeedChange: (speed: number) => void;
   syncStatus?: SettingsSyncStatus;
 }
 
@@ -82,9 +84,15 @@ export default function SettingsSheet({
   onReciterChange,
   continueRecitation,
   onContinueRecitationChange,
+  recitationSpeed,
+  onRecitationSpeedChange,
   syncStatus = null,
 }: SettingsSheetProps) {
   const reciterId = useId();
+  const speedLabelId = useId();
+  // The speed steps through RECITATION_SPEEDS; a saved value off the list sits at its nearest step.
+  const speedIndex = RECITATION_SPEEDS.indexOf(nearestRecitationSpeed(recitationSpeed) as (typeof RECITATION_SPEEDS)[number]);
+  const SPEED_MAX = RECITATION_SPEEDS.length - 1;
   const FONT_MIN = 0;
   const FONT_MAX = FONT_SIZE_STEPS.length - 1;
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
@@ -218,6 +226,29 @@ export default function SettingsSheet({
                   <Icon name="chevronDown" size={16} />
                 </span>
               </span>
+            </div>
+
+            <div className={`${styles.group} ${styles.inlineGroup}`}>
+              <span className={styles.label} id={speedLabelId}>Speed</span>
+              <div className={styles.fontStepper} role="group" aria-labelledby={speedLabelId}>
+                <button
+                  onClick={() => onRecitationSpeedChange(RECITATION_SPEEDS[Math.max(0, speedIndex - 1)])}
+                  disabled={speedIndex <= 0}
+                  className={styles.fontBtn}
+                  aria-label="Slower"
+                >
+                  <Icon name="minus" size={14} />
+                </button>
+                <span className={`${styles.fontLabel} ${styles.speedLabel}`}>{RECITATION_SPEEDS[speedIndex]}×</span>
+                <button
+                  onClick={() => onRecitationSpeedChange(RECITATION_SPEEDS[Math.min(SPEED_MAX, speedIndex + 1)])}
+                  disabled={speedIndex >= SPEED_MAX}
+                  className={styles.fontBtn}
+                  aria-label="Faster"
+                >
+                  <Icon name="plus" size={14} />
+                </button>
+              </div>
             </div>
 
             <div className={styles.group}>

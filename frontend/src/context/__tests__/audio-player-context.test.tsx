@@ -9,7 +9,7 @@ vi.mock("@/lib/telemetry", () => ({
 }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/quran/2/" }));
 // The provider sits inside the reader settings; the bar's gear also needs the sign-in gate.
-const settings = { continueRecitation: true, openSettings: vi.fn() };
+const settings = { continueRecitation: true, recitationSpeed: 1, openSettings: vi.fn() };
 vi.mock("@/context/reader-settings-context", () => ({ useReaderSettings: () => settings }));
 vi.mock("@/context/sign-in-prompt-context", () => ({ useSignInGate: () => (action: () => void) => { action(); return true; } }));
 
@@ -21,6 +21,8 @@ class FakeAudio extends EventTarget {
   static instances: FakeAudio[] = [];
   src = "";
   preload = "";
+  playbackRate = 1;
+  defaultPlaybackRate = 1;
   currentTime = 0;
   paused = true;
   calls: string[] = [];
@@ -80,6 +82,7 @@ beforeEach(() => {
   vi.stubGlobal("cancelAnimationFrame", () => {});
   trackEvent.mockClear();
   settings.continueRecitation = true;
+  settings.recitationSpeed = 1;
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
@@ -218,6 +221,21 @@ describe("AudioPlayerProvider", () => {
     await flush();
     act(() => audio().at(9.0));
     expect(status()).toBe("closed:-");
+  });
+
+  it("plays at the reader's speed, and follows the setting as it changes", async () => {
+    settings.recitationSpeed = 1.5;
+    render(<Page />);
+    act(() => api.play(playlist, 2));
+    expect(audio().playbackRate).toBe(1.5);
+    expect(audio().defaultPlaybackRate).toBe(1.5);
+    await flush();
+    settings.recitationSpeed = 2;
+    act(() => api.pause());   // any render after the change carries it to the provider
+    expect(audio().playbackRate).toBe(2);
+    act(() => api.next());    // clip 3 is in another file; the speed survives the load
+    expect(audio().src).toBe(`${file2}#t=0`);
+    expect(audio().playbackRate).toBe(2);
   });
 
   it("plays a whole-file clip and closes on ended", async () => {

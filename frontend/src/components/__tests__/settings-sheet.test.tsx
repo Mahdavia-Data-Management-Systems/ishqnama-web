@@ -23,6 +23,8 @@ function renderSheet(props: Partial<React.ComponentProps<typeof SettingsSheet>> 
       onReciterChange={vi.fn()}
       continueRecitation
       onContinueRecitationChange={vi.fn()}
+      recitationSpeed={1}
+      onRecitationSpeedChange={vi.fn()}
       {...props}
     />,
   );
@@ -80,6 +82,8 @@ describe("SettingsSheet reader section", () => {
           onReciterChange={vi.fn()}
           continueRecitation
           onContinueRecitationChange={vi.fn()}
+          recitationSpeed={1}
+          onRecitationSpeedChange={vi.fn()}
           isOpen
           {...props}
         />,
@@ -149,6 +153,23 @@ describe("SettingsSheet recitation section", () => {
     expect(Array.from(reciter.options).map((o) => o.textContent)).toEqual(["Abdul Basit Abdul Samad - Murattal"]);
     expect(reciter.value).toBe("abdul-basit-murattal");
     expect(screen.getByRole("switch", { name: "Continue to the next verse" }).getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("steps the speed through the offered values and stops at the ends", () => {
+    const onRecitationSpeedChange = vi.fn();
+    renderSheet({ expandedSection: "recitation", onRecitationSpeedChange });
+    const speed = screen.getByRole("group", { name: "Speed" });
+    expect(within(speed).getByText("1×")).toBeTruthy();
+    expect((within(speed).getByRole("button", { name: "Slower" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(speed).getByRole("button", { name: "Faster" }));
+    expect(onRecitationSpeedChange).toHaveBeenCalledWith(1.2);
+    cleanup();
+    renderSheet({ expandedSection: "recitation", recitationSpeed: 2.5, onRecitationSpeedChange });
+    const top = screen.getByRole("group", { name: "Speed" });
+    expect(within(top).getByText("2.5×")).toBeTruthy();
+    expect((within(top).getByRole("button", { name: "Faster" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(top).getByRole("button", { name: "Slower" }));
+    expect(onRecitationSpeedChange).toHaveBeenCalledWith(2);
   });
 
   it("reports the switch and the reciter changed", () => {

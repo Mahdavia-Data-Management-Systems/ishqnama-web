@@ -11,6 +11,8 @@ export interface UserSettingsDto {
   reciter: string;
   /** Whether a recitation runs on past the verse Play was pressed on. */
   continueRecitation: boolean;
+  /** The recording's pace multiplied; one of `RECITATION_SPEEDS` in config/recitation.ts. */
+  recitationSpeed: number;
 }
 
 export interface UserBookmarkDto {

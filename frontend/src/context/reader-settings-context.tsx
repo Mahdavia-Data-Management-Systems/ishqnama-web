@@ -8,7 +8,7 @@ import SettingsSheet, {
 } from "@/components/settings-sheet";
 import type { ReadingMode, TranslationLang } from "@/components/reader-toolbar";
 import { DEFAULT_FONT_SIZE_INDEX } from "@/config/reader-config";
-import { RECITATION } from "@/config/recitation";
+import { DEFAULT_RECITATION_SPEED, RECITATION } from "@/config/recitation";
 import { getApiReadiness, onReady, useApiReadiness } from "@/lib/api-readiness";
 import { getUserSettings, saveUserSettings } from "@/lib/user-api";
 import { trackEvent } from "@/lib/telemetry";
@@ -44,6 +44,7 @@ export const DEFAULT_SETTINGS: UserSettingsDto = {
   reciter: RECITATION.timings.id,
   // A recitation runs on from the verse Play was pressed on; off, it stops after that verse.
   continueRecitation: true,
+  recitationSpeed: DEFAULT_RECITATION_SPEED,
 };
 
 const SAVE_DEBOUNCE_MS = 500;
@@ -65,6 +66,7 @@ interface ReaderSettingsContextValue {
   showJuzRukuMarks: boolean;
   reciter: string;
   continueRecitation: boolean;
+  recitationSpeed: number;
   updateSettings: (patch: Partial<UserSettingsDto>) => void;
   settingsOpen: boolean;
   /** Opens the sheet with every section collapsed, or with `expand` open. */
@@ -216,6 +218,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
       if (patch.showJuzRukuMarks !== undefined) defined.showJuzRukuMarks = patch.showJuzRukuMarks;
       if (patch.reciter !== undefined) defined.reciter = patch.reciter;
       if (patch.continueRecitation !== undefined) defined.continueRecitation = patch.continueRecitation;
+      if (patch.recitationSpeed !== undefined) defined.recitationSpeed = patch.recitationSpeed;
 
       const before = settingsRef.current;
       if (defined.lang !== undefined && defined.lang !== before.lang) {
@@ -250,7 +253,9 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
 
   const mode = settings.mode as ReadingMode;
   const lang = settings.lang as TranslationLang;
-  const { fontScale, showTafseer, showSuraRukuMarks, showJuzRukuMarks, reciter, continueRecitation } = settings;
+  const {
+    fontScale, showTafseer, showSuraRukuMarks, showJuzRukuMarks, reciter, continueRecitation, recitationSpeed,
+  } = settings;
 
   return (
     <ReaderSettingsContext.Provider
@@ -263,6 +268,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
         showJuzRukuMarks,
         reciter,
         continueRecitation,
+        recitationSpeed,
         updateSettings,
         settingsOpen,
         openSettings,
@@ -291,6 +297,8 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
           onReciterChange={(r) => updateSettings({ reciter: r })}
           continueRecitation={continueRecitation}
           onContinueRecitationChange={(c) => updateSettings({ continueRecitation: c })}
+          recitationSpeed={recitationSpeed}
+          onRecitationSpeedChange={(s) => updateSettings({ recitationSpeed: s })}
           syncStatus={syncStatus}
         />
       )}
