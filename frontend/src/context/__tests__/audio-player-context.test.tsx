@@ -8,6 +8,10 @@ vi.mock("@/lib/telemetry", () => ({
   routePattern: (p: string) => p.replace(/\/\d+(?=\/|$)/g, "/[n]"),
 }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/quran/2/" }));
+// The provider sits inside the reader settings; the bar's gear also needs the sign-in gate.
+const settings = { continueRecitation: true, openSettings: vi.fn() };
+vi.mock("@/context/reader-settings-context", () => ({ useReaderSettings: () => settings }));
+vi.mock("@/context/sign-in-prompt-context", () => ({ useSignInGate: () => (action: () => void) => { action(); return true; } }));
 
 import AudioPlayerProvider, { useAudioPlayer, type AudioPlayerContextValue } from "@/context/audio-player-context";
 import type { Playlist } from "@/lib/recitation-playlist";
@@ -43,6 +47,7 @@ const file2 = "https://audio.test/002.mp3";
 const playlist: Playlist = {
   id: "juz/1",
   href: "/quran/juz/1/",
+  reciter: "A test reciter",
   clips: [
     { url: file1, fromMs: 4000, toMs: 9000, title: "al-Fātiḥah", subtitle: "Verse 1", ref: { chapter: 1, verse: 1 } },
     { url: file1, fromMs: 9000, toMs: 14000, title: "al-Fātiḥah", subtitle: "Verse 2", ref: { chapter: 1, verse: 2 } },
@@ -74,6 +79,7 @@ beforeEach(() => {
   vi.stubGlobal("requestAnimationFrame", () => 0);
   vi.stubGlobal("cancelAnimationFrame", () => {});
   trackEvent.mockClear();
+  settings.continueRecitation = true;
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
@@ -177,6 +183,41 @@ describe("AudioPlayerProvider", () => {
     expect(audio().calls.at(-1)).toBe("pause");
     expect(audio().src).toBe("");
     expect(api.isCurrent({ chapter: 2, verse: 2 })).toBe(false);
+  });
+
+  it("closes after the verse it was asked for when the reader has turned continuing off", async () => {
+    settings.continueRecitation = false;
+    render(<Page />);
+    act(() => api.play(playlist, 0));
+    await flush();
+    act(() => audio().at(8.0));
+    expect(status()).toBe("playing:0");
+    act(() => audio().at(9.0));
+    expect(status()).toBe("closed:-");
+    expect(audio().src).toBe("");
+  });
+
+  it("still moves to the next verse by hand when continuing is off, then stops after it", async () => {
+    settings.continueRecitation = false;
+    render(<Page />);
+    act(() => api.play(playlist, 0));
+    await flush();
+    act(() => api.next());
+    expect(status()).toBe("playing:1");
+    act(() => audio().dispatchEvent(new Event("ended")));
+    expect(status()).toBe("closed:-");
+  });
+
+  it("follows the setting as it changes during a recitation", async () => {
+    render(<Page />);
+    act(() => api.play(playlist, 0));
+    await flush();
+    settings.continueRecitation = false;
+    act(() => api.pause());   // any render after the change carries it to the provider
+    act(() => api.resume());
+    await flush();
+    act(() => audio().at(9.0));
+    expect(status()).toBe("closed:-");
   });
 
   it("plays a whole-file clip and closes on ended", async () => {
@@ -361,6 +402,20 @@ describe("AudioPlayerProvider", () => {
     act(() => audio().at(12.0));
     expect(status()).toBe("closed:-");
     expect(document.activeElement).toBe(field);
+  });
+
+  it("names the playlist's reciter on the lock screen, and no one for a recording without one", async () => {
+    const session = { metadata: null as MediaMetadata | null, playbackState: "none", setActionHandler: vi.fn() };
+    vi.stubGlobal("navigator", { ...navigator, mediaSession: session });
+    vi.stubGlobal("MediaMetadata", class { constructor(public init: MediaMetadataInit) {} });
+    render(<Page />);
+    act(() => api.play(playlist, 0));
+    expect((session.metadata as unknown as { init: MediaMetadataInit }).init).toMatchObject({
+      title: "al-Fātiḥah, Verse 1",
+      artist: "A test reciter",
+    });
+    act(() => api.play(wholeFile, 0));
+    expect((session.metadata as unknown as { init: MediaMetadataInit }).init.artist).toBeUndefined();
   });
 
   it("never sends a title or url to telemetry", async () => {

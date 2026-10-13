@@ -7,6 +7,10 @@ export interface UserSettingsDto {
   showSuraRukuMarks: boolean;
   /** Ruku rails under juz cards in the Quran index. */
   showJuzRukuMarks: boolean;
+  /** Id of the recitation Play uses; see `RECITATIONS` in config/recitation.ts. */
+  reciter: string;
+  /** Whether a recitation runs on past the verse Play was pressed on. */
+  continueRecitation: boolean;
 }
 
 export interface UserBookmarkDto {

@@ -5,19 +5,24 @@ import { usePathname } from "next/navigation";
 import IconButton from "@/components/ui/icon-button";
 import { AUDIO_COPY } from "@/config/audio-copy";
 import { useAudioPlayer } from "@/context/audio-player-context";
+import { useReaderSettings } from "@/context/reader-settings-context";
+import { useSignInGate } from "@/context/sign-in-prompt-context";
 import { verseQuery } from "@/lib/recitation-playlist";
 import { isReaderRoute } from "@/lib/reader-route";
 import styles from "./audio-player-bar.module.css";
 
 /**
  * The strip along the bottom edge while a recording plays: previous, play/pause, next, what is
- * playing (a link back to its page), close. Rendered by AudioPlayerProvider; sits above the
- * reader toolbar on reader routes and above the phone bottom nav elsewhere. Never takes
- * focus when it appears, the reader is still reading.
+ * playing (a link back to its page), the settings gear (the sheet on its recitation section;
+ * anonymous readers get the sign-in prompt, as from the reader toolbar), close. Rendered by
+ * AudioPlayerProvider; sits above the reader toolbar on reader routes and above the phone
+ * bottom nav elsewhere. Never takes focus when it appears, the reader is still reading.
  */
 export default function AudioPlayerBar() {
   const pathname = usePathname();
   const { status, playlist, index, current, pause, resume, next, previous, close } = useAudioPlayer();
+  const { openSettings } = useReaderSettings();
+  const gateSettings = useSignInGate("settings");
   if (!playlist || index == null || !current) return null;
 
   const clears = isReaderRoute(pathname) ? "toolbar" : "bottom-nav";
@@ -61,6 +66,12 @@ export default function AudioPlayerBar() {
           <span className={styles.title}>{label}</span>
         )}
 
+        <IconButton
+          icon="settings"
+          label={AUDIO_COPY.settings}
+          size="sm"
+          onClick={() => gateSettings(() => openSettings("recitation"))}
+        />
         <IconButton icon="close" label={AUDIO_COPY.closeRecording} size="sm" onClick={close} />
       </div>
     </section>

@@ -11,4 +11,6 @@ public sealed class UserSettings
     public bool ShowTafseer { get; set; } = true;
     public bool ShowSuraRukuMarks { get; set; }
     public bool ShowJuzRukuMarks { get; set; } = true;
+    public string Reciter { get; set; } = "abdul-basit-murattal";
+    public bool ContinueRecitation { get; set; } = true;
 }

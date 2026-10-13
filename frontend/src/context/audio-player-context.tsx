@@ -12,7 +12,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import AudioPlayerBar from "@/components/audio/audio-player-bar";
-import { RECITER_NAME } from "@/config/recitation";
+import { useReaderSettings } from "@/context/reader-settings-context";
 import type { Clip, Playlist } from "@/lib/recitation-playlist";
 import { routePattern, trackEvent } from "@/lib/telemetry";
 
@@ -61,13 +61,15 @@ function loadedUrl(audio: HTMLAudioElement): string {
 
 /**
  * Owns the one Audio element for the whole site and the bar that shows what it plays. Mounted
- * in AppShell around AuthProvider, so playback survives navigation and works for anonymous
- * readers. Knows nothing about verses: it plays clips, and pages ask isCurrent(ref) to
- * highlight. The element is created on the first play, inside the reader's tap, which unlocks
- * it; later file changes on the same element may call play() outside a gesture.
+ * once in AppShell, inside the reader settings (for the continue setting and the bar's gear)
+ * but around every page, so playback survives navigation; it needs no account, so it works for
+ * anonymous readers. Knows nothing about verses: it plays clips, and pages ask isCurrent(ref)
+ * to highlight. The element is created on the first play, inside the reader's tap, which
+ * unlocks it; later file changes on the same element may call play() outside a gesture.
  */
 export default function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { continueRecitation } = useReaderSettings();
   const [status, setStatus] = useState<AudioPlayerStatus>("closed");
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [index, setIndex] = useState<number | null>(null);
@@ -82,6 +84,11 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
   const frameRef = useRef<number>(0);
   // Each play() gets a ticket; a play promise settling for an older ticket is ignored.
   const ticketRef = useRef(0);
+  // The continue setting as the audio event handlers see it; a change applies at the next verse end.
+  const continueRef = useRef(continueRecitation);
+  useEffect(() => {
+    continueRef.current = continueRecitation;
+  }, [continueRecitation]);
 
   const setStatusBoth = useCallback((s: AudioPlayerStatus) => {
     statusRef.current = s;
@@ -169,6 +176,20 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     if (trigger && trigger.isConnected && (focus === "always" || inBar)) trigger.focus();
   }, [setIndexBoth, setPlaylistBoth, setStatusBoth]);
 
+  /**
+   * What happens when the clip at `i` has been heard to its end: the next clip, unless it was
+   * the last or the reader has asked for one verse at a time, in which case the bar closes.
+   */
+  const clipEnded = useCallback((i: number) => {
+    const p = playlistRef.current;
+    if (!p) return;
+    if (!continueRef.current || i + 1 >= p.clips.length) {
+      stopAll("ifInBar");
+      return;
+    }
+    startClip(i + 1);
+  }, [startClip, stopAll]);
+
   /** The position check both the frame loop and timeupdate run. */
   const checkPosition = useCallback(() => {
     const audio = audioRef.current;
@@ -177,13 +198,8 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     if (!audio || !clip || !p || statusRef.current !== "playing") return;
     if (clip.toMs == null) return;
     if (audio.currentTime * 1000 < clip.toMs) return;
-    const i = indexRef.current ?? 0;
-    if (i + 1 >= p.clips.length) {
-      stopAll("ifInBar");
-      return;
-    }
-    startClip(i + 1);
-  }, [currentClip, startClip, stopAll]);
+    clipEnded(indexRef.current ?? 0);
+  }, [clipEnded, currentClip]);
 
   // Wire the element's events once it exists.
   const ensureAudio = useCallback((): HTMLAudioElement => {
@@ -196,11 +212,8 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     });
     audio.addEventListener("timeupdate", checkPosition);
     audio.addEventListener("ended", () => {
-      const p = playlistRef.current;
       const i = indexRef.current;
-      if (!p || i == null) return;
-      if (i + 1 >= p.clips.length) stopAll("ifInBar");
-      else startClip(i + 1);
+      if (playlistRef.current && i != null) clipEnded(i);
     });
     audio.addEventListener("error", () => {
       if (statusRef.current === "closed") return;
@@ -215,7 +228,7 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
       if (Math.abs(audio.currentTime - wantedS) > FRAGMENT_SLACK_S) audio.currentTime = wantedS;
     });
     return audio;
-  }, [checkPosition, currentClip, setStatusBoth, startClip, stopAll]);
+  }, [checkPosition, clipEnded, currentClip, setStatusBoth]);
 
   // The frame loop, for tight verse boundaries while the tab is visible; timeupdate covers the
   // background tab.
@@ -320,7 +333,7 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     }
     session.metadata = new MediaMetadata({
       title: current.subtitle ? `${current.title}, ${current.subtitle}` : current.title,
-      artist: RECITER_NAME,
+      artist: playlist?.reciter,
       album: "Ishqnama",
     });
     session.playbackState = status === "playing" ? "playing" : "paused";

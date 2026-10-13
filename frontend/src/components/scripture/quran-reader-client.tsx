@@ -30,6 +30,7 @@ import { JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
 import { RUKU_BY_ID } from "@/data/rukus";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import { versePlaylist } from "@/lib/recitation-playlist";
+import { recitationById } from "@/config/recitation";
 import { localizeNumber } from "@/lib/translation-map";
 import { suras } from "@/data/suras";
 import styles from "./quran-reader-client.module.css";
@@ -59,6 +60,7 @@ export default function QuranReaderClient({
   const {
     mode: persistedMode,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
+    reciter,
   } = useReaderSettings();
   const { bookmarks, savePosition, addBookmark } = useBookmarks();
   const gateBookmark = useSignInGate("bookmark");
@@ -72,8 +74,13 @@ export default function QuranReaderClient({
   // The whole page is the queue: tap a verse and the recitation runs to the page's end, basmala
   // included where the page shows one. Chapter 9 has no verse 0, so none is ever asked for.
   const playlist = useMemo(
-    () => versePlaylist(pathname, verses.map((v) => ({ chapter: v.chapterNumber, verse: v.number })), pathname),
-    [verses, pathname],
+    () => versePlaylist(
+      pathname,
+      verses.map((v) => ({ chapter: v.chapterNumber, verse: v.number })),
+      pathname,
+      recitationById(reciter),
+    ),
+    [verses, pathname, reciter],
   );
   const handlePlay = useCallback((chapterNum: number, verseNum: number, trigger: HTMLElement) => {
     const index = playlist.clips.findIndex((c) => c.ref?.chapter === chapterNum && c.ref.verse === verseNum);

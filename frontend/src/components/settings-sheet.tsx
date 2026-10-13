@@ -5,6 +5,7 @@ import Icon from "@/components/ui/icon";
 import SegmentedControl from "@/components/ui/segmented-control";
 import Switch from "@/components/ui/switch";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
+import { RECITATIONS } from "@/config/recitation";
 import {
   SETTINGS_LOADING_MESSAGE,
   SETTINGS_UNREACHABLE_MESSAGE,
@@ -18,7 +19,7 @@ import styles from "./settings-sheet.module.css";
 export type SettingsSyncStatus = "warming" | "unreachable" | "loading" | null;
 
 /** A collapsible group of preferences in the sheet. */
-export type SettingsSection = "general" | "reader";
+export type SettingsSection = "general" | "reader" | "recitation";
 
 const SYNC_MESSAGES: Record<Exclude<SettingsSyncStatus, null>, string> = {
   warming: SETTINGS_WARMING_MESSAGE,
@@ -43,6 +44,10 @@ interface SettingsSheetProps {
   onFontScaleChange: (scale: number) => void;
   showTafseer: boolean;
   onTafseerChange: (show: boolean) => void;
+  reciter: string;
+  onReciterChange: (reciter: string) => void;
+  continueRecitation: boolean;
+  onContinueRecitationChange: (continueRecitation: boolean) => void;
   syncStatus?: SettingsSyncStatus;
 }
 
@@ -73,8 +78,13 @@ export default function SettingsSheet({
   onFontScaleChange,
   showTafseer,
   onTafseerChange,
+  reciter,
+  onReciterChange,
+  continueRecitation,
+  onContinueRecitationChange,
   syncStatus = null,
 }: SettingsSheetProps) {
+  const reciterId = useId();
   const FONT_MIN = 0;
   const FONT_MAX = FONT_SIZE_STEPS.length - 1;
   const pct = FONT_SIZE_STEPS[fontScale] ?? 100;
@@ -190,6 +200,36 @@ export default function SettingsSheet({
             </div>
           </SettingsSectionPanel>
 
+          <SettingsSectionPanel title="Recitation settings" {...sectionProps("recitation")}>
+            <div className={`${styles.group} ${styles.inlineGroup}`}>
+              <label className={styles.label} htmlFor={reciterId}>Reciter</label>
+              <span className={styles.selectWrap}>
+                <select
+                  id={reciterId}
+                  className={styles.select}
+                  value={reciter}
+                  onChange={(e) => onReciterChange(e.target.value)}
+                >
+                  {RECITATIONS.map((r) => (
+                    <option key={r.timings.id} value={r.timings.id}>{r.name}</option>
+                  ))}
+                </select>
+                <span className={styles.selectChevron} aria-hidden="true">
+                  <Icon name="chevronDown" size={16} />
+                </span>
+              </span>
+            </div>
+
+            <div className={styles.group}>
+              <Switch
+                label="Continue to the next verse"
+                checked={continueRecitation}
+                onChange={onContinueRecitationChange}
+                className={styles.switchRow}
+              />
+            </div>
+          </SettingsSectionPanel>
+
           <p className={styles.hint}>
             Saved to your account when signed in.
           </p>
@@ -200,7 +240,8 @@ export default function SettingsSheet({
 }
 
 /**
- * A collapsible section of the sheet ("General settings", "Reader settings"). The sheet owns
+ * A collapsible section of the sheet ("General settings", "Reader settings", "Recitation
+ * settings"). The sheet owns
  * which one is expanded, so opening one collapses the others.
  */
 function SettingsSectionPanel({

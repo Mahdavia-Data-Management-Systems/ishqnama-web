@@ -28,9 +28,28 @@ const player: AudioPlayerContextValue = {
 player.current = player.playlist!.clips[1];
 vi.mock("@/context/audio-player-context", () => ({ useAudioPlayer: () => player }));
 
+const openSettings = vi.fn();
+let signedIn = true;
+const promptSignIn = vi.fn();
+vi.mock("@/context/reader-settings-context", () => ({ useReaderSettings: () => ({ openSettings }) }));
+vi.mock("@/context/sign-in-prompt-context", () => ({
+  useSignInGate: (feature: string) => (action: () => void) => {
+    if (signedIn) { action(); return true; }
+    promptSignIn(feature);
+    return false;
+  },
+}));
+
 import AudioPlayerBar from "@/components/audio/audio-player-bar";
 
-afterEach(() => { cleanup(); Object.assign(player, { status: "playing", index: 1, current: player.playlist!.clips[1] }); pathname = "/quran/2/"; });
+afterEach(() => {
+  cleanup();
+  Object.assign(player, { status: "playing", index: 1, current: player.playlist!.clips[1] });
+  pathname = "/quran/2/";
+  signedIn = true;
+  openSettings.mockClear();
+  promptSignIn.mockClear();
+});
 
 describe("AudioPlayerBar", () => {
   it("is a region named Recording with the verse as a link back to its page", () => {
@@ -84,6 +103,20 @@ describe("AudioPlayerBar", () => {
     pathname = "/lists/view/";
     render(<AudioPlayerBar />);
     expect(screen.getByRole("region").getAttribute("data-clears")).toBe("bottom-nav");
+  });
+
+  it("opens the settings sheet on the recitation section from its gear", () => {
+    render(<AudioPlayerBar />);
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(openSettings).toHaveBeenCalledWith("recitation");
+  });
+
+  it("asks an anonymous reader to sign in instead of opening settings", () => {
+    signedIn = false;
+    render(<AudioPlayerBar />);
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(openSettings).not.toHaveBeenCalled();
+    expect(promptSignIn).toHaveBeenCalledWith("settings");
   });
 
   it("does not take focus when it appears", () => {

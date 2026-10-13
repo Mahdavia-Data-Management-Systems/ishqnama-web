@@ -11,10 +11,12 @@ import ConfirmDialog from "@/components/ui/confirm-dialog";
 import IconButton from "@/components/ui/icon-button";
 import { AUDIO_COPY } from "@/config/audio-copy";
 import { FEATURED_LIST_IDS } from "@/config/featured-lists";
+import { recitationById } from "@/config/recitation";
 import { LISTS_COPY } from "@/config/lists-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useAudioPlayer } from "@/context/audio-player-context";
 import { useLists } from "@/context/lists-context";
+import { useReaderSettings } from "@/context/reader-settings-context";
 import { useSignInGate, useSignInPrompt } from "@/context/sign-in-prompt-context";
 import { ApiError } from "@/lib/api-client";
 import { onReady, useApiReadiness } from "@/lib/api-readiness";
@@ -95,6 +97,7 @@ export default function ListView() {
 
   // Play: every group's verses in list order, from the header, or from one group onwards.
   const { play: playClip, current: playing } = useAudioPlayer();
+  const { reciter } = useReaderSettings();
   useFollowReading(playing?.ref);
   const playlist = useMemo(() => {
     if (!list) return null;
@@ -102,8 +105,8 @@ export default function ListView() {
     for (const g of list.groups) {
       for (let v = g.fromVerse; v <= g.toVerse; v++) verses.push({ chapter: g.chapter, verse: v });
     }
-    return versePlaylist(`list/${list.id}`, verses, `/lists/view/?id=${list.id}`);
-  }, [list]);
+    return versePlaylist(`list/${list.id}`, verses, `/lists/view/?id=${list.id}`, recitationById(reciter));
+  }, [list, reciter]);
   // A group's first clip, found by verse rather than by counting, since a verse the recitation
   // cannot serve is left out of the playlist.
   const groupStart = useCallback(

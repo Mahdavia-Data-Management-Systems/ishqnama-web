@@ -19,6 +19,10 @@ function renderSheet(props: Partial<React.ComponentProps<typeof SettingsSheet>> 
       onSuraRukuMarksChange={vi.fn()}
       showJuzRukuMarks
       onJuzRukuMarksChange={vi.fn()}
+      reciter="abdul-basit-murattal"
+      onReciterChange={vi.fn()}
+      continueRecitation
+      onContinueRecitationChange={vi.fn()}
       {...props}
     />,
   );
@@ -72,6 +76,10 @@ describe("SettingsSheet reader section", () => {
           onSuraRukuMarksChange={vi.fn()}
           showJuzRukuMarks
           onJuzRukuMarksChange={vi.fn()}
+          reciter="abdul-basit-murattal"
+          onReciterChange={vi.fn()}
+          continueRecitation
+          onContinueRecitationChange={vi.fn()}
           isOpen
           {...props}
         />,
@@ -118,6 +126,39 @@ describe("SettingsSheet general section", () => {
     fireEvent.click(juz);
     expect(onSuraRukuMarksChange).toHaveBeenCalledWith(true);
     expect(onJuzRukuMarksChange).toHaveBeenCalledWith(false);
+  });
+});
+
+const recitationToggle = () => screen.getByRole("button", { name: "Recitation settings" });
+
+describe("SettingsSheet recitation section", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("comes after the general and reader sections", () => {
+    renderSheet();
+    const names = screen.getAllByRole("button", { expanded: false }).map((b) => b.textContent);
+    expect(names).toEqual(["General settings", "Reader settings", "Recitation settings"]);
+  });
+
+  it("offers the one reciter and the continue switch, on", () => {
+    renderSheet({ expandedSection: "recitation" });
+    expect(recitationToggle().getAttribute("aria-expanded")).toBe("true");
+    const reciter = screen.getByRole("combobox", { name: "Reciter" }) as HTMLSelectElement;
+    expect(Array.from(reciter.options).map((o) => o.textContent)).toEqual(["Abdul Basit Abdul Samad - Murattal"]);
+    expect(reciter.value).toBe("abdul-basit-murattal");
+    expect(screen.getByRole("switch", { name: "Continue to the next verse" }).getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("reports the switch and the reciter changed", () => {
+    const onContinueRecitationChange = vi.fn();
+    const onReciterChange = vi.fn();
+    renderSheet({ expandedSection: "recitation", onContinueRecitationChange, onReciterChange });
+    fireEvent.click(screen.getByRole("switch", { name: "Continue to the next verse" }));
+    expect(onContinueRecitationChange).toHaveBeenCalledWith(false);
+    fireEvent.change(screen.getByRole("combobox", { name: "Reciter" }), { target: { value: "abdul-basit-murattal" } });
+    expect(onReciterChange).toHaveBeenCalledWith("abdul-basit-murattal");
   });
 });
 

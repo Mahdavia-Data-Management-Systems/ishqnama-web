@@ -233,6 +233,40 @@
   user-select: none;
 }
 
+/* A native select dressed like the font stepper, with the chevron drawn over its end. */
+.selectWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+.select {
+  appearance: none;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-8) var(--space-2) var(--space-4);
+  border: 1px solid var(--tint-ink-20);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+
+.select:hover {
+  background: var(--tint-ink-6);
+}
+
+.selectChevron {
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  display: flex;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
 .hint {
   font-size: var(--text-xs);
   color: var(--text-tertiary);

@@ -24,8 +24,9 @@ import { isAuthRedirectPath } from "@/lib/auth-redirect";
  * iframe MSAL opens for silent token renewal loads only the bridge script.
  * See src/lib/auth-redirect.ts.
  *
- * The audio player sits outside auth, so a recording plays for every reader, signed in or not,
- * and outlives every page: the bar and the playing verse survive navigation.
+ * The audio player sits inside the reader settings (it follows the continue setting and its bar
+ * opens the sheet) but around every page, so a recording outlives navigation: the bar and the
+ * playing verse survive it. It asks for no account, so it plays for every reader.
  */
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -40,10 +41,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <ApiKeepAlive />
       <GlobalLoadingIndicator />
       <ApiWarmupNotice />
-      <AudioPlayerProvider>
-        <AuthProvider>
-          <SignInPromptProvider>
-            <ReaderSettingsProvider>
+      <AuthProvider>
+        <SignInPromptProvider>
+          <ReaderSettingsProvider>
+            <AudioPlayerProvider>
               <BookmarksProvider>
                 <ListsProvider>
                   <AppBar />
@@ -53,10 +54,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
                   <PwaInstallPrompt />
                 </ListsProvider>
               </BookmarksProvider>
-            </ReaderSettingsProvider>
-          </SignInPromptProvider>
-        </AuthProvider>
-      </AudioPlayerProvider>
+            </AudioPlayerProvider>
+          </ReaderSettingsProvider>
+        </SignInPromptProvider>
+      </AuthProvider>
     </>
   );
 }

@@ -55,16 +55,19 @@ describe("clipFor", () => {
   });
 });
 
+const tinyOption = { name: "A test reciter - Murattal", reciter: "A test reciter", timings: tiny };
+
 describe("versePlaylist", () => {
-  it("keeps the verses in the order given, across chapters, with the id and href", () => {
+  it("keeps the verses in the order given, across chapters, with the id, href and reciter", () => {
     const p = versePlaylist(
       "juz/1",
       [{ chapter: 1, verse: 2 }, { chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }],
       "/quran/juz/1/",
-      tiny,
+      tinyOption,
     );
     expect(p.id).toBe("juz/1");
     expect(p.href).toBe("/quran/juz/1/");
+    expect(p.reciter).toBe("A test reciter");
     expect(p.clips.map((c) => c.ref)).toEqual([
       { chapter: 1, verse: 2 }, { chapter: 2, verse: 0 }, { chapter: 2, verse: 1 },
     ]);
@@ -77,7 +80,7 @@ describe("versePlaylist", () => {
       "quran/2",
       [{ chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }, { chapter: 2, verse: 3 }, { chapter: 9, verse: 0 }],
       "/quran/2/",
-      tiny,
+      tinyOption,
     );
     expect(p.clips.map((c) => c.ref)).toEqual([{ chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }]);
   });
@@ -86,6 +89,7 @@ describe("versePlaylist", () => {
     const p = versePlaylist("quran/112", [{ chapter: 112, verse: 1 }]);
     expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/v1/abdul-basit-murattal/112.mp3");
     expect(p.clips[0].title).toBe("al-Ikhlāṣ");
+    expect(p.reciter).toBe("Abdul Basit Abdul Samad");
   });
 });
 

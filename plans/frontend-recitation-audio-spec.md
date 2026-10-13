@@ -72,11 +72,12 @@ can never ship as a silently shifted highlight.
 ## Non-goals
 
 - Word-by-word highlighting. The raw export keeps the word segments for later.
-- A reciter setting, repeat, playback speed, remembering where a recitation stopped, or
-  downloading for offline.
+- Repeat, playback speed, remembering where a recitation stopped, or downloading for
+  offline. (A reciter setting and a "continue to the next verse" switch were added later, in the
+  sheet's "Recitation settings" section, saved with the reader's other settings; see CLAUDE.md.)
 - The essays' recordings. The provider accepts a whole-file clip today; hosting and wiring
   those files is its own piece of work.
-- Any backend change. Audio and timings are static.
+- Any backend change beyond the two settings fields. Audio and timings are static.
 - Terraforming R2. The Cloudflare workspace pins provider `~> 4.0`, which has no R2 custom
   domain or CORS resource; v5 breaks the zone resource. The bucket is hand-managed and
   documented, as the API custom domain and the Entra registrations are.
@@ -176,7 +177,8 @@ the custom domain puts Cloudflare's cache in front.
 ```ts
 export const RECITATION_AUDIO_ORIGIN =
   process.env.NEXT_PUBLIC_RECITATION_AUDIO_ORIGIN ?? "https://audio.ishqnama.com";
-export const RECITATION = ABDUL_BASIT_MURATTAL;   // the one reciter, for now
+export const RECITATIONS: readonly RecitationOption[];   // { name, reciter, timings }: one entry, for now
+export const RECITATION = RECITATIONS[0];                // the default; recitationById(id) finds a saved choice
 export function chapterAudioUrl(recitation: RecitationTimings, chapter: number): string;
 // → `${origin}/recitations/v${version}/${id}/${chapter padded to 3}.mp3`
 ```

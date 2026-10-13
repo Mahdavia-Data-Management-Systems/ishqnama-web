@@ -31,6 +31,8 @@ const SERVER: UserSettingsDto = {
   showTafseer: true,
   showSuraRukuMarks: true,
   showJuzRukuMarks: false,
+  reciter: "abdul-basit-murattal",
+  continueRecitation: false,
 };
 
 function deferred<T>() {
@@ -72,6 +74,19 @@ describe("mergeSettings", () => {
 
   it("shows juz ruku marks but not chapter ones by default", () => {
     expect(DEFAULT_SETTINGS).toMatchObject({ showSuraRukuMarks: false, showJuzRukuMarks: true });
+  });
+
+  it("continues the recitation with the one reciter by default", () => {
+    expect(DEFAULT_SETTINGS).toMatchObject({ reciter: "abdul-basit-murattal", continueRecitation: true });
+  });
+
+  it("fills the recitation settings from defaults when the server predates them", () => {
+    const { reciter: _r, continueRecitation: _c, ...older } = SERVER;
+    expect(mergeSettings(older as UserSettingsDto, {})).toEqual({
+      ...older,
+      reciter: "abdul-basit-murattal",
+      continueRecitation: true,
+    });
   });
 
   it("fills the ruku mark settings from defaults when the server predates them", () => {

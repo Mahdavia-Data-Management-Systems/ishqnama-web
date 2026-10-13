@@ -14,6 +14,8 @@ export const AUDIO_COPY = {
   previousVerse: "Previous verse",
   nextVerse: "Next verse",
   closeRecording: "Close recording",
+  /** The bar's gear: the settings sheet on its recitation section. */
+  settings: "Settings",
   couldNotStart: "This recording couldn't start.",
   tryAgain: "Try again",
   /** The list page's header button: every group in order. */

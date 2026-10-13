@@ -1,4 +1,4 @@
-import { RECITATION, RECITATION_AUDIO_ORIGIN } from "@/config/recitation";
+import { RECITATION, RECITATION_AUDIO_ORIGIN, type RecitationOption } from "@/config/recitation";
 import { suras } from "@/data/suras";
 import { AUDIO_COPY } from "@/config/audio-copy";
 
@@ -31,6 +31,8 @@ export interface Playlist {
   clips: Clip[];
   /** The page the playlist came from; the bar's title links back to it. */
   href?: string;
+  /** Who is heard, for the lock screen; an essay recording may have no one to name. */
+  reciter?: string;
 }
 
 export function chapterAudioUrl(recitation: RecitationTimings, chapter: number): string {
@@ -65,17 +67,17 @@ export function versePlaylist(
   id: string,
   verses: readonly { chapter: number; verse: number }[],
   href?: string,
-  recitation: RecitationTimings = RECITATION,
+  recitation: RecitationOption = RECITATION,
 ): Playlist {
   const clips: Clip[] = [];
   for (const v of verses) {
     try {
-      clips.push(clipFor(recitation, v.chapter, v.verse));
+      clips.push(clipFor(recitation.timings, v.chapter, v.verse));
     } catch {
       // not in the recitation
     }
   }
-  return { id, clips, href };
+  return { id, clips, href, reciter: recitation.reciter };
 }
 
 /** The page link that opens on this verse: a bare number on a chapter page, chapter-verse elsewhere. */
