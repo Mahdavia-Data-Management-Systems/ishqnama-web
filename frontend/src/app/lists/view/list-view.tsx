@@ -1,21 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useIsAuthenticated } from "@azure/msal-react";
+import { useFollowReading } from "@/components/audio/use-follow-reading";
 import EmptyState from "@/components/empty-state";
 import ListGroupCard from "@/components/lists/list-group-card";
 import OwnerAvatar from "@/components/lists/owner-avatar";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import IconButton from "@/components/ui/icon-button";
+import { AUDIO_COPY } from "@/config/audio-copy";
 import { FEATURED_LIST_IDS } from "@/config/featured-lists";
 import { LISTS_COPY } from "@/config/lists-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
+import { useAudioPlayer } from "@/context/audio-player-context";
 import { useLists } from "@/context/lists-context";
 import { useSignInGate, useSignInPrompt } from "@/context/sign-in-prompt-context";
 import { ApiError } from "@/lib/api-client";
 import { onReady, useApiReadiness } from "@/lib/api-readiness";
 import { getPublishedList } from "@/lib/lists-api";
+import { versePlaylist } from "@/lib/recitation-playlist";
 import { shareList } from "@/lib/share-list";
 import { trackEvent } from "@/lib/telemetry";
 import { listEditPath, listOwnerName } from "@/lib/verse-lists";
@@ -88,6 +92,26 @@ export default function ListView() {
   const list = state.kind === "loaded" ? state.list : null;
   const favorite = list ? favoriteFor(list.id) : undefined;
   const featured = list ? FEATURED_LIST_IDS.includes(list.id) : false;
+
+  // Play: every group's verses in list order, from the header, or from one group onwards.
+  const { play: playClip, current: playing } = useAudioPlayer();
+  useFollowReading(playing?.ref);
+  const playlist = useMemo(() => {
+    if (!list) return null;
+    const verses: { chapter: number; verse: number }[] = [];
+    for (const g of list.groups) {
+      for (let v = g.fromVerse; v <= g.toVerse; v++) verses.push({ chapter: g.chapter, verse: v });
+    }
+    return versePlaylist(`list/${list.id}`, verses, `/lists/view/?id=${list.id}`);
+  }, [list]);
+  const groupStart = useCallback((gi: number) => {
+    let index = 0;
+    for (let i = 0; i < gi; i++) {
+      const g = list!.groups[i];
+      index += g.toVerse - g.fromVerse + 1;
+    }
+    return index;
+  }, [list]);
 
   const handleShare = useCallback(async () => {
     if (!list) return;
@@ -173,6 +197,9 @@ export default function ListView() {
           <div className={styles.toolbar}>
             {/* Shown to everyone: the owner learns every reader sees it, others why it has no Favourite */}
             {featured && list.status === "published" && <p className={styles.featuredBadge}>{LISTS_COPY.featured}</p>}
+            {playlist && playlist.clips.length > 0 && (
+              <IconButton icon="play" label={AUDIO_COPY.playList} size="sm" onClick={() => playClip(playlist, 0)} />
+            )}
             <IconButton icon="share" label={LISTS_COPY.share} size="sm" onClick={() => void handleShare()} />
             {list.isMine ? (
               <IconButton
@@ -220,8 +247,12 @@ export default function ListView() {
         <hr className="hairline-gold" />
 
         <div className={styles.groups}>
-          {list.groups.map((g) => (
-            <ListGroupCard key={g.id ?? `${g.chapter}-${g.fromVerse}`} group={g} />
+          {list.groups.map((g, gi) => (
+            <ListGroupCard
+              key={g.id ?? `${g.chapter}-${g.fromVerse}`}
+              group={g}
+              onPlay={playlist ? (trigger) => playClip(playlist, groupStart(gi), trigger) : undefined}
+            />
           ))}
         </div>
       </div>

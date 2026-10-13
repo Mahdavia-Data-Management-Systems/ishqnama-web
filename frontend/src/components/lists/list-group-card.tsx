@@ -5,6 +5,7 @@ import Link from "next/link";
 import ArabicPassage from "@/components/lists/arabic-passage";
 import Sheet from "@/components/lists/sheet";
 import Icon from "@/components/ui/icon";
+import { AUDIO_COPY } from "@/config/audio-copy";
 import { LISTS_COPY } from "@/config/lists-copy";
 import { UNREACHABLE_MESSAGE, WARMING_MESSAGE } from "@/config/readiness-copy";
 import { useArabicVerses } from "@/hooks/use-arabic-verses";
@@ -19,9 +20,16 @@ const BISMILLAH = "﷽";
 /**
  * One group on a list page: its caption and reference, then the Arabic in continuous mode. A
  * group longer than GROUP_PREVIEW_VERSES shows its first verses and "Read more", which opens the
- * whole group in a sheet; both come from the same request.
+ * whole group in a sheet; both come from the same request. `onPlay`, when the page gives one,
+ * adds "Play from here": the recitation from this group to the end of the list.
  */
-export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
+export default function ListGroupCard({
+  group,
+  onPlay,
+}: {
+  group: VerseListGroupDto;
+  onPlay?: (trigger: HTMLElement) => void;
+}) {
   const { verses, failed } = useArabicVerses(group.chapter, group.fromVerse, group.toVerse);
   const [expanded, setExpanded] = useState(false);
   const readiness = useApiReadiness();
@@ -48,6 +56,17 @@ export default function ListGroupCard({ group }: { group: VerseListGroupDto }) {
           )}
           <p className={styles.reference}>{reference}</p>
         </div>
+        {onPlay && (
+          <button
+            type="button"
+            className={styles.play}
+            aria-label={AUDIO_COPY.playFromGroup}
+            onClick={(e) => onPlay(e.currentTarget)}
+          >
+            <Icon name="play" size={16} />
+            <span>{AUDIO_COPY.playFromGroup}</span>
+          </button>
+        )}
       </header>
 
       {verses ? (

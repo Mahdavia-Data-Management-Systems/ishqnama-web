@@ -20,6 +20,10 @@ import type { ArabicVerseDto, VerseListDto } from "@/types/lists";
 const msal = vi.hoisted(() => ({ authed: false }));
 const query = vi.hoisted(() => ({ id: "k3Jd9QxP2mWa" }));
 const router = vi.hoisted(() => ({ push: vi.fn() }));
+const audio = vi.hoisted(() => ({ play: vi.fn() }));
+vi.mock("@/context/audio-player-context", () => ({
+  useAudioPlayer: () => ({ status: "closed", current: null, play: audio.play, isCurrent: () => false }),
+}));
 
 vi.mock("@azure/msal-react", () => ({
   useIsAuthenticated: () => msal.authed,
@@ -95,12 +99,30 @@ describe("a shared list", () => {
     query.id = "k3Jd9QxP2mWa";
     clearArabicVersesCache();
     router.push.mockReset();
+    audio.play.mockReset();
     vi.mocked(copyList).mockReset();
     vi.mocked(getMyLists).mockResolvedValue([]);
     vi.mocked(getFavorites).mockResolvedValue([]);
     vi.mocked(getChapterArabic).mockImplementation((_c, from, to) => Promise.resolve(verses(from, to)));
   });
   afterEach(cleanup);
+
+  it("plays every group in order from the header, and from a group onwards", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list());
+    renderPage();
+    const header = await screen.findByRole("button", { name: "Play" });
+    fireEvent.click(header);
+    const [playlist, index] = audio.play.mock.calls[0];
+    expect(index).toBe(0);
+    expect(playlist.id).toBe("list/k3Jd9QxP2mWa");
+    expect(playlist.href).toBe("/lists/view/?id=k3Jd9QxP2mWa");
+    const refs = playlist.clips.map((c: { ref: { chapter: number; verse: number } }) => `${c.ref.chapter}:${c.ref.verse}`);
+    expect(refs.slice(0, 5)).toEqual(["112:1", "112:2", "112:3", "112:4", "2:1"]);
+    expect(refs).toHaveLength(24);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Play from here" })[1]);
+    expect(audio.play.mock.calls[1][1]).toBe(4);   // the second group starts after al-Ikhlas's four verses
+  });
 
   it("shows its title, compiler and each group's Arabic to an anonymous reader", async () => {
     vi.mocked(getPublishedList).mockResolvedValue(list());

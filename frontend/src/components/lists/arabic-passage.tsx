@@ -8,6 +8,7 @@ import SajdahMark from "@/components/scripture/sajdah-mark";
 import { JUZ_QUARTER_BY_VERSE } from "@/data/juz-quarters";
 import { RUKU_BY_ID } from "@/data/rukus";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
+import { useAudioPlayer } from "@/context/audio-player-context";
 import { useReaderSettings } from "@/context/reader-settings-context";
 import { localizeNumber } from "@/lib/translation-map";
 import { rukuEndsInChapter } from "@/lib/verse-lists";
@@ -26,6 +27,7 @@ interface ArabicPassageProps {
  */
 export default function ArabicPassage({ chapter, verses }: ArabicPassageProps) {
   const { lang, fontScale } = useReaderSettings();
+  const { isCurrent } = useAudioPlayer();
   const rukuEnds = useMemo(() => rukuEndsInChapter(chapter), [chapter]);
   const scale = (FONT_SIZE_STEPS[fontScale] ?? 100) / 100;
 
@@ -42,7 +44,11 @@ export default function ArabicPassage({ chapter, verses }: ArabicPassageProps) {
         const ruku = rukuId != null ? RUKU_BY_ID.get(rukuId) : undefined;
         const quarter = JUZ_QUARTER_BY_VERSE.get(key);
         return (
-          <span key={key} className={styles.verse}>
+          <span
+            key={key}
+            id={`verse-${key}`}
+            className={`${styles.verse} ${isCurrent({ chapter, verse: verse.verseNumber }) ? styles.reading : ""}`}
+          >
             <span className={verse.hasSajdah ? styles.sajdahUnderline : undefined}>{verse.arabicText}</span>
             <span className={styles.separator}>
               {chapter === 1 && verse.verseNumber === 6 ? " " : <>{" "}&#1757;{" "}</>}

@@ -12,6 +12,11 @@
   border-radius: 4px;
 }
 
+/* The verse being recited */
+.reading {
+  background-color: var(--tint-teal-8);
+}
+
 .sajdahUnderline {
   border-bottom: 1px solid var(--gold);
   padding-bottom: 0.08em;
