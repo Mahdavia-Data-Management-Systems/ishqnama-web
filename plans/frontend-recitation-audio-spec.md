@@ -307,10 +307,10 @@ trigger if it is still in the document.
 
 ### Telemetry
 
-Two events in `telemetry-events.ts`: `recording-played` (`route`, `mode` = `verse` |
-`continuous` where the reader sends it, `option` = `verse` | `popup` | `bar` | `list` |
-`list-group`) and `recording-failed` (`reason` = `audio` | `blocked`). No new property key,
-so no verse, title or URL can be sent.
+Two events in `telemetry-events.ts`: `recording-played` (`route`, the route pattern, which
+already tells a reader page from a list page) and `recording-failed` (`reason` = `audio` |
+`blocked`). The provider sends them, so it needs nothing from the page that pressed Play. No
+new property key, so no verse, title or URL can be sent.
 
 ## Section 3: The bar, the highlight and the Play controls
 
