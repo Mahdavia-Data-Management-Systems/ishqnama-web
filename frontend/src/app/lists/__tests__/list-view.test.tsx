@@ -20,9 +20,22 @@ import type { ArabicVerseDto, VerseListDto } from "@/types/lists";
 const msal = vi.hoisted(() => ({ authed: false }));
 const query = vi.hoisted(() => ({ id: "k3Jd9QxP2mWa" }));
 const router = vi.hoisted(() => ({ push: vi.fn() }));
-const audio = vi.hoisted(() => ({ play: vi.fn() }));
+const audio = vi.hoisted(() => ({
+  play: vi.fn(),
+  status: "closed" as string,
+  playlist: null as { id: string } | null,
+  index: null as number | null,
+  current: null as { ref?: { chapter: number; verse: number } } | null,
+}));
 vi.mock("@/context/audio-player-context", () => ({
-  useAudioPlayer: () => ({ status: "closed", current: null, play: audio.play, isCurrent: () => false }),
+  useAudioPlayer: () => ({
+    status: audio.status,
+    playlist: audio.playlist,
+    index: audio.index,
+    current: audio.current,
+    play: audio.play,
+    isCurrent: () => false,
+  }),
 }));
 
 vi.mock("@azure/msal-react", () => ({
@@ -100,6 +113,7 @@ describe("a shared list", () => {
     clearArabicVersesCache();
     router.push.mockReset();
     audio.play.mockReset();
+    Object.assign(audio, { status: "closed", playlist: null, index: null, current: null });
     vi.mocked(copyList).mockReset();
     vi.mocked(getMyLists).mockResolvedValue([]);
     vi.mocked(getFavorites).mockResolvedValue([]);
@@ -117,11 +131,27 @@ describe("a shared list", () => {
     expect(playlist.id).toBe("list/k3Jd9QxP2mWa");
     expect(playlist.href).toBe("/lists/view/?id=k3Jd9QxP2mWa");
     const refs = playlist.clips.map((c: { ref: { chapter: number; verse: number } }) => `${c.ref.chapter}:${c.ref.verse}`);
-    expect(refs.slice(0, 5)).toEqual(["112:1", "112:2", "112:3", "112:4", "2:1"]);
-    expect(refs).toHaveLength(24);
+    expect(refs.slice(0, 7)).toEqual(["112:0", "112:1", "112:2", "112:3", "112:4", "2:0", "2:1"]);
+    expect(refs).toHaveLength(26);
 
     fireEvent.click(screen.getAllByRole("button", { name: "Play from here" })[1]);
-    expect(audio.play.mock.calls[1][1]).toBe(4);   // the second group starts after al-Ikhlas's four verses
+    expect(audio.play.mock.calls[1][1]).toBe(5);   // the second group opens with its own bismillah
+  });
+
+  it("washes the bismillah of the group whose bismillah is being recited, and only that one", async () => {
+    vi.mocked(getPublishedList).mockResolvedValue(list());
+    Object.assign(audio, {
+      status: "playing",
+      playlist: { id: "list/k3Jd9QxP2mWa" },
+      index: 5,
+      current: { ref: { chapter: 2, verse: 0 } },
+    });
+    renderPage();
+    await screen.findByRole("button", { name: "Play" });
+    const marks = screen.getAllByText("﷽");
+    expect(marks).toHaveLength(2);
+    expect(marks[0].getAttribute("data-reading")).toBeNull();
+    expect(marks[1].getAttribute("data-reading")).toBe("true");
   });
 
   it("shows its title, compiler and each group's Arabic to an anonymous reader", async () => {

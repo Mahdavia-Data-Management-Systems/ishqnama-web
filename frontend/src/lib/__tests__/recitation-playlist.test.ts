@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   chapterAudioUrl,
   clipFor,
+  listPlaylist,
   versePlaylist,
   verseQuery,
   type RecitationTimings,
@@ -90,6 +91,54 @@ describe("versePlaylist", () => {
     expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/v1/abdul-basit-murattal/112.mp3");
     expect(p.clips[0].title).toBe("al-Ikhlāṣ");
     expect(p.reciter).toBe("Abdul Basit Abdul Samad");
+  });
+});
+
+describe("listPlaylist", () => {
+  const nine: RecitationTimings = {
+    ...tiny,
+    chapters: [...tiny.chapters, [], [], [], [], [], [], [[1, 0, 5000], [2, 5000, 9000], [5, 9000, 12000], [6, 12000, 15000]]],
+  };
+  const option = { name: "A test reciter - Murattal", reciter: "A test reciter", timings: nine };
+
+  it("opens every group with its bismillah, then its verses in order, and says which group each clip is in", () => {
+    const { playlist, groupOfClip } = listPlaylist(
+      "list/abc",
+      [{ chapter: 2, fromVerse: 1, toVerse: 2 }, { chapter: 1, fromVerse: 2, toVerse: 2 }],
+      "/lists/view/?id=abc",
+      option,
+    );
+    expect(playlist.id).toBe("list/abc");
+    expect(playlist.href).toBe("/lists/view/?id=abc");
+    expect(playlist.reciter).toBe("A test reciter");
+    expect(playlist.clips.map((c) => `${c.ref!.chapter}:${c.ref!.verse}`)).toEqual(["2:0", "2:1", "2:2", "1:0", "1:2"]);
+    expect(playlist.clips[0].subtitle).toBe("Bismillah");
+    expect(playlist.clips[0].url).toMatch(/001\.mp3$/);
+    expect(groupOfClip).toEqual([0, 0, 0, 1, 1]);
+  });
+
+  it("recites the bismillah a group of at-Tawbah shows, and leaves it off the group that opens the sura", () => {
+    const { playlist, groupOfClip } = listPlaylist(
+      "list/t",
+      [{ chapter: 9, fromVerse: 1, toVerse: 2 }, { chapter: 9, fromVerse: 5, toVerse: 6 }],
+      undefined,
+      option,
+    );
+    expect(playlist.clips.map((c) => `${c.ref!.chapter}:${c.ref!.verse}`)).toEqual(["9:1", "9:2", "9:0", "9:5", "9:6"]);
+    expect(playlist.clips[2].url).toMatch(/001\.mp3$/);
+    expect(playlist.clips[2].title).toBe(playlist.clips[3].title);
+    expect(groupOfClip).toEqual([0, 0, 1, 1, 1]);
+  });
+
+  it("skips a verse the recitation cannot serve without losing its group's place", () => {
+    const { playlist, groupOfClip } = listPlaylist(
+      "list/x",
+      [{ chapter: 2, fromVerse: 2, toVerse: 3 }],
+      undefined,
+      option,
+    );
+    expect(playlist.clips.map((c) => c.ref!.verse)).toEqual([0, 2]);
+    expect(groupOfClip).toEqual([0, 0]);
   });
 });
 

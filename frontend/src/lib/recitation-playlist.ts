@@ -1,6 +1,8 @@
 import { RECITATION, RECITATION_AUDIO_ORIGIN, type RecitationOption } from "@/config/recitation";
 import { suras } from "@/data/suras";
 import { AUDIO_COPY } from "@/config/audio-copy";
+import { showsBismillah } from "@/lib/verse-lists";
+import type { VerseListGroupDto } from "@/types/lists";
 
 /** Verse timings of one surah-by-surah recitation, as `scripts/build-recitation-timings.mjs` writes them. */
 export interface RecitationTimings {
@@ -43,13 +45,24 @@ function chapterName(chapter: number): string {
   return suras.find((s) => s.number === chapter)?.name ?? `Chapter ${chapter}`;
 }
 
+/**
+ * The basmala, read from chapter 1's file, as verse 0 of `chapter`: what a page prints as ﷽
+ * before that chapter's verses.
+ */
+function basmalaClip(recitation: RecitationTimings, chapter: number): Clip {
+  const [fromMs, toMs] = recitation.basmala;
+  return {
+    url: chapterAudioUrl(recitation, 1), fromMs, toMs,
+    title: chapterName(chapter), subtitle: AUDIO_COPY.bismillah, ref: { chapter, verse: 0 },
+  };
+}
+
 /** The clip for one verse. Verse 0 is the basmala from chapter 1's file; chapter 9 has none. */
 export function clipFor(recitation: RecitationTimings, chapter: number, verse: number): Clip {
   const title = chapterName(chapter);
   if (verse === 0) {
     if (chapter === 9) throw new Error("9:0 does not exist: chapter 9 has no basmala");
-    const [fromMs, toMs] = recitation.basmala;
-    return { url: chapterAudioUrl(recitation, 1), fromMs, toMs, title, subtitle: AUDIO_COPY.bismillah, ref: { chapter, verse: 0 } };
+    return basmalaClip(recitation, chapter);
   }
   const row = recitation.chapters[chapter - 1]?.find(([v]) => v === verse);
   if (!row) throw new Error(`${chapter}:${verse} is not in the recitation`);
@@ -78,6 +91,38 @@ export function versePlaylist(
     }
   }
   return { id, clips, href, reciter: recitation.reciter };
+}
+
+/**
+ * A verse list's playlist: each group opens with the bismillah its header shows (every group but
+ * one starting at at-Tawbah's first ayah, so a group from the middle of at-Tawbah is read with it
+ * too, as printed), then its verses in order. `groupOfClip[i]` is the index into `groups` of
+ * clip `i`, since two groups from one chapter share a chapter and the bismillah's verse 0, so
+ * a page cannot tell them apart by ref alone.
+ */
+export function listPlaylist(
+  id: string,
+  groups: readonly Pick<VerseListGroupDto, "chapter" | "fromVerse" | "toVerse">[],
+  href?: string,
+  recitation: RecitationOption = RECITATION,
+): { playlist: Playlist; groupOfClip: number[] } {
+  const clips: Clip[] = [];
+  const groupOfClip: number[] = [];
+  groups.forEach((g, gi) => {
+    if (showsBismillah(g)) {
+      clips.push(basmalaClip(recitation.timings, g.chapter));
+      groupOfClip.push(gi);
+    }
+    for (let v = g.fromVerse; v <= g.toVerse; v++) {
+      try {
+        clips.push(clipFor(recitation.timings, g.chapter, v));
+        groupOfClip.push(gi);
+      } catch {
+        // not in the recitation
+      }
+    }
+  });
+  return { playlist: { id, clips, href, reciter: recitation.reciter }, groupOfClip };
 }
 
 /** The page link that opens on this verse: a bare number on a chapter page, chapter-verse elsewhere. */

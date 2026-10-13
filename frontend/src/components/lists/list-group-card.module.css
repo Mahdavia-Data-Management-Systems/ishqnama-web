@@ -25,10 +25,19 @@
   flex: none;
   order: 2;
   margin: 0;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
   font-family: var(--font-arabic);
   font-size: 1.25rem;
   line-height: 1.5;
   color: var(--text-tertiary);
+}
+
+/* The same wash the verses get while being read (arabic-passage), lifted out of the tertiary
+   tone so the ﷽ reads as the thing being heard. */
+.bismillah[data-reading] {
+  background-color: var(--tint-teal-8);
+  color: var(--text-primary);
 }
 
 .caption {

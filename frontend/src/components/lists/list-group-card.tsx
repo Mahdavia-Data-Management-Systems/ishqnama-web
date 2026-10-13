@@ -21,14 +21,17 @@ const BISMILLAH = "﷽";
  * One group on a list page: its caption and reference, then the Arabic in continuous mode. A
  * group longer than GROUP_PREVIEW_VERSES shows its first verses and "Read more", which opens the
  * whole group in a sheet; both come from the same request. `onPlay`, when the page gives one,
- * adds "Play from here": the recitation from this group to the end of the list.
+ * adds "Play from here": the recitation from this group to the end of the list, which opens
+ * with the ﷽ in the header; `readingBismillah` washes it while that is what is being read.
  */
 export default function ListGroupCard({
   group,
   onPlay,
+  readingBismillah = false,
 }: {
   group: VerseListGroupDto;
   onPlay?: (trigger: HTMLElement) => void;
+  readingBismillah?: boolean;
 }) {
   const { verses, failed } = useArabicVerses(group.chapter, group.fromVerse, group.toVerse);
   const [expanded, setExpanded] = useState(false);
@@ -50,7 +53,7 @@ export default function ListGroupCard({
         <div className={styles.meta}>
           {/* U+FDFD, drawn by the Quran font itself (PDMS Saleem Quran carries the glyph) */}
           {showsBismillah(group) && (
-            <p className={styles.bismillah} dir="rtl" lang="ar">
+            <p className={styles.bismillah} dir="rtl" lang="ar" data-reading={readingBismillah || undefined}>
               {BISMILLAH}
             </p>
           )}

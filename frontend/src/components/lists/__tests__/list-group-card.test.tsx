@@ -18,6 +18,14 @@ describe("ListGroupCard play control", () => {
     expect(onPlay).toHaveBeenCalledWith(button);
   });
 
+  it("marks its bismillah while that is what is being recited", () => {
+    const group = { id: "g1", chapter: 2, fromVerse: 1, toVerse: 5, caption: null };
+    const { rerender } = render(<ListGroupCard group={group} />);
+    expect(screen.getByText("﷽").getAttribute("data-reading")).toBeNull();
+    rerender(<ListGroupCard group={group} readingBismillah />);
+    expect(screen.getByText("﷽").getAttribute("data-reading")).toBe("true");
+  });
+
   it("shows no play control when the page gives none", () => {
     render(<ListGroupCard group={{ id: "g1", chapter: 2, fromVerse: 1, toVerse: 5, caption: null }} />);
     expect(screen.queryByRole("button", { name: "Play from here" })).toBeNull();

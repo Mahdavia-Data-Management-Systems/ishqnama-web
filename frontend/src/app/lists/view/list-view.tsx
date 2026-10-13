@@ -21,7 +21,7 @@ import { useSignInGate, useSignInPrompt } from "@/context/sign-in-prompt-context
 import { ApiError } from "@/lib/api-client";
 import { onReady, useApiReadiness } from "@/lib/api-readiness";
 import { getPublishedList } from "@/lib/lists-api";
-import { versePlaylist } from "@/lib/recitation-playlist";
+import { listPlaylist } from "@/lib/recitation-playlist";
 import { shareList } from "@/lib/share-list";
 import { trackEvent } from "@/lib/telemetry";
 import { listEditPath, listOwnerName } from "@/lib/verse-lists";
@@ -95,25 +95,26 @@ export default function ListView() {
   const favorite = list ? favoriteFor(list.id) : undefined;
   const featured = list ? FEATURED_LIST_IDS.includes(list.id) : false;
 
-  // Play: every group's verses in list order, from the header, or from one group onwards.
-  const { play: playClip, current: playing } = useAudioPlayer();
+  // Play: every group in list order, each opening with its bismillah, from the header or from
+  // one group onwards.
+  const player = useAudioPlayer();
+  const { play: playClip, current: playing } = player;
   const { reciter } = useReaderSettings();
   useFollowReading(playing?.ref);
-  const playlist = useMemo(() => {
-    if (!list) return null;
-    const verses: { chapter: number; verse: number }[] = [];
-    for (const g of list.groups) {
-      for (let v = g.fromVerse; v <= g.toVerse; v++) verses.push({ chapter: g.chapter, verse: v });
-    }
-    return versePlaylist(`list/${list.id}`, verses, `/lists/view/?id=${list.id}`, recitationById(reciter));
+  const { playlist, groupOfClip } = useMemo(() => {
+    if (!list) return { playlist: null, groupOfClip: [] as number[] };
+    return listPlaylist(`list/${list.id}`, list.groups, `/lists/view/?id=${list.id}`, recitationById(reciter));
   }, [list, reciter]);
-  // A group's first clip, found by verse rather than by counting, since a verse the recitation
-  // cannot serve is left out of the playlist.
-  const groupStart = useCallback(
-    (g: VerseListGroupDto) =>
-      playlist?.clips.findIndex((c) => c.ref?.chapter === g.chapter && c.ref.verse === g.fromVerse) ?? -1,
-    [playlist],
-  );
+  // A group's first clip (its bismillah), by group rather than by verse: two groups may share
+  // a chapter, and a verse the recitation cannot serve is left out of the playlist.
+  const groupStart = useCallback((gi: number) => groupOfClip.indexOf(gi), [groupOfClip]);
+  // The group being read, when this list is what is playing. The verses wash themselves by
+  // ref; the ﷽ cannot, since every group of a chapter shares its verse 0.
+  const readingGroup =
+    player.status !== "closed" && playlist && player.playlist?.id === playlist.id && player.index != null
+      ? groupOfClip[player.index]
+      : undefined;
+  const readingBismillah = readingGroup != null && player.current?.ref?.verse === 0 ? readingGroup : undefined;
 
   const handleShare = useCallback(async () => {
     if (!list) return;
@@ -249,13 +250,14 @@ export default function ListView() {
         <hr className="hairline-gold" />
 
         <div className={styles.groups}>
-          {list.groups.map((g) => {
-            const start = groupStart(g);
+          {list.groups.map((g, gi) => {
+            const start = groupStart(gi);
             return (
               <ListGroupCard
                 key={g.id ?? `${g.chapter}-${g.fromVerse}`}
                 group={g}
                 onPlay={playlist && start >= 0 ? (trigger) => playClip(playlist, start, trigger) : undefined}
+                readingBismillah={readingBismillah === gi}
               />
             );
           })}
