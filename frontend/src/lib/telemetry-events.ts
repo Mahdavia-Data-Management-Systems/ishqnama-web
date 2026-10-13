@@ -16,6 +16,8 @@ export type TelemetryEvent =
   | "list-unfavorited"
   | "list-shared"
   | "article-shared"
+  | "recording-played"
+  | "recording-failed"
   | "sign-in-prompt-shown"
   | "sign-in-started"
   | "translation-language-changed"
