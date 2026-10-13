@@ -38,6 +38,12 @@ export default function PrivacyPage() {
             name on your account, can be read by anyone who has its link. You
             can unpublish or delete it at any time, and the link stops working.
           </p>
+          <h2>Recordings</h2>
+          <p>
+            The recitation you can play on a verse comes from Ishqnama&apos;s own
+            storage, served through Cloudflare, which sees the request the way any
+            web host does. Nothing is fetched until you press Play.
+          </p>
           <h2>How the site is used</h2>
           <p>
             To find out what is slow or broken, and which parts of Ishqnama

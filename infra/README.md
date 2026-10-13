@@ -298,6 +298,42 @@ In the Static Web App `swa-ishqnama-prod`, Custom domains:
 CORS on the API already allows both hostnames and the SWA default hostname
 (`local.api_cors_allowed_origins`).
 
+## Recitation audio on R2
+
+The Quran recitation (Abdul Basit Abdul Samad, murattal, from Tarteel's Quranic Universal
+Library resource 408) is served from one Cloudflare R2 bucket shared by every environment.
+Nothing here is Terraform: the Cloudflare workspace pins provider 4.x, which has no R2 custom
+domain or CORS resource, and the bucket is set up once by hand.
+
+1. R2 → Create bucket `ishqnama-audio`: location Automatic, Standard storage. Leave the
+   public `r2.dev` URL off.
+2. Bucket → Settings → Custom Domains → Add `audio.ishqnama.com` (zone `ishqnama.com`).
+   Cloudflare creates the DNS record itself and it is **proxied** (orange cloud): the one
+   record in the zone that is not DNS-only, and it must stay that way, because R2 custom
+   domains only work through the proxy.
+3. Bucket → Settings → CORS policy:
+
+   ```json
+   [{ "AllowedOrigins": ["*"], "AllowedMethods": ["GET", "HEAD"], "AllowedHeaders": ["Range"],
+      "ExposeHeaders": ["Content-Length", "Content-Range", "Accept-Ranges"], "MaxAgeSeconds": 86400 }]
+   ```
+
+   The content is public and read-only, so any origin may read it.
+4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Put it in the
+   owner's `rclone` config as a remote named `r2` (`rclone config`, type `s3`, provider
+   `Cloudflare`, the token's access key and secret, endpoint
+   `https://<account id>.r2.cloudflarestorage.com`). It is never in CI or the repository.
+5. From `frontend/`: `npm run recitation:fetch` (once, 1.8 GB from Tarteel's CDN into
+   `audio/.tarteel/mp3/`), then `npm run recitation:upload`. Files land at
+   `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3` with a one-year `immutable`
+   cache header; a changed recording goes under `/v2/` with `version: 2` in the timings.
+
+Release prerequisites: confirm Tarteel's terms allow hosting this recording, and keep the
+credit to the reciter and QUL on the About page.
+
+Cost: about 1.8 GB of the free 10 GB, free egress, reads far under the free 10 million a
+month.
+
 ## Monitoring and its cost caps
 
 Each environment has one Log Analytics workspace (`ishqnama-<env>-logs`, module

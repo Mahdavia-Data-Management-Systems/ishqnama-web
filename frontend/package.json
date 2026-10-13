@@ -15,7 +15,9 @@
     "articles:build": "python scripts/build_nooreimaan_articles.py",
     "articles:test": "python -m unittest discover -s scripts -p \"test_*.py\"",
     "recitation:build": "node scripts/build-recitation-timings.mjs",
-    "recitation:test": "node --test scripts/test-build-recitation-timings.mjs"
+    "recitation:test": "node --test scripts/test-build-recitation-timings.mjs",
+    "recitation:fetch": "node scripts/fetch-recitation.mjs",
+    "recitation:upload": "node scripts/upload-recitation.mjs"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.19.0",

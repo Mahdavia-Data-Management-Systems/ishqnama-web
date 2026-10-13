@@ -61,6 +61,13 @@ export default function AboutPage() {
             Quranic knowledge.
           </p>
 
+          <h2>About the recitation</h2>
+          <p>
+            The recitation you can play alongside each verse is by Qari Abdul
+            Basit Abdul Samad, in the murattal style, from Tarteel&apos;s Quranic
+            Universal Library.
+          </p>
+
           <h2>About MDMS</h2>
           <div className={aboutStyles.mdmsSection}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
