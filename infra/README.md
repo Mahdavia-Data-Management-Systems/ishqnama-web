@@ -322,7 +322,10 @@ domain or CORS resource, and the bucket is set up once by hand.
 4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Put it in the
    owner's `rclone` config as a remote named `r2` (`rclone config`, type `s3`, provider
    `Cloudflare`, the token's access key and secret, endpoint
-   `https://<account id>.r2.cloudflarestorage.com`). It is never in CI or the repository.
+   `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in CI or
+   the repository. `rclone config show r2` must list `access_key_id`, `secret_access_key` and
+   `endpoint`: a remote with only `type` and `provider` sends unsigned requests, which R2
+   rejects as anonymous and rclone reports as a failed `CreateBucket`.
 5. From `frontend/`: `npm run recitation:fetch` (once, 1.8 GB from Tarteel's CDN into
    `audio/.tarteel/mp3/`), then `npm run recitation:upload`. Files land at
    `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3` with a one-year `immutable`

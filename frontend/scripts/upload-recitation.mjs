@@ -12,15 +12,18 @@ const VERSION = 1;
 const SOURCE = path.resolve("../audio/.tarteel/mp3");
 const TARGET = `r2:ishqnama-audio/recitations/v${VERSION}/${RECITATION_ID}`;
 
+// No shell: with one, Node joins the arguments unquoted on Windows, and the repository path
+// (which has spaces) and the Cache-Control header would reach rclone as several arguments.
+// rclone and node are executables, so they are found on the path without a shell.
 function run(cmd, args) {
-  const r = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" });
+  const r = spawnSync(cmd, args, { stdio: "inherit" });
   if (r.error || r.status !== 0) {
     console.error(`${cmd} ${args.join(" ")} failed`);
     process.exit(r.status ?? 1);
   }
 }
 
-const probe = spawnSync("rclone", ["listremotes"], { encoding: "utf8", shell: process.platform === "win32" });
+const probe = spawnSync("rclone", ["listremotes"], { encoding: "utf8" });
 if (probe.error || probe.status !== 0) {
   console.error("rclone is not installed or not on the path: https://rclone.org/install/");
   process.exit(1);
@@ -34,6 +37,9 @@ run("node", ["scripts/build-recitation-timings.mjs"]);
 run("rclone", [
   "sync", SOURCE, TARGET,
   "--checksum",
+  // The bucket is made by hand (infra/README.md); rclone must never try to create one, which
+  // it otherwise does when a bucket-scoped token cannot answer its existence check.
+  "--s3-no-check-bucket",
   "--header-upload", "Cache-Control: public, max-age=31536000, immutable",
   "--progress",
 ]);
