@@ -330,6 +330,9 @@ domain or CORS resource, and the bucket is set up once by hand.
    `audio/.tarteel/mp3/`), then `npm run recitation:upload`. Files land at
    `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3` with a one-year `immutable`
    cache header; a changed recording goes under `/v2/` with `version: 2` in the timings.
+   The sync makes the bucket match the local folder, so the script refuses to run unless all
+   114 files are present locally: the fetched files may be deleted to free 1.8 GB, but a
+   thinned folder can never delete the recitation from the bucket.
 
 Release prerequisites: confirm Tarteel's terms allow hosting this recording, and keep the
 credit to the reciter and QUL on the About page.
