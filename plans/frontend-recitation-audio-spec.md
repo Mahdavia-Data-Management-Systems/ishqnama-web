@@ -85,14 +85,35 @@ can never ship as a silently shifted highlight.
 
 ### The export
 
-The QUL export (the recitation's JSON and its 114 MP3s) is downloaded with the owner's QUL
-account into `audio/.tarteel/` (gitignored), laid out as the build script's header describes:
+The QUL package (`surah-recitation-abdul-basit-abd-us-samad-murattal.zip`, downloaded with
+the owner's QUL account) holds two JSON files and no audio:
+
+- `surah.json`: 114 entries keyed by chapter, each `{ surah_number, audio_url, duration }`.
+  `audio_url` is `https://audio-cdn.tarteel.ai/quran/surah/abdulBasit/murattal/mp3/NNN.mp3`.
+  `duration` is unreliable (8,655 s for al-Baqarah, whose file and timings both say 9,685 s)
+  and is not used.
+- `segments.json`: 6,236 entries keyed `"c:v"`, each `{ timestamp_from, timestamp_to,
+  duration_ms, duration_sec, segments }` with `segments` as `[[wordPosition, fromMs, toMs], …]`.
+
+The MP3s are fetched from those URLs by `npm run recitation:fetch`
+(`frontend/scripts/fetch-recitation.mjs`): 114 files, 128 kbps CBR MP3, about 1.8 GB in all
+(al-Baqarah is 155 MB). The script skips a file whose size already matches the CDN's
+`Content-Length`, so it can be rerun. The originals are kept as they are; re-encoding to a
+lower bitrate for readers on phone data is a possible later step, not part of this work.
+
+Everything lives under `audio/.tarteel/` (gitignored):
 
 ```
-audio/.tarteel/abdul-basit-murattal/
-  recitation.json      the QUL JSON export for resource 408
-  mp3/001.mp3 … 114.mp3
+audio/.tarteel/
+  surah-recitation-abdul-basit-abd-us-samad-murattal.zip
+  export/segments.json, export/surah.json      the unpacked package
+  mp3/001.mp3 … 114.mp3                        from recitation:fetch
 ```
+
+The export has been checked against our data: every chapter's verse count matches
+`src/data/suras.ts`; chapter 1 is as the remap table says (1:7 has nine word segments);
+verse 1 of every other chapter starts at 0 ms with no basmala audio before it. Its timing
+defects are catalogued in `plans/recitation-timing-issues.md`.
 
 ### The timings build
 
@@ -121,11 +142,18 @@ The script's assertions, in order, each stopping the build with the chapter and 
 
 1. Tarteel chapter 1 has 7 verses and its verse 7 has exactly 9 word segments.
 2. Every other chapter's verse count equals `suras[n].verseCount`.
-3. Within a chapter the rows are in verse order, each `fromMs < toMs`, and no row starts
-   before the previous one ends.
+3. Within a chapter the rows are in verse order and each `fromMs < toMs`.
 
 A remap table in the script, `VERSE_REMAPS`, keyed by chapter, holds the al-Fatiha rule, so a
 further chapter needing one is a single entry.
+
+**Overlaps and gaps are known defects of the export, carried as technical debt** and listed
+in full in `plans/recitation-timing-issues.md`. The build does not try to be clever: it copies
+the verse spans as they are and prints every overlap, largest first, so the list stays
+visible on each run. The player tolerates them (Section 2: a clip that starts before the
+previous one ended is a seek backwards; a gap is a seek forwards). Correcting the data, by
+listening and recording hand overrides in a committed file the build applies before its
+assertions, is follow-up work listed at the end.
 
 `src/data/__tests__/recitation-timings.test.ts` repeats checks 2 and 3 against the checked-in
 data, so a hand edit cannot break it either.
@@ -133,8 +161,8 @@ data, so a hand edit cannot break it either.
 ### Audio on R2
 
 One bucket, `ishqnama-audio`, behind the custom domain `https://audio.ishqnama.com`. Objects
-live at `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3`, uploaded as QUL ships
-them, with `Cache-Control: public, max-age=31536000, immutable`. A changed recording gets
+live at `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3`, the originals as fetched,
+with `Cache-Control: public, max-age=31536000, immutable`. A changed recording gets
 `/v2/` in its path and `version: 2` in the timings, mirroring the rule for fonts under
 `/fonts/`. One bucket serves dev, prod and localhost; audio is not environment data.
 
@@ -244,8 +272,11 @@ While `playing`, a `requestAnimationFrame` loop reads `audio.currentTime`. When 
 the clip's `toMs`:
 
 - next clip in the **same file starting where this one ends**: nothing is done to the audio;
-  it runs on gapless, only `index` moves;
-- same file, elsewhere: seek;
+  it runs on gapless, only `index` moves. "Where this one ends" allows the export's small
+  gaps and overlaps: a start within 300 ms either side of the end counts, so the audio is not
+  nudged for a few hundred milliseconds of padding;
+- same file, elsewhere (a bigger gap or overlap in the timings, or a verse the reader
+  skipped to): seek;
 - a different file (verse 0's basmala in `001.mp3`, a new chapter on a juz or ruku page or in
   a list): step 3 above.
 
@@ -396,7 +427,7 @@ free egress, reads well under 10 M a month: $0.
 bad export never gets uploaded), then
 
 ```
-rclone sync audio/.tarteel/abdul-basit-murattal/mp3 r2:ishqnama-audio/recitations/v1/abdul-basit-murattal \
+rclone sync audio/.tarteel/mp3 r2:ishqnama-audio/recitations/v1/abdul-basit-murattal \
   --checksum --header-upload "Cache-Control: public, max-age=31536000, immutable" --progress
 ```
 
@@ -406,8 +437,8 @@ is for the fonts and Chrome is for the posters.
 ### Testing
 
 - `frontend/scripts/test-build-recitation-timings.mjs` (`npm run recitation:test`, Node's
-  test runner) with a fixture export: the al-Fatiha remap, the basmala extraction, and each
-  assertion failing on bad input.
+  test runner) with a fixture export in the package's shape: the al-Fatiha remap, the
+  basmala extraction, the overlap report, and each assertion failing on bad input.
 - `src/data/__tests__/recitation-timings.test.ts`: the checked-in data against `suras`,
   ordered and non-overlapping.
 - `src/lib/__tests__/recitation-playlist.test.ts`: verse 0 → the basmala clip from file 1,
@@ -425,15 +456,14 @@ is for the fonts and Chrome is for the posters.
 - A manual check on a phone before merging: lock-screen controls, the chapter switch on a juz
   page, the basmala before a chapter, and al-Fatiha 1:6 and 1:7.
 
-### Open until the export is in hand
-
-- Whether to re-encode to a lower bitrate for readers on phone data. Depends on what QUL
-  ships; re-encoding keeps the timeline within a few milliseconds, well inside a verse
-  boundary.
-- Whether any chapter other than al-Fatiha differs in numbering. The build assertion will
-  say.
-
 ### Follow-ups
+
+- **Timing corrections** (technical debt from the export, catalogued in
+  `plans/recitation-timing-issues.md`): listen to each listed verse, starting with 55:70–71
+  and the single-word opening verses, and record the right boundaries in a committed
+  overrides file the build applies before its assertions.
+- **Re-encoding** to about 64 kbps mono (roughly half the data for readers on phones;
+  al-Baqarah from 155 MB to 77 MB) under a `/v2/` path, if the originals prove heavy in use.
 
 - Essay recordings: host the files under `/recordings/v1/…` on the same bucket, a URL per
   essay through the converter and `EssayDto`, and a one-clip playlist behind a play control
