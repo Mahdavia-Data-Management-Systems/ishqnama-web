@@ -72,6 +72,16 @@ describe("versePlaylist", () => {
     expect(p.clips[2].url).toMatch(/002\.mp3$/);
   });
 
+  it("leaves out a verse the recitation cannot serve instead of failing the page", () => {
+    const p = versePlaylist(
+      "quran/2",
+      [{ chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }, { chapter: 2, verse: 3 }, { chapter: 9, verse: 0 }],
+      "/quran/2/",
+      tiny,
+    );
+    expect(p.clips.map((c) => c.ref)).toEqual([{ chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }]);
+  });
+
   it("uses the bundled recitation by default", () => {
     const p = versePlaylist("quran/112", [{ chapter: 112, verse: 1 }]);
     expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/v1/abdul-basit-murattal/112.mp3");

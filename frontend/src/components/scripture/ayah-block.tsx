@@ -64,8 +64,10 @@ interface AyahBlockProps {
   onAddToList?: () => void;
   /** Play this verse's recitation; receives the button so focus can return to it on close. */
   onPlay?: (trigger: HTMLElement) => void;
-  /** This verse is the one being recited: the block is washed and the play button shows Pause. */
+  /** This verse is the one being recited: the block is washed and the play button is pressed. */
   isReading?: boolean;
+  /** The recitation is paused (or could not start): the pressed button offers Play again. */
+  isPaused?: boolean;
   fontScale?: number;
   highlightQuery?: string;
 }
@@ -89,6 +91,7 @@ export default function AyahBlock({
   onAddToList,
   onPlay,
   isReading = false,
+  isPaused = false,
   fontScale = 1,
   highlightQuery,
 }: AyahBlockProps) {
@@ -125,11 +128,11 @@ export default function AyahBlock({
             <button
               type="button"
               className={styles.playButton}
-              aria-label={isReading ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
+              aria-label={isReading && !isPaused ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
               aria-pressed={isReading}
               onClick={(e) => onPlay(e.currentTarget)}
             >
-              <Icon name={isReading ? "pause" : "play"} size={18} />
+              <Icon name={isReading && !isPaused ? "pause" : "play"} size={18} />
             </button>
           )}
           <IconButton

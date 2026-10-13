@@ -55,14 +55,27 @@ export function clipFor(recitation: RecitationTimings, chapter: number, verse: n
   return { url: chapterAudioUrl(recitation, chapter), fromMs, toMs, title, subtitle: AUDIO_COPY.verse(verse), ref: { chapter, verse } };
 }
 
-/** A playlist of the given verses in the given order; the caller decides what a page or list holds. */
+/**
+ * A playlist of the given verses in the given order; the caller decides what a page or list
+ * holds. A verse the recitation cannot serve (chapter 9's verse 0, or one outside the table)
+ * is left out rather than failing the page that builds its playlist; `clipFor` still throws
+ * for an explicit request. Callers find a verse's clip by `ref`, never by counting.
+ */
 export function versePlaylist(
   id: string,
   verses: readonly { chapter: number; verse: number }[],
   href?: string,
   recitation: RecitationTimings = RECITATION,
 ): Playlist {
-  return { id, clips: verses.map((v) => clipFor(recitation, v.chapter, v.verse)), href };
+  const clips: Clip[] = [];
+  for (const v of verses) {
+    try {
+      clips.push(clipFor(recitation, v.chapter, v.verse));
+    } catch {
+      // not in the recitation
+    }
+  }
+  return { id, clips, href };
 }
 
 /** The page link that opens on this verse: a bare number on a chapter page, chapter-verse elsewhere. */

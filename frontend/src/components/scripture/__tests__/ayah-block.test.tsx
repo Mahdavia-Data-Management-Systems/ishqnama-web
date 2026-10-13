@@ -25,4 +25,12 @@ describe("AyahBlock recitation control", () => {
     expect(button.getAttribute("aria-pressed")).toBe("true");
     expect(document.getElementById("verse-2-255")?.classList.contains(styles.reading)).toBe(true);
   });
+
+  it("offers Play recitation again, still pressed and washed, while this verse is paused", () => {
+    renderBlock({ onPlay: () => {}, isReading: true, isPaused: true });
+    const button = screen.getByRole("button", { name: "Play recitation" });
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.queryByRole("button", { name: "Pause" })).toBeNull();
+    expect(document.getElementById("verse-2-255")?.classList.contains(styles.reading)).toBe(true);
+  });
 });

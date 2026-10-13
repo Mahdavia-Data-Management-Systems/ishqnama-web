@@ -21,9 +21,10 @@ vi.mock("@/components/ui/back-to-top", () => ({ default: () => null }));
 
 const play = vi.fn();
 let reading: { chapter: number; verse: number } | null = null;
+let paused = false;
 vi.mock("@/context/audio-player-context", () => ({
   useAudioPlayer: () => ({
-    status: reading ? "playing" : "closed",
+    status: reading ? (paused ? "paused" : "playing") : "closed",
     current: reading ? { ref: reading } : null,
     play,
     isCurrent: (ref: { chapter: number; verse: number }) =>
@@ -45,7 +46,7 @@ function renderReader() {
   );
 }
 
-afterEach(() => { cleanup(); play.mockClear(); reading = null; });
+afterEach(() => { cleanup(); play.mockClear(); reading = null; paused = false; });
 
 describe("QuranReaderClient recitation", () => {
   it("plays the page's verses from the tapped one, basmala included", () => {
@@ -68,6 +69,15 @@ describe("QuranReaderClient recitation", () => {
     reading = { chapter: 2, verse: 1 };
     renderReader();
     expect(screen.getByRole("button", { name: "Pause" })).toBeTruthy();
+    expect(document.getElementById("verse-2-1")?.className).toMatch(/reading/);
+  });
+
+  it("offers Play again on the verse while the recitation is paused, keeping the wash", () => {
+    reading = { chapter: 2, verse: 1 };
+    paused = true;
+    renderReader();
+    expect(screen.queryByRole("button", { name: "Pause" })).toBeNull();
+    expect(screen.getAllByRole("button", { name: "Play recitation" })).toHaveLength(2);
     expect(document.getElementById("verse-2-1")?.className).toMatch(/reading/);
   });
 });

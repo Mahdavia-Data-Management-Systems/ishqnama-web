@@ -65,7 +65,9 @@ export default function QuranReaderClient({
   const gateLists = useSignInGate("lists");
   const readiness = useApiReadiness();
   const pathname = usePathname() ?? "";
-  const { play: playClip, current: playing, isCurrent } = useAudioPlayer();
+  const { play: playClip, current: playing, isCurrent, status: recitationStatus } = useAudioPlayer();
+  // While paused (or failed) the current verse stays washed and pressed but offers Play again.
+  const recitationPaused = recitationStatus === "paused" || recitationStatus === "failed";
 
   // The whole page is the queue: tap a verse and the recitation runs to the page's end, basmala
   // included where the page shows one. Chapter 9 has no verse 0, so none is ever asked for.
@@ -296,6 +298,7 @@ export default function QuranReaderClient({
                       onAddToList={() => handleAddToList(verse.chapterNumber, verse.number)}
                       onPlay={(trigger) => handlePlay(verse.chapterNumber, verse.number, trigger)}
                       isReading={isCurrent({ chapter: verse.chapterNumber, verse: verse.number })}
+                      isPaused={recitationPaused}
                       highlightQuery={highlightQuery}
                     />
                   )}
@@ -440,15 +443,16 @@ export default function QuranReaderClient({
                 {(() => {
                   // Verse 0 too (the bismillah entry), except chapter 9's, which has none.
                   const reading = isCurrent({ chapter: selectedVerse.chapter, verse: verse.number });
+                  const showPause = reading && !recitationPaused;
                   return (
                     <button
                       type="button"
                       className={styles.popupPlay}
-                      aria-label={reading ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
+                      aria-label={showPause ? AUDIO_COPY.pause : AUDIO_COPY.playRecitation}
                       aria-pressed={reading}
                       onClick={(e) => handlePlay(selectedVerse.chapter, verse.number, e.currentTarget)}
                     >
-                      <Icon name={reading ? "pause" : "play"} size={18} />
+                      <Icon name={showPause ? "pause" : "play"} size={18} />
                     </button>
                   );
                 })()}

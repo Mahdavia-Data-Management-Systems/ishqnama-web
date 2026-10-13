@@ -23,7 +23,7 @@ import { versePlaylist } from "@/lib/recitation-playlist";
 import { shareList } from "@/lib/share-list";
 import { trackEvent } from "@/lib/telemetry";
 import { listEditPath, listOwnerName } from "@/lib/verse-lists";
-import type { VerseListDto } from "@/types/lists";
+import type { VerseListDto, VerseListGroupDto } from "@/types/lists";
 import styles from "./list-view.module.css";
 
 type LoadState =
@@ -104,14 +104,13 @@ export default function ListView() {
     }
     return versePlaylist(`list/${list.id}`, verses, `/lists/view/?id=${list.id}`);
   }, [list]);
-  const groupStart = useCallback((gi: number) => {
-    let index = 0;
-    for (let i = 0; i < gi; i++) {
-      const g = list!.groups[i];
-      index += g.toVerse - g.fromVerse + 1;
-    }
-    return index;
-  }, [list]);
+  // A group's first clip, found by verse rather than by counting, since a verse the recitation
+  // cannot serve is left out of the playlist.
+  const groupStart = useCallback(
+    (g: VerseListGroupDto) =>
+      playlist?.clips.findIndex((c) => c.ref?.chapter === g.chapter && c.ref.verse === g.fromVerse) ?? -1,
+    [playlist],
+  );
 
   const handleShare = useCallback(async () => {
     if (!list) return;
@@ -247,13 +246,16 @@ export default function ListView() {
         <hr className="hairline-gold" />
 
         <div className={styles.groups}>
-          {list.groups.map((g, gi) => (
-            <ListGroupCard
-              key={g.id ?? `${g.chapter}-${g.fromVerse}`}
-              group={g}
-              onPlay={playlist ? (trigger) => playClip(playlist, groupStart(gi), trigger) : undefined}
-            />
-          ))}
+          {list.groups.map((g) => {
+            const start = groupStart(g);
+            return (
+              <ListGroupCard
+                key={g.id ?? `${g.chapter}-${g.fromVerse}`}
+                group={g}
+                onPlay={playlist && start >= 0 ? (trigger) => playClip(playlist, start, trigger) : undefined}
+              />
+            );
+          })}
         </div>
       </div>
 

@@ -54,8 +54,9 @@ const FRAGMENT_SLACK_S = 0.5;
 function url(clip: Clip): string {
   return clip.fromMs != null ? `${clip.url}#t=${clip.fromMs / 1000}` : clip.url;
 }
-function sameFile(a: Clip, b: Clip): boolean {
-  return a.url === b.url;
+/** The file the element holds, without the media fragment; "" when nothing is loaded. */
+function loadedUrl(audio: HTMLAudioElement): string {
+  return audio.src ? audio.src.split("#")[0] : "";
 }
 
 /**
@@ -77,6 +78,7 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
   const indexRef = useRef<number | null>(null);
   const statusRef = useRef<AudioPlayerStatus>("closed");
   const triggerRef = useRef<HTMLElement | null>(null);
+  const barHostRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number>(0);
   // Each play() gets a ticket; a play promise settling for an older ticket is ignored.
   const ticketRef = useRef(0);
@@ -116,22 +118,22 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
   }, [setStatusBoth]);
 
   /** Loads (if needed), positions and starts the clip at `i` of the current playlist. */
-  const startClip = useCallback((i: number, options: { seekOnly?: boolean } = {}) => {
+  const startClip = useCallback((i: number) => {
     const audio = audioRef.current;
     const p = playlistRef.current;
     if (!audio || !p) return;
     const clip = p.clips[i];
     if (!clip) return;
-    const previous = currentClip();
     setIndexBoth(i);
 
-    if (previous && sameFile(previous, clip) && audio.src !== "") {
+    // Decided by what the element has actually loaded, never by the previous clip: a verse
+    // tapped on another page belongs to a new playlist that may share nothing with the file
+    // playing, and must never be heard as a seek inside it.
+    if (loadedUrl(audio) === clip.url) {
       // Same file: a seek, or nothing at all when the clip starts where the last one ended.
       const wantedS = (clip.fromMs ?? 0) / 1000;
       const drift = Math.abs(audio.currentTime - wantedS) * 1000;
-      if (!options.seekOnly || drift > BOUNDARY_TOLERANCE_MS) {
-        if (drift > BOUNDARY_TOLERANCE_MS) audio.currentTime = wantedS;
-      }
+      if (drift > BOUNDARY_TOLERANCE_MS) audio.currentTime = wantedS;
       if (audio.paused) {
         setStatusBoth("loading");
         startElement(audio);
@@ -144,18 +146,27 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     audio.preload = "auto";
     audio.load();
     startElement(audio);
-  }, [currentClip, setIndexBoth, setStatusBoth, startElement]);
+  }, [setIndexBoth, setStatusBoth, startElement]);
 
-  const stopAll = useCallback(() => {
+  /**
+   * Stops and forgets everything. Focus goes back to the button that started the recording
+   * when the reader asked to close, or when the recitation ran out while their focus was on
+   * the bar (which is about to disappear); a reader whose focus is elsewhere is left alone.
+   */
+  const stopAll = useCallback((focus: "always" | "ifInBar") => {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
       audio.removeAttribute("src");
     }
     cancelAnimationFrame(frameRef.current);
+    const trigger = triggerRef.current;
+    const inBar = barHostRef.current?.contains(document.activeElement) ?? false;
+    triggerRef.current = null;
     setIndexBoth(null);
     setPlaylistBoth(null);
     setStatusBoth("closed");
+    if (trigger && trigger.isConnected && (focus === "always" || inBar)) trigger.focus();
   }, [setIndexBoth, setPlaylistBoth, setStatusBoth]);
 
   /** The position check both the frame loop and timeupdate run. */
@@ -168,10 +179,10 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     if (audio.currentTime * 1000 < clip.toMs) return;
     const i = indexRef.current ?? 0;
     if (i + 1 >= p.clips.length) {
-      stopAll();
+      stopAll("ifInBar");
       return;
     }
-    startClip(i + 1, { seekOnly: true });
+    startClip(i + 1);
   }, [currentClip, startClip, stopAll]);
 
   // Wire the element's events once it exists.
@@ -188,7 +199,7 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
       const p = playlistRef.current;
       const i = indexRef.current;
       if (!p || i == null) return;
-      if (i + 1 >= p.clips.length) stopAll();
+      if (i + 1 >= p.clips.length) stopAll("ifInBar");
       else startClip(i + 1);
     });
     audio.addEventListener("error", () => {
@@ -288,12 +299,7 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
     startClip(i - 1);
   }, [startClip]);
 
-  const close = useCallback(() => {
-    stopAll();
-    const trigger = triggerRef.current;
-    triggerRef.current = null;
-    if (trigger && trigger.isConnected) trigger.focus();
-  }, [stopAll]);
+  const close = useCallback(() => stopAll("always"), [stopAll]);
 
   const current = playlist && index != null ? (playlist.clips[index] ?? null) : null;
 
@@ -337,7 +343,12 @@ export default function AudioPlayerProvider({ children }: { children: ReactNode 
   return (
     <AudioPlayerContext.Provider value={value}>
       {children}
-      {status !== "closed" && <AudioPlayerBar />}
+      {status !== "closed" && (
+        // The host lets stopAll tell whether the reader's focus is on the bar before it goes.
+        <div ref={barHostRef} style={{ display: "contents" }}>
+          <AudioPlayerBar />
+        </div>
+      )}
     </AudioPlayerContext.Provider>
   );
 }

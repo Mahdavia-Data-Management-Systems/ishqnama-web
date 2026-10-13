@@ -314,6 +314,55 @@ describe("AudioPlayerProvider", () => {
     expect(document.documentElement.hasAttribute("data-audio-bar")).toBe(false);
   });
 
+  it("loads the other file when a new playlist's verse is not in the file playing", async () => {
+    const file3 = "https://audio.test/003.mp3";
+    const chapter = (n: number, url: string): Playlist => ({
+      id: `quran/${n}`,
+      clips: [0, 1, 2, 3, 4, 5].map((v) => ({ url, fromMs: v * 5000, toMs: v * 5000 + 5000, title: `Chapter ${n}`, ref: { chapter: n, verse: v } })),
+    });
+    render(<Page />);
+    act(() => api.play(chapter(2, file2), 4));
+    await flush();
+    expect(status()).toBe("playing:4");
+    act(() => api.play(chapter(3, file3), 0));
+    expect(status()).toBe("loading:0");
+    expect(audio().src).toBe(`${file3}#t=0`);
+    expect(audio().calls.slice(-2)).toEqual(["load", "play"]);
+  });
+
+  it("returns focus to the trigger when the recitation ends while a bar control has focus", async () => {
+    render(
+      <Page>
+        <button type="button">Play</button>
+      </Page>,
+    );
+    const trigger = screen.getByRole("button", { name: "Play" });
+    act(() => api.play(playlist, 4, trigger));
+    await flush();
+    act(() => screen.getByRole("button", { name: "Pause" }).focus());
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Pause");
+    act(() => audio().at(12.0));
+    expect(status()).toBe("closed:-");
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("leaves focus where it is when the recitation ends and the reader is elsewhere on the page", async () => {
+    render(
+      <Page>
+        <button type="button">Play</button>
+        <input aria-label="Search" />
+      </Page>,
+    );
+    const trigger = screen.getByRole("button", { name: "Play" });
+    act(() => api.play(playlist, 4, trigger));
+    await flush();
+    const field = screen.getByRole("textbox", { name: "Search" });
+    act(() => field.focus());
+    act(() => audio().at(12.0));
+    expect(status()).toBe("closed:-");
+    expect(document.activeElement).toBe(field);
+  });
+
   it("never sends a title or url to telemetry", async () => {
     render(<Page />);
     act(() => api.play(playlist, 0));
