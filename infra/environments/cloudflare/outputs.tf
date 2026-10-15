@@ -1,9 +1,9 @@
-output "ishqnama_zone_id" {
-  description = "Zone ID for ishqnama.com"
-  value       = module.ishqnama.zone_id
+output "audio_bucket_name" {
+  description = "Name of the R2 bucket holding the recordings"
+  value       = module.audio.bucket_name
 }
 
-output "ishqnama_zone_name_servers" {
-  description = "Name servers for ishqnama.com"
-  value       = module.ishqnama.zone_name_servers
+output "audio_custom_domain" {
+  description = "Public domain the recordings are served from"
+  value       = module.audio.custom_domain
 }

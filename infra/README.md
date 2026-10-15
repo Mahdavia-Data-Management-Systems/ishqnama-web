@@ -2,7 +2,8 @@
 
 Terraform for the Ishqnama Azure footprint. `environments/dev` and `environments/prod` are
 identical in shape and differ only in names, hostnames and image tags; `environments/cloudflare`
-manages the `ishqnama.com` zone. Everything runs on free tiers, so each environment has its own
+manages the R2 bucket behind `audio.ishqnama.com` (the `ishqnama.com` zone itself is no longer in
+Terraform). Everything runs on free tiers, so each environment has its own
 dedicated Azure subscription (the Cosmos DB free tier and the Container Apps monthly grant are
 per subscription).
 
@@ -94,8 +95,10 @@ Create the GitHub environment `prod` (repository Settings, Environments) and add
 | Variable | `DOCKERHUB_USERNAME`    | Docker Hub user with pull access to `ishqnama-db`   |
 | Variable | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID                               |
 | Secret   | `DOCKERHUB_TOKEN`       | Docker Hub access token                             |
-| Secret   | `CLOUDFLARE_API_TOKEN`  | Cloudflare token with `Zone:Read` on `ishqnama.com` |
+| Secret   | `CLOUDFLARE_API_TOKEN`  | Cloudflare token with `Zone:Read` on `ishqnama.com` and `Workers R2 Storage:Edit` on the account |
 | Secret   | `TF_API_TOKEN`          | Terraform Cloud token (see step 4)                  |
+| Secret   | `R2_ACCESS_KEY_ID`      | Access key of the R2 API token (**Recitation audio on R2**, step 4) |
+| Secret   | `R2_SECRET_ACCESS_KEY`  | Secret access key of the same R2 API token          |
 
 Variables map to `TF_VAR_*` in `deploy-infra.yml` and `destroy-infra.yml`. The workflows apply
 with `-auto-approve`, so what keeps an unintended change away from Azure is the environment's
@@ -129,8 +132,8 @@ for `prod` or the required reviewer is silently wiped.
 starts, which is what makes `prod-release.yml` park on "Review pending" before it applies.
 `prevent_self_review` stays `false`: the sole maintainer is also the only reviewer.
 
-**Every apply runs inside an environment.** `deploy-cloudflare-zone.yml` used to be the exception;
-it now declares `environment: cloudflare`. Any new workflow that applies Terraform, pushes an
+**Every apply runs inside an environment.** `deploy-cloudflare-infra.yml` (formerly `deploy-cloudflare-zone.yml`) used to be the exception;
+it now declares `environment: prod`. Any new workflow that applies Terraform, pushes an
 image or deploys the SWA must declare an environment, or it inherits none of the above.
 
 **Actions allowlist.** Only GitHub-owned actions plus `docker/*`, `Azure/*`,
@@ -302,27 +305,32 @@ CORS on the API already allows both hostnames and the SWA default hostname
 
 The Quran recitation (Abdul Basit Abdul Samad, murattal, from Tarteel's Quranic Universal
 Library resource 408) is served from one Cloudflare R2 bucket shared by every environment.
-Nothing here is Terraform: the Cloudflare workspace pins provider 4.x, which has no R2 custom
-domain or CORS resource, and the bucket is set up once by hand.
 
-1. R2 → Create bucket `ishqnama-audio`: location Automatic, Standard storage. Leave the
-   public `r2.dev` URL off.
-2. Bucket → Settings → Custom Domains → Add `audio.ishqnama.com` (zone `ishqnama.com`).
-   Cloudflare creates the DNS record itself and it is **proxied** (orange cloud): the one
-   record in the zone that is not DNS-only, and it must stay that way, because R2 custom
-   domains only work through the proxy.
-3. Bucket → Settings → CORS policy:
+1. The bucket, its custom domain and its CORS policy are Terraform:
+   `environments/cloudflare` (workspace `ishqnama-web-cloudflare`, applied by running
+   `cloudflare-release.yml` from the Actions tab, which calls the reusable
+   `deploy-cloudflare-infra.yml`, or locally with `terraform apply`) calls
+   `modules/cloudflare/ishqnama-audio` for bucket
+   `ishqnama-audio` (Standard storage, placed in Oceania; the public `r2.dev` URL stays off).
+   The bucket was created by hand and adopted with an `import` block.
+2. `audio.ishqnama.com` is attached as an R2 custom domain (minimum TLS 1.2). Cloudflare creates
+   the DNS record itself and it is **proxied** (orange cloud): the one record in the zone that is
+   not DNS-only, and it must stay that way, because R2 custom domains only work through the
+   proxy. Provider v5 cannot import a custom domain or a CORS policy, so a re-created workspace
+   needs the domain detached in the dashboard before the apply that creates it.
+3. CORS allows any origin `GET` and `HEAD` with the `Range` header, exposes `Content-Length`,
+   `Content-Range` and `Accept-Ranges`, and lets browsers cache the preflight for a day. The
+   content is public and read-only, so any origin may read it.
 
-   ```json
-   [{ "AllowedOrigins": ["*"], "AllowedMethods": ["GET", "HEAD"], "AllowedHeaders": ["Range"],
-      "ExposeHeaders": ["Content-Length", "Content-Range", "Accept-Ranges"], "MaxAgeSeconds": 86400 }]
-   ```
-
-   The content is public and read-only, so any origin may read it.
-4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Put it in the
-   owner's `rclone` config as a remote named `r2` (`rclone config`, type `s3`, provider
-   `Cloudflare`, the token's access key and secret, endpoint
-   `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in CI or
+   For a local plan, put `cloudflare_api_token` and `cloudflare_account_id` in
+   `environments/cloudflare/local.auto.tfvars` (gitignored, like every `*.tfvars`).
+4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Add its access
+   key and secret to the `prod` GitHub environment as the secrets `R2_ACCESS_KEY_ID` and
+   `R2_SECRET_ACCESS_KEY` (step 3 above): `sync-audio.yml`, which `cloudflare-release.yml` runs
+   after the Terraform apply, reads them, and without them its first run fails on an empty
+   access key. For local uploads, also put it in the owner's `rclone` config as a remote named
+   `r2` (`rclone config`, type `s3`, provider `Cloudflare`, the token's access key and secret,
+   endpoint `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in
    the repository. `rclone config show r2` must list `access_key_id`, `secret_access_key` and
    `endpoint`: a remote with only `type` and `provider` sends unsigned requests, which R2
    rejects as anonymous and rclone reports as a failed `CreateBucket`.

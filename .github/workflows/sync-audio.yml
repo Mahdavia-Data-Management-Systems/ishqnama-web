@@ -1,0 +1,57 @@
+name: Sync Audio
+
+# Copies audio/ to the root of the ishqnama-audio R2 bucket behind https://audio.ishqnama.com.
+# Recordings too big for git are listed by URL in a .tarteel.json manifest in the folder they belong
+# to; any of those the bucket does not have yet is streamed straight from that URL into the bucket
+# (`rclone copyurl`, nothing written to disk). Neither step deletes anything, so files missing from
+# the checkout stay in the bucket.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Sync Audio to R2
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      RCLONE_CONFIG_R2_TYPE: s3
+      RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+      RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      RCLONE_CONFIG_R2_ENDPOINT: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      RCLONE_CONFIG_R2_ACL: private
+      # The bucket is Terraform's; rclone must never try to create it.
+      RCLONE_CONFIG_R2_NO_CHECK_BUCKET: "true"
+      BUCKET: r2:ishqnama-audio
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rclone
+        run: command -v rclone || (sudo apt-get update && sudo apt-get install -y rclone)
+
+      - name: Copy manifest recordings the bucket does not have
+        run: |
+          set -euo pipefail
+          find audio -name .tarteel.json | while read -r manifest; do
+            dir=$(dirname "$manifest")
+            prefix=${dir#audio/}
+            present=$(rclone lsf --files-only "$BUCKET/$prefix")
+            for url in $(jq -r '.[]' "$manifest"); do
+              file=$(basename "$url")
+              if grep -qxF "$file" <<<"$present"; then continue; fi
+              echo "Copying $url to $prefix/$file"
+              rclone copyurl "$url" "$BUCKET/$prefix/$file" --retries 5 --header-upload "Cache-Control: public, max-age=31536000, immutable"
+            done
+          done
+
+      - name: Copy to R2
+        run: >-
+          rclone copy audio "$BUCKET"
+          --checksum
+          --exclude ".tarteel.json"
+          --header-upload "Cache-Control: public, max-age=31536000, immutable"
+          --stats-one-line --stats 30s -v
