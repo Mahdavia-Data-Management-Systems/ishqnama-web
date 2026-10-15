@@ -97,6 +97,8 @@ Create the GitHub environment `prod` (repository Settings, Environments) and add
 | Secret   | `DOCKERHUB_TOKEN`       | Docker Hub access token                             |
 | Secret   | `CLOUDFLARE_API_TOKEN`  | Cloudflare token with `Zone:Read` on `ishqnama.com` and `Workers R2 Storage:Edit` on the account |
 | Secret   | `TF_API_TOKEN`          | Terraform Cloud token (see step 4)                  |
+| Secret   | `R2_ACCESS_KEY_ID`      | Access key of the R2 API token (**Recitation audio on R2**, step 4) |
+| Secret   | `R2_SECRET_ACCESS_KEY`  | Secret access key of the same R2 API token          |
 
 Variables map to `TF_VAR_*` in `deploy-infra.yml` and `destroy-infra.yml`. The workflows apply
 with `-auto-approve`, so what keeps an unintended change away from Azure is the environment's
@@ -322,10 +324,13 @@ Library resource 408) is served from one Cloudflare R2 bucket shared by every en
 
    For a local plan, put `cloudflare_api_token` and `cloudflare_account_id` in
    `environments/cloudflare/local.auto.tfvars` (gitignored, like every `*.tfvars`).
-4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Put it in the
-   owner's `rclone` config as a remote named `r2` (`rclone config`, type `s3`, provider
-   `Cloudflare`, the token's access key and secret, endpoint
-   `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in CI or
+4. R2 → Manage R2 API tokens → Create: Object Read & Write, this bucket only. Add its access
+   key and secret to the `prod` GitHub environment as the secrets `R2_ACCESS_KEY_ID` and
+   `R2_SECRET_ACCESS_KEY` (step 3 above): `sync-audio.yml`, which `cloudflare-release.yml` runs
+   after the Terraform apply, reads them, and without them its first run fails on an empty
+   access key. For local uploads, also put it in the owner's `rclone` config as a remote named
+   `r2` (`rclone config`, type `s3`, provider `Cloudflare`, the token's access key and secret,
+   endpoint `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in
    the repository. `rclone config show r2` must list `access_key_id`, `secret_access_key` and
    `endpoint`: a remote with only `type` and `provider` sends unsigned requests, which R2
    rejects as anonymous and rclone reports as a failed `CreateBucket`.
