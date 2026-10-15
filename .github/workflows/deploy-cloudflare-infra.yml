@@ -1,4 +1,4 @@
-name: Setup ishqnama.com
+name: Setup Cloudflare Infra
 
 on:
   workflow_call:
@@ -10,9 +10,9 @@ jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    # The zone apply is as destructive as any other, so it runs inside an environment too. The
-    # cloudflare environment is restricted to main, which is what keeps this apply off other refs.
-    environment: cloudflare
+    # The R2 bucket serves every environment's recordings, so it is applied as prod: main only,
+    # behind prod's required review.
+    environment: prod
     defaults:
       run:
         working-directory: infra/environments/cloudflare

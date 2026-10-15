@@ -1,0 +1,27 @@
+name: Cloudflare Release
+
+# Applies the Cloudflare R2 bucket behind audio.ishqnama.com (infra/environments/cloudflare), then
+# uploads audio/ and the recordings listed in its .tarteel.json manifests to it, never deleting
+# anything. Run by hand from the Actions tab; no push triggers it.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One apply at a time; a second run waits instead of racing the first on Terraform state
+concurrency:
+  group: cloudflare-release
+  cancel-in-progress: false
+
+jobs:
+  deploy-cloudflare-infra:
+    name: Deploy Cloudflare Infra
+    uses: ./.github/workflows/deploy-cloudflare-infra.yml
+    secrets: inherit
+
+  sync-audio:
+    name: Sync Audio
+    needs: deploy-cloudflare-infra
+    uses: ./.github/workflows/sync-audio.yml
+    secrets: inherit

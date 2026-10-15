@@ -4,5 +4,7 @@ data "tfe_outputs" "mdms-core" {
 }
 
 data "cloudflare_zone" "ishqnama" {
-  name = "ishqnama.com"
+  filter = {
+    name = "ishqnama.com"
+  }
 }
