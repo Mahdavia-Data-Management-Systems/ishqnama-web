@@ -7,11 +7,23 @@ against: the speaking mascot's avatar glows and swaps expression in time with
 the audio.
 
 Usage:
-    python scripts/diarize_podcast.py AUDIO [--out FILE] [--language ur]
+    python scripts/diarize_podcast.py AUDIO [--name EPISODE] [--out FILE] [--language ur]
         [--title "..."] [--caption "..."]
         [--speakers hamza=low,zoya=high | --speakers zoya] [--voices auto|1|2]
         [--map hamza=1,zoya=0] [--whisper-model small] [--no-transcript]
     python scripts/diarize_podcast.py --check FILE
+    python scripts/diarize_podcast.py --release FILE [--into FOLDER]
+
+The recording can be anywhere; the draft timeline is written beside it as
+<episode>.timeline.json, where the episode is the recording's own name unless
+--name gives another, and names the recording as it is. --release, once the
+draft passes --check, moves the pair into the served folder (audio/podcasts/
+articles/nooreimaan/ at the repo root, which sync-audio.yml copies to the
+bucket under a one-year immutable cache header) under versioned names,
+<episode>.vN.<ext> and <episode>.timeline.vN.json, and points the released
+timeline's `audio` at the versioned recording. Each file's version is one
+more than the highest already there; a recording identical to a released
+version keeps that version, so a corrected timeline adds only itself.
 
 A recording with one voice (a solo brief) is detected on its own: when the
 two clusters of a two-way split sit close together, they are one speaker,
@@ -33,6 +45,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -57,6 +70,9 @@ ONE_VOICE_MAX_CENTROID_DISTANCE = 0.35  # cosine distance between the two cluste
 EXPRESSIONS = ("speaking", "laughing", "thoughtful")
 DEFAULT_SPEAKERS = "hamza=low,zoya=high"
 TIMELINE_VERSION = 1
+DRAFT_SUFFIX = ".timeline.json"
+# Where released episodes live: the repo's audio/ folder is laid out like the bucket.
+RELEASE_DIR = Path(__file__).resolve().parents[2] / "audio" / "podcasts" / "articles" / "nooreimaan"
 CACHE_DIR = Path(os.environ.get("ISHQNAMA_PODCAST_CACHE", Path.home() / ".cache" / "ishqnama-podcast"))
 
 
@@ -385,6 +401,110 @@ def name_speakers(pitches: dict[int, float], speakers: list[tuple[str, str | Non
     return mapping, ("high" if ratio >= PITCH_CONFIDENT_RATIO else "low")
 
 
+def episode_paths(audio: Path, name: str | None, out: str | None) -> Path:
+    """Where the draft timeline goes: <episode>.timeline.json beside the recording, or `out`.
+
+    The episode is the recording's stem unless `name` replaces it. A name is a plain
+    word for the files, with no folder, extension or version in it.
+    """
+    if name is not None:
+        name = name.strip()
+        if not name or name in (".", "..") or "/" in name or "\\" in name or "." in name:
+            raise SystemExit(f"--name must be a plain episode name with no path or extension, not {name!r}")
+    episode = name or audio.stem
+    if name is None and "." in episode:
+        raise SystemExit(f"the recording's name {audio.name!r} holds a dot, which a released file name cannot; give the episode a name with --name")
+    return Path(out) if out else audio.with_name(f"{episode}.timeline.json")
+
+
+def episode_of(timeline: Path) -> str:
+    """The episode a draft timeline is named for: <episode>.timeline.json."""
+    name = timeline.name
+    if not name.endswith(DRAFT_SUFFIX) or len(name) == len(DRAFT_SUFFIX):
+        raise SystemExit(f"{timeline} is not a draft timeline (<episode>{DRAFT_SUFFIX}); a released one is not released again")
+    episode = name[: -len(DRAFT_SUFFIX)]
+    if "." in episode:
+        raise SystemExit(f"{timeline} is not a draft timeline (<episode>{DRAFT_SUFFIX}); a released one is not released again")
+    return episode
+
+
+def _released_version(name: str, prefix: str, suffix: str) -> int | None:
+    """N when `name` is <prefix>vN<suffix>, else None."""
+    if not (name.startswith(prefix) and name.endswith(suffix)):
+        return None
+    middle = name[len(prefix): len(name) - len(suffix)]
+    return int(middle) if middle.isdigit() and middle[0] != "0" else None
+
+
+def release_plan(existing, episode: str, ext: str, same_recording) -> dict:
+    """The versioned names a release of `episode` takes among the files already in the folder.
+
+    `existing` is the folder's file names, `ext` the recording's extension with its dot,
+    and `same_recording(name)` says whether a released recording is byte-for-byte the
+    one being released. The recording reuses the version of an identical one, else takes
+    the next; the timeline always takes the next.
+    """
+    audio_prefix, audio_suffix = f"{episode}.v", ext
+    timeline_prefix, timeline_suffix = f"{episode}.timeline.v", ".json"
+    audio_versions = {}
+    timeline_versions = []
+    for name in existing:
+        if (n := _released_version(name, audio_prefix, audio_suffix)) is not None:
+            audio_versions[n] = name
+        if (n := _released_version(name, timeline_prefix, timeline_suffix)) is not None:
+            timeline_versions.append(n)
+    reused = next((n for n in sorted(audio_versions) if same_recording(audio_versions[n])), None)
+    audio_version = reused if reused is not None else max(audio_versions, default=0) + 1
+    return {
+        "audio": f"{audio_prefix}{audio_version}{audio_suffix}",
+        "timeline": f"{timeline_prefix}{max(timeline_versions, default=0) + 1}{timeline_suffix}",
+        "audioReused": reused is not None,
+    }
+
+
+def _same_file(a: Path, b: Path) -> bool:
+    if a.stat().st_size != b.stat().st_size:
+        return False
+    with a.open("rb") as fa, b.open("rb") as fb:
+        while True:
+            x, y = fa.read(1 << 20), fb.read(1 << 20)
+            if x != y:
+                return False
+            if not x:
+                return True
+
+
+def release(path: str, into: str | None) -> int:
+    """Move a reviewed draft timeline and its recording into the served folder under versioned names."""
+    draft = Path(path)
+    episode = episode_of(draft)
+    timeline = json.loads(draft.read_text(encoding="utf-8"))
+    problems = check_timeline(timeline)
+    if problems:
+        for problem in problems:
+            print(problem)
+        print("not released: fix the timeline and run --check first")
+        return 1
+    recording = draft.with_name(timeline["audio"])
+    if not recording.is_file():
+        raise SystemExit(f"the recording {recording} the timeline names is not beside it")
+    folder = Path(into) if into else RELEASE_DIR
+    folder.mkdir(parents=True, exist_ok=True)
+    existing = [p.name for p in folder.iterdir() if p.is_file()]
+    plan = release_plan(existing, episode, recording.suffix.lower(), lambda name: _same_file(folder / name, recording))
+    timeline["audio"] = plan["audio"]
+    (folder / plan["timeline"]).write_text(json.dumps(timeline, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if plan["audioReused"]:
+        recording.unlink()
+        log(f"the recording is already released as {plan['audio']}; the draft copy is removed")
+    else:
+        shutil.move(str(recording), str(folder / plan["audio"]))
+        log(f"moved the recording to {folder / plan['audio']}")
+    draft.unlink()
+    log(f"released the timeline as {folder / plan['timeline']}, naming {plan['audio']}")
+    return 0
+
+
 def topic_fields(title: str | None, caption: str | None) -> dict[str, str]:
     """The timeline's title and caption, only those given and not blank."""
     fields = {}
@@ -483,7 +603,7 @@ def transcribe(wav, language: str | None, model_name: str):
 
 def run(args) -> int:
     audio = Path(args.audio)
-    out = Path(args.out) if args.out else audio.with_suffix(".timeline.json")
+    out = episode_paths(audio, args.name, args.out)
     speakers = parse_speakers(args.speakers)
     override = parse_map(args.map)
 
@@ -589,7 +709,8 @@ def main(argv=None) -> int:
             stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("audio", nargs="?", help="the recording (m4a, mp3, wav...)")
-    parser.add_argument("--out", help="timeline file to write (default: beside the audio as <name>.timeline.json)")
+    parser.add_argument("--name", help="the episode's name in place of the recording's: the draft timeline and the released files take it")
+    parser.add_argument("--out", help="timeline file to write (default: beside the audio as <episode>.timeline.json)")
     parser.add_argument("--language", help="ISO code of the spoken language, e.g. ur; detected when left out")
     parser.add_argument("--title", help="the topic, as the bubble heads it, in the recording's own script")
     parser.add_argument("--caption", help="one line under the title")
@@ -599,11 +720,15 @@ def main(argv=None) -> int:
     parser.add_argument("--whisper-model", default="small", help="faster-whisper model size (default small)")
     parser.add_argument("--no-transcript", action="store_true", help="skip transcription")
     parser.add_argument("--check", metavar="FILE", help="validate a timeline file instead of making one")
+    parser.add_argument("--release", metavar="FILE", help="move a checked draft timeline and its recording into the served folder under versioned names")
+    parser.add_argument("--into", metavar="FOLDER", help=f"the served folder for --release (default {RELEASE_DIR})")
     args = parser.parse_args(argv)
     if args.voices != "auto":
         args.voices = int(args.voices)
     if args.check:
         return check(args.check)
+    if args.release:
+        return release(args.release, args.into)
     if not args.audio:
         parser.error("an audio file is required (or --check FILE)")
     return run(args)

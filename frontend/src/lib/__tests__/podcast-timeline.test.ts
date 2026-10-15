@@ -70,19 +70,23 @@ describe("mascotStates", () => {
 });
 
 describe("episodeUrls", () => {
-  it("puts the timeline and the audio it names under the episode's folder on the audio origin", () => {
-    expect(episodeUrls("articles/nooreimaan/mustanifa_brief")).toEqual({
-      timeline: "https://audio.ishqnama.com/podcasts/articles/nooreimaan/mustanifa_brief.timeline.json",
+  it("puts the versioned timeline and the audio it names under the episode's folder on the audio origin", () => {
+    expect(episodeUrls("articles/nooreimaan/naskh", 1)).toEqual({
+      timeline: "https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh.timeline.v1.json",
       folder: "https://audio.ishqnama.com/podcasts/articles/nooreimaan/",
     });
-    expect(episodeUrls("articles/nooreimaan/mustanifa_brief", "https://cdn.example")).toEqual({
-      timeline: "https://cdn.example/podcasts/articles/nooreimaan/mustanifa_brief.timeline.json",
+    expect(episodeUrls("articles/nooreimaan/naskh", 12, "https://cdn.example")).toEqual({
+      timeline: "https://cdn.example/podcasts/articles/nooreimaan/naskh.timeline.v12.json",
       folder: "https://cdn.example/podcasts/articles/nooreimaan/",
     });
   });
 
-  it("refuses an episode that leaves the podcasts folder", () => {
-    expect(() => episodeUrls("../secrets")).toThrow(/episode/);
-    expect(() => episodeUrls("")).toThrow(/episode/);
+  it("refuses an episode that leaves the podcasts folder or a version that is not a counting number", () => {
+    expect(() => episodeUrls("../secrets", 1)).toThrow(/episode/);
+    expect(() => episodeUrls("", 1)).toThrow(/episode/);
+    expect(() => episodeUrls("articles/nooreimaan/naskh.timeline.v1", 1)).toThrow(/episode/);
+    expect(() => episodeUrls("articles/nooreimaan/naskh", 0)).toThrow(/version/);
+    expect(() => episodeUrls("articles/nooreimaan/naskh", 1.5)).toThrow(/version/);
+    expect(() => episodeUrls("articles/nooreimaan/naskh", Number.NaN)).toThrow(/version/);
   });
 });

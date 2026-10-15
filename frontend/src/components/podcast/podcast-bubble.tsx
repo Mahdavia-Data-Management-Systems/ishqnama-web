@@ -94,6 +94,7 @@ export default function PodcastBubble({ timeline, audioUrl, autoPlay = false, on
       role="region"
       aria-label={PODCAST_COPY.regionLabel}
       data-speaker={turn?.speaker ?? ""}
+      data-cast={cast.length}
       data-glow={playing && !liveLevel ? "steady" : "live"}
     >
       <audio

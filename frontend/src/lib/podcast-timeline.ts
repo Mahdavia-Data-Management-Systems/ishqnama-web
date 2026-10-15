@@ -106,11 +106,15 @@ export function mascotStates(timeline: PodcastTimeline, ms: number): Partial<Rec
 
 /**
  * Where an episode's files are: its timeline, and the folder its `audio` is in. The episode is
- * a path under `/podcasts/` with no extension, e.g. `articles/nooreimaan/mustanifa_brief`.
+ * a path under `/podcasts/` with no extension or version, e.g. `articles/nooreimaan/naskh`, and
+ * the version picks the released timeline, `naskh.timeline.v1.json`. Released files are served
+ * under a one-year immutable cache header and never change, so a corrected timeline is the next
+ * version, and whatever names an episode has to name its version too.
  */
-export function episodeUrls(episode: string, origin: string = PODCAST_AUDIO_ORIGIN): { timeline: string; folder: string } {
+export function episodeUrls(episode: string, version: number, origin: string = PODCAST_AUDIO_ORIGIN): { timeline: string; folder: string } {
   if (!/^[\w-]+(\/[\w-]+)*$/.test(episode)) throw new Error(`not an episode path: ${episode}`);
+  if (!Number.isInteger(version) || version < 1) throw new Error(`not a timeline version: ${version}`);
   const base = `${origin.replace(/\/$/, "")}/podcasts/`;
   const folder = episode.includes("/") ? `${base}${episode.slice(0, episode.lastIndexOf("/") + 1)}` : base;
-  return { timeline: `${base}${episode}.timeline.json`, folder };
+  return { timeline: `${base}${episode}.timeline.v${version}.json`, folder };
 }

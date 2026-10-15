@@ -13,17 +13,18 @@ export interface Episode {
 }
 
 /**
- * Fetches an episode's timeline from the audio origin and resolves its recording's URL. An
- * episode is a path under `/podcasts/` without extension; anything that is not one, a missing
- * file or a timeline the parser rejects all end as `unavailable`.
+ * Fetches an episode's timeline, at the given released version, from the audio origin and
+ * resolves its recording's URL. An episode is a path under `/podcasts/` without extension;
+ * anything that is not one, a version that is not a counting number, a missing file or a
+ * timeline the parser rejects all end as `unavailable`.
  */
-export function useEpisode(episode: string): Episode {
+export function useEpisode(episode: string, version: number): Episode {
   const [state, setState] = useState<Episode>({ status: "loading", timeline: null, audioUrl: null });
 
   useEffect(() => {
     let urls: { timeline: string; folder: string };
     try {
-      urls = episodeUrls(episode);
+      urls = episodeUrls(episode, version);
     } catch {
       setState({ status: "unavailable", timeline: null, audioUrl: null });
       return;
@@ -43,7 +44,7 @@ export function useEpisode(episode: string): Episode {
     return () => {
       cancelled = true;
     };
-  }, [episode]);
+  }, [episode, version]);
 
   return state;
 }

@@ -58,6 +58,22 @@ describe("PodcastBubble", () => {
     expect(screen.getByRole("region", { name: PODCAST_COPY.regionLabel }).getAttribute("data-speaker")).toBe("hamza");
   });
 
+  it("says how many hosts sit under the balloon, so the tail only moves between two", () => {
+    render(<PodcastBubble timeline={timeline} audioUrl="https://cdn.example/episode.m4a" onClose={() => {}} />);
+    expect(screen.getByRole("region", { name: PODCAST_COPY.regionLabel }).getAttribute("data-cast")).toBe("2");
+    cleanup();
+    const solo: PodcastTimeline = {
+      ...timeline,
+      speakers: { zoya: { cluster: 0, medianPitchHz: 198, speechMs: 9000 } },
+      turns: [{ speaker: "zoya", fromMs: 200, toMs: 9000, expression: "speaking", text: "سلام" }],
+    };
+    render(<PodcastBubble timeline={solo} audioUrl="https://cdn.example/episode.m4a" onClose={() => {}} />);
+    seekTo(1);
+    const region = screen.getByRole("region", { name: PODCAST_COPY.regionLabel });
+    expect(region.getAttribute("data-cast")).toBe("1");
+    expect(region.getAttribute("data-speaker")).toBe("zoya");
+  });
+
   it("plays and pauses from its one main control and closes on request", () => {
     const onClose = vi.fn();
     render(<PodcastBubble timeline={timeline} audioUrl="https://cdn.example/episode.m4a" onClose={onClose} />);

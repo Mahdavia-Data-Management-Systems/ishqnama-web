@@ -152,12 +152,13 @@
   transition: left var(--duration-normal) var(--ease-out);
 }
 
-/* Half a portrait plus half the gap between the two: the centre of each disc. */
-.bubble[data-speaker="hamza"] .balloon {
+/* Half a portrait plus half the gap between the two: the centre of each disc. Only when both
+   hosts are seated; a solo brief's one portrait sits at the centre, where the tail already is. */
+.bubble[data-cast="2"][data-speaker="hamza"] .balloon {
   --tail-x: calc(50% - 40px - var(--space-4));
 }
 
-.bubble[data-speaker="zoya"] .balloon {
+.bubble[data-cast="2"][data-speaker="zoya"] .balloon {
   --tail-x: calc(50% + 40px + var(--space-4));
 }
 

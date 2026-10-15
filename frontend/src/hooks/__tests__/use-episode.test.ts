@@ -4,7 +4,7 @@ import { useEpisode } from "../use-episode";
 
 const timeline = {
   version: 1,
-  audio: "mustanifa_brief.m4a",
+  audio: "naskh.v1.m4a",
   durationMs: 10000,
   language: "ur",
   speakers: { zoya: { cluster: 0, medianPitchHz: 219, speechMs: 5000 } },
@@ -14,32 +14,34 @@ const timeline = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("useEpisode", () => {
-  it("fetches the episode's timeline and resolves its audio beside it", async () => {
+  it("fetches the episode's timeline at the given version and resolves its audio beside it", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(timeline), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
-    const { result } = renderHook(() => useEpisode("articles/nooreimaan/mustanifa_brief"));
+    const { result } = renderHook(() => useEpisode("articles/nooreimaan/naskh", 1));
     expect(result.current.status).toBe("loading");
     await waitFor(() => expect(result.current.status).toBe("ready"));
-    expect(fetchMock).toHaveBeenCalledWith("https://audio.ishqnama.com/podcasts/articles/nooreimaan/mustanifa_brief.timeline.json");
+    expect(fetchMock).toHaveBeenCalledWith("https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh.timeline.v1.json");
     expect(result.current.timeline?.turns).toHaveLength(1);
-    expect(result.current.audioUrl).toBe("https://audio.ishqnama.com/podcasts/articles/nooreimaan/mustanifa_brief.m4a");
+    expect(result.current.audioUrl).toBe("https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh.v1.m4a");
   });
 
   it("reports a missing or malformed episode", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("", { status: 404 })));
-    const { result } = renderHook(() => useEpisode("articles/nooreimaan/missing"));
+    const { result } = renderHook(() => useEpisode("articles/nooreimaan/missing", 1));
     await waitFor(() => expect(result.current.status).toBe("unavailable"));
 
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ version: 2 }), { status: 200 })));
-    const { result: malformed } = renderHook(() => useEpisode("articles/nooreimaan/odd"));
+    const { result: malformed } = renderHook(() => useEpisode("articles/nooreimaan/odd", 1));
     await waitFor(() => expect(malformed.current.status).toBe("unavailable"));
   });
 
-  it("refuses an episode path that leaves the podcasts folder without fetching", () => {
+  it("refuses an episode path that leaves the podcasts folder, or a bad version, without fetching", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    const { result } = renderHook(() => useEpisode("../elsewhere"));
+    const { result } = renderHook(() => useEpisode("../elsewhere", 1));
     expect(result.current.status).toBe("unavailable");
+    const { result: badVersion } = renderHook(() => useEpisode("articles/nooreimaan/naskh", Number.NaN));
+    expect(badVersion.current.status).toBe("unavailable");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -150,6 +150,102 @@ class TopicTest(unittest.TestCase):
         self.assertEqual(d.topic_fields(" Title ", None), {"title": "Title"})
 
 
+class EpisodePathsTest(unittest.TestCase):
+    def test_episode_is_named_after_the_recording_by_default(self):
+        audio = Path("C:/anywhere/Jumla e Mustanifa.m4a")
+        self.assertEqual(d.episode_paths(audio, None, None), Path("C:/anywhere/Jumla e Mustanifa.timeline.json"))
+
+    def test_a_name_renames_the_timeline_beside_the_recording(self):
+        audio = Path("C:/anywhere/NotebookLM export (3).m4a")
+        self.assertEqual(d.episode_paths(audio, "mustanifa_brief", None), Path("C:/anywhere/mustanifa_brief.timeline.json"))
+
+    def test_a_recording_name_with_a_dot_needs_a_name(self):
+        with self.assertRaises(SystemExit):
+            d.episode_paths(Path("C:/anywhere/export v2.1.m4a"), None, None)
+        self.assertEqual(d.episode_paths(Path("C:/anywhere/export v2.1.m4a"), "sabr_brief", None), Path("C:/anywhere/sabr_brief.timeline.json"))
+
+    def test_out_wins_over_the_name(self):
+        audio = Path("C:/anywhere/raw.wav")
+        self.assertEqual(d.episode_paths(audio, "sabr", "C:/ready/x.timeline.json"), Path("C:/ready/x.timeline.json"))
+
+    def test_a_blank_or_pathlike_name_is_refused(self):
+        audio = Path("C:/anywhere/raw.wav")
+        for bad in ("", "  ", "a/b", "a" + chr(92) + "b", "..", "a.timeline", "x.v1"):
+            with self.assertRaises(SystemExit, msg=bad):
+                d.episode_paths(audio, bad, None)
+
+
+class ReleaseNamesTest(unittest.TestCase):
+    def test_first_release_is_v1_for_both_files(self):
+        plan = d.release_plan([], "mustanifa_brief", ".m4a", lambda name: False)
+        self.assertEqual(plan, {"audio": "mustanifa_brief.v1.m4a", "timeline": "mustanifa_brief.timeline.v1.json", "audioReused": False})
+
+    def test_a_changed_recording_takes_the_next_version_of_each(self):
+        existing = ["mustanifa_brief.v1.m4a", "mustanifa_brief.timeline.v1.json", "mustanifa_brief.timeline.v2.json", "other.v3.m4a", "mustanifa_brief_long.v4.m4a"]
+        plan = d.release_plan(existing, "mustanifa_brief", ".m4a", lambda name: False)
+        self.assertEqual(plan, {"audio": "mustanifa_brief.v2.m4a", "timeline": "mustanifa_brief.timeline.v3.json", "audioReused": False})
+
+    def test_an_unchanged_recording_keeps_its_version_and_only_the_timeline_moves_on(self):
+        existing = ["mustanifa_brief.v1.m4a", "mustanifa_brief.v2.m4a", "mustanifa_brief.timeline.v1.json"]
+        plan = d.release_plan(existing, "mustanifa_brief", ".m4a", lambda name: name == "mustanifa_brief.v1.m4a")
+        self.assertEqual(plan, {"audio": "mustanifa_brief.v1.m4a", "timeline": "mustanifa_brief.timeline.v2.json", "audioReused": True})
+
+    def test_episode_name_comes_from_the_draft_timeline_name(self):
+        self.assertEqual(d.episode_of(Path("C:/x/mustanifa_brief.timeline.json")), "mustanifa_brief")
+        with self.assertRaises(SystemExit):
+            d.episode_of(Path("C:/x/mustanifa_brief.json"))
+        with self.assertRaises(SystemExit):
+            d.episode_of(Path("C:/x/mustanifa_brief.timeline.v1.json"))
+
+
+class ReleaseTest(unittest.TestCase):
+    def draft(self, folder: Path, episode: str, reviewed=True, audio_bytes=b"recording-one"):
+        (folder / "raw.m4a").write_bytes(audio_bytes)
+        timeline = {
+            "version": d.TIMELINE_VERSION, "audio": "raw.m4a", "durationMs": 10000, "language": "ur",
+            "speakers": {"zoya": {"cluster": 0, "medianPitchHz": 220, "speechMs": 4000}},
+            "pitchConfidence": "high", "voices": 1, "voiceDetection": "auto", "expressionsReviewed": reviewed,
+            "turns": [{"speaker": "zoya", "fromMs": 0, "toMs": 4000, "expression": "speaking", "text": "salam"}],
+        }
+        path = folder / f"{episode}.timeline.json"
+        path.write_text(json.dumps(timeline, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8")
+        return path
+
+    def test_release_moves_both_files_into_the_folder_under_v1_and_names_the_versioned_recording(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dest = Path(tmp) / "src", Path(tmp) / "dest"
+            src.mkdir()
+            draft = self.draft(src, "sabr_brief")
+            self.assertEqual(d.main(["--release", str(draft), "--into", str(dest)]), 0)
+            self.assertEqual(sorted(p.name for p in dest.iterdir()), ["sabr_brief.timeline.v1.json", "sabr_brief.v1.m4a"])
+            self.assertEqual(sorted(p.name for p in src.iterdir()), [])
+            released = json.loads((dest / "sabr_brief.timeline.v1.json").read_text(encoding="utf-8"))
+            self.assertEqual(released["audio"], "sabr_brief.v1.m4a")
+            self.assertEqual(released["turns"][0]["text"], "salam")
+            self.assertEqual((dest / "sabr_brief.v1.m4a").read_bytes(), b"recording-one")
+
+    def test_a_second_release_with_the_same_recording_adds_only_a_timeline_version(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dest = Path(tmp) / "src", Path(tmp) / "dest"
+            src.mkdir()
+            d.main(["--release", str(self.draft(src, "sabr_brief")), "--into", str(dest)])
+            d.main(["--release", str(self.draft(src, "sabr_brief")), "--into", str(dest)])
+            self.assertEqual(sorted(p.name for p in dest.iterdir()), ["sabr_brief.timeline.v1.json", "sabr_brief.timeline.v2.json", "sabr_brief.v1.m4a"])
+            self.assertEqual(sorted(p.name for p in src.iterdir()), [])
+            d.main(["--release", str(self.draft(src, "sabr_brief", audio_bytes=b"recording-two")), "--into", str(dest)])
+            self.assertIn("sabr_brief.v2.m4a", [p.name for p in dest.iterdir()])
+            self.assertEqual(json.loads((dest / "sabr_brief.timeline.v3.json").read_text(encoding="utf-8"))["audio"], "sabr_brief.v2.m4a")
+
+    def test_an_unreviewed_timeline_is_not_released(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dest = Path(tmp) / "src", Path(tmp) / "dest"
+            src.mkdir()
+            draft = self.draft(src, "sabr_brief", reviewed=False)
+            self.assertNotEqual(d.main(["--release", str(draft), "--into", str(dest)]), 0)
+            self.assertFalse(dest.exists())
+            self.assertTrue(draft.exists() and (src / "raw.m4a").exists())
+
+
 class CheckTimelineTest(unittest.TestCase):
     def timeline(self, **overrides):
         base = {
@@ -193,9 +289,11 @@ class EndToEndTest(unittest.TestCase):
                  "-MaleVoice", "Microsoft Zira Desktop"],
                 check=True, capture_output=True,
             )
-            out = Path(tmp) / "conversation.timeline.json"
-            self.assertEqual(d.main([str(Path(tmp) / "conversation.wav"), "--no-transcript", "--out", str(out)]), 0)
+            # --name names the timeline; the recording beside it keeps its own name.
+            out = Path(tmp) / "brief.timeline.json"
+            self.assertEqual(d.main([str(Path(tmp) / "conversation.wav"), "--no-transcript", "--name", "brief"]), 0)
             timeline = json.loads(out.read_text(encoding="utf-8"))
+            self.assertEqual(timeline["audio"], "conversation.wav")
         self.assertEqual(timeline["voices"], 1)
         self.assertEqual(timeline["voiceDetection"], "auto")
         self.assertEqual(list(timeline["speakers"]), ["zoya"])

@@ -1,6 +1,6 @@
 ---
 name: onboarding-podcast-audio
-description: Use when a podcast recording for the Hamza and Zoya mascots arrives (an m4a, mp3 or wav from NotebookLM or voice actors, one or two voices) and the site needs to know which mascot speaks when and with which expression, or when a recording's timeline file must be checked or redone
+description: Use when a podcast recording for the Hamza and Zoya mascots arrives (an m4a, mp3 or wav from NotebookLM or voice actors, one or two voices) and the site needs to know which mascot speaks when and with which expression, or when a recording's timeline file must be checked, redone or released into the served audio folder
 ---
 
 # Onboarding podcast audio
@@ -10,11 +10,12 @@ description: Use when a podcast recording for the Hamza and Zoya mascots arrives
 Claude cannot hear a recording. `frontend/scripts/diarize_podcast.py` does the
 listening: it finds speech, tells the voices apart, names them after the
 mascots by pitch (Hamza is the lower voice, Zoya the higher), transcribes
-every turn and writes `<recording>.timeline.json` beside the recording. The
-site plays that timeline against the audio: the speaking mascot's avatar
-glows and shows the turn's expression. Your part is what the script cannot
-do: run it, judge the voices, choose each turn's expression from the
-transcript, and mark the file reviewed.
+every turn and writes a draft `<episode>.timeline.json` beside the
+recording. The site plays that timeline against the audio: the speaking
+mascot's avatar glows and shows the turn's expression. Your part is what
+the script cannot do: ask where the recording is, run the script, judge the
+voices, choose each turn's expression from the transcript, mark the file
+reviewed, and release the pair into the served folder.
 
 ## Setup, once per machine
 
@@ -29,21 +30,47 @@ into `~/.cache/ishqnama-podcast`. No account, token or GPU is needed.
 
 ## Steps
 
-1. The recording lives at `frontend/design/podcast/audio/<episode>.<ext>`.
-   Keep the name the user gave it; the timeline takes the same name.
+A fresh recording goes through all seven. To check or release a draft the
+user already reviewed, start at step 5; to redo one, at step 1.
+
+1. Ask the user for these before anything else runs, in one message.
+   There is no folder recordings arrive in: the user keeps them anywhere
+   on the machine.
+   - **The path of the recording** (m4a, mp3 or wav). Required. Ask for it
+     even when a file with a likely name is lying around; never guess.
+   - **A name for the episode.** Optional. It replaces the recording's own
+     filename as the episode's name, the one the released files carry
+     (`mustanifa_brief` gives `mustanifa_brief.v1.m4a` and
+     `mustanifa_brief.timeline.v1.json`). Without one, the episode is named
+     after the recording's file. A name is one plain word for a filename:
+     letters, digits, `_` or `-`, no folder, extension or version.
+   - **A title and a caption** for the topic, which the bubble heads
+     itself with: the title in the recording's script, the caption one
+     line under it (the article's Urdu title and its English title make a
+     good pair). Ask unless the request gives them.
+
+   A request that already states any of these is not asked for them
+   again. Ask with `AskUserQuestion` when it is available, else in
+   chat, and wait for the answer. Quote the path in the commands below; it
+   may hold spaces.
 2. Run, from `frontend/` (about 1.5x real time on a CPU):
 
    ```
-   .venv-podcast/Scripts/python scripts/diarize_podcast.py design/podcast/audio/<episode>.m4a --language ur
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py "<path>" --language ur
    ```
 
-   Add `--title "<the topic, in the recording's script>"` and
-   `--caption "<one line under it>"`, which the bubble heads itself with; ask
-   the user for them if the request does not say (the article's Urdu title
-   and its English title make a good pair). Add `--speakers zoya` (or
-   `hamza`) when the user says a recording is one known mascot. Read what it prints: the number of voices and whether it
-   was detected or forced, how far apart the two clusters are, each
-   mascot's median pitch, the pitch confidence, and the turn table.
+   Add `--name <name>` when the user gave one, `--title "<title>"` and
+   `--caption "<caption>"` (double quotes hold the Urdu and its spaces),
+   and `--speakers zoya` (or `hamza`) when the user says a recording is
+   one known mascot. The draft timeline is written beside the recording:
+   `<name>.timeline.json` with a name, else the recording's own name with
+   `.timeline.json` in place of its extension. It names the recording as
+   it is; the recording is not renamed or moved until the release in
+   step 6.
+
+   Read what it prints: the number of voices and whether it was detected
+   or forced, how far apart the two clusters are, each mascot's median
+   pitch, the pitch confidence, and the turn table.
 3. Judge the voices with these predicates, nothing else:
    - `pitch confidence: high` and two voices whose medians sit on either
      side of 155 Hz, or one voice: accept the mapping.
@@ -52,17 +79,38 @@ into `~/.cache/ishqnama-podcast`. No account, token or GPU is needed.
      and say who is who, then rerun with `--map hamza=<cluster>,zoya=<cluster>`.
    - The voice count looks wrong (a solo brief came out as two voices, or
      a pair as one): rerun with `--voices 1` or `--voices 2`.
-4. Open the timeline and read every turn's `text`. Set each turn's
+4. Open the draft timeline and read every turn's `text`. Set each turn's
    `expression` by the rules below, then set `expressionsReviewed` to
    `true`. Change nothing else by hand.
-5. Check it:
+5. Check it, naming the draft the script said it wrote:
 
    ```
-   .venv-podcast/Scripts/python scripts/diarize_podcast.py --check design/podcast/audio/<episode>.timeline.json
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py --check "<folder of the recording>/<episode>.timeline.json"
    ```
 
    It must print `ok`.
-6. Report: voices and detection, turn count, each mascot's median pitch,
+6. Release it. This moves the recording and the timeline out of the user's
+   folder into `audio/podcasts/articles/nooreimaan/` at the repo root (the
+   folder `sync-audio.yml` copies to the bucket, so a file there is served
+   under a one-year immutable cache header and must never change in place)
+   under versioned names, and points the released timeline's `audio` at the
+   versioned recording:
+
+   ```
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py --release "<folder of the recording>/<episode>.timeline.json"
+   ```
+
+   The script picks the versions: each file takes one more than the highest
+   `<episode>.vN.<ext>` or `<episode>.timeline.vN.json` already there, and
+   a recording byte-for-byte identical to a released one keeps that
+   version, so a corrected timeline adds only `timeline.v2.json`. It refuses
+   a draft that fails the check. Never choose a version or rename the files
+   yourself, and never edit a released file: redo the draft and release
+   again. The new files are untracked until the user commits them; the
+   skill does not commit.
+7. Report: the episode's name and the two released paths with their
+   versions (and that an unchanged recording kept its version, when it
+   did), voices and detection, turn count, each mascot's median pitch,
    every turn marked laughing or thoughtful with the words that decided
    it, and anything odd (a turn under a second, a turn over 30 s with no
    pause to split at, a transcript too rough to read, which
@@ -87,27 +135,31 @@ shows listening on its own, so `listening` is never written in the file.
 
 ## The timeline file
 
-`version` 1, `audio`, `durationMs`, `language`, `speakers` (per mascot:
-`cluster`, `medianPitchHz`, `speechMs`), `pitchConfidence` high, low or
-override, `voices` 1 or 2, `voiceDetection` auto or forced,
-`expressionsReviewed`, and `turns` of `speaker`, `fromMs`, `toMs`,
-`expression`, `text`. Turns are ordered and never overlap. A pause under
-1.2 s stays inside a turn, a run under 0.6 s joins its neighbour (a
-listener's "hmm" never flickers the glow), and a turn over 30 s is split
-at its widest pause so the expression can change. Where the served copy of
-the audio and timeline will live is for the feature spec; until then both
-stay beside each other in `design/podcast/audio/`.
+`version` 1, `audio` (the recording's file name beside the timeline: as
+given in the draft, `<episode>.vN.<ext>` once released), `durationMs`,
+`language`, `speakers` (per mascot: `cluster`, `medianPitchHz`,
+`speechMs`), `pitchConfidence` high, low or override, `voices` 1 or 2,
+`voiceDetection` auto or forced, `expressionsReviewed`, and `turns` of
+`speaker`, `fromMs`, `toMs`, `expression`, `text`. Turns are ordered and
+never overlap. A pause under 1.2 s stays inside a turn, a run under 0.6 s
+joins its neighbour (a listener's "hmm" never flickers the glow), and a
+turn over 30 s is split at its widest pause so the expression can change.
+Released episodes live in `audio/podcasts/articles/nooreimaan/` in the
+repo, laid out as the bucket serves them under `/podcasts/`.
 
 ## Common mistakes
 
 | Mistake | Instead |
 |---|---|
+| Running the script on a file you found, or on a path from an earlier episode, without asking | Ask the user for the recording's path first, every time it is not in the request |
+| Copying the files into `audio/podcasts/` by hand, choosing a version, or editing a released file | `--release` moves, versions and rewrites `audio`; a change is a new release |
+| Renaming the recording by hand, or editing `audio` in the draft, to give the episode a name | Rerun with `--name`; the release carries it onto both files |
 | Building a pipeline by hand (pyannote needs a gated token; average-linkage clustering split a real pair into one voice plus a one-second sliver) | Run the script; it is tested against known turn times and both voice counts |
 | Deciding who is Hamza from the roles (the explainer "must" be Hamza, the asker Zoya) | Pitch decides; a solo brief can be either mascot and NotebookLM swaps roles freely |
 | Marking an exclamation as `laughing` | Laughing needs laughter in the text |
 | Writing `listening` as a turn's expression, or inventing a fourth value | Three values only; `--check` rejects anything else |
 | Setting `expressionsReviewed` before reading every turn | Read all the turns, then set it |
 | Editing `fromMs` or `toMs` by hand | Boundaries come from the audio; rerun with other flags instead |
-| Committing `.venv-podcast`, model caches or scratch files | Only the recording and its timeline belong in the repo |
+| Committing `.venv-podcast`, model caches, drafts or scratch files | Only the released pair under `audio/podcasts/` belongs in the repo |
 
 Three or more voices are not supported: the cast is one or two mascots.
