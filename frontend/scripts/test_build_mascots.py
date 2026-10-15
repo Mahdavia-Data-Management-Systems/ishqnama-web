@@ -1,4 +1,4 @@
-"""Tests for build_mascots.py: cutting the expression sheets and keying out the wash."""
+"""Tests for build_mascots.py: cutting the transparent expression sheets into quadrants."""
 
 import sys
 import tempfile
@@ -10,15 +10,13 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).parent))
 import build_mascots as b  # noqa: E402
 
-WASH = (249, 240, 201)
 
-
-def sheet(size=64, wash=WASH):
-    """A 2x2 sheet on the wash: each quadrant holds a disc of its own colour."""
-    img = Image.new("RGB", (size, size), wash)
+def sheet(size=64):
+    """A transparent 2x2 sheet: each quadrant holds an opaque disc of its own colour."""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     px = img.load()
     half = size // 2
-    colours = {(0, 0): (10, 20, 30), (1, 0): (40, 50, 60), (0, 1): (70, 80, 90), (1, 1): (100, 110, 120)}
+    colours = {(0, 0): (10, 20, 30, 255), (1, 0): (40, 50, 60, 255), (0, 1): (70, 80, 90, 255), (1, 1): (100, 110, 120, 255)}
     for (qx, qy), colour in colours.items():
         cx, cy = qx * half + half // 2, qy * half + half // 2
         for x in range(size):
@@ -39,34 +37,22 @@ class QuadrantsTest(unittest.TestCase):
         self.assertEqual(cut["thoughtful"].getpixel((16, 16)), colours[(1, 1)])
         self.assertEqual(cut["listening"].size, (32, 32))
 
-
-class KeyOutTest(unittest.TestCase):
-    def test_wash_becomes_transparent_and_the_figure_stays_opaque(self):
+    def test_pixels_are_copied_as_they_are_including_their_transparency(self):
         img, _ = sheet()
-        keyed = b.key_out(img, b.corner_colour(img))
-        self.assertEqual(keyed.mode, "RGBA")
-        self.assertEqual(keyed.getpixel((0, 0))[3], 0)
-        self.assertEqual(keyed.getpixel((16, 16))[3], 255)
-
-    def test_a_slightly_off_wash_pixel_is_still_keyed(self):
-        img, _ = sheet()
-        img.putpixel((1, 1), (246, 238, 205))
-        keyed = b.key_out(img, b.corner_colour(img))
-        self.assertEqual(keyed.getpixel((1, 1))[3], 0)
-
-    def test_corner_colour_is_sampled_from_the_sheet(self):
-        img, _ = sheet(wash=(250, 243, 208))
-        self.assertEqual(b.corner_colour(img), (250, 243, 208))
+        cut = b.quadrants(img)
+        self.assertEqual(cut["listening"].mode, "RGBA")
+        self.assertEqual(cut["listening"].getpixel((0, 0))[3], 0)
+        self.assertEqual(cut["listening"].getpixel((16, 16))[3], 255)
 
 
 class BuildTest(unittest.TestCase):
-    def test_writes_four_transparent_webps_per_mascot(self):
+    def test_cuts_each_mascots_png_sheet_into_four_transparent_webps(self):
         with tempfile.TemporaryDirectory() as tmp:
             src, out = Path(tmp) / "characters", Path(tmp) / "out"
             for name in ("Hamza", "Zoya"):
                 (src / name).mkdir(parents=True)
-                sheet()[0].save(src / name / f"{name}.expressions.jpg", quality=95)
-            written = b.build(src, out, size=32)
+                sheet()[0].save(src / name / f"{name}.expressions.png")
+            written = b.build(src, out)
             self.assertEqual(len(written), 8)
             for name in ("hamza", "zoya"):
                 for expression in b.EXPRESSIONS:
@@ -75,6 +61,15 @@ class BuildTest(unittest.TestCase):
                     with Image.open(path) as img:
                         self.assertEqual(img.size, (32, 32))
                         self.assertEqual(img.mode, "RGBA")
+                        self.assertEqual(img.getpixel((0, 0))[3], 0)
+                        self.assertEqual(img.getpixel((16, 16))[3], 255)
+
+    def test_a_folder_with_only_a_jpg_sheet_is_skipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src, out = Path(tmp) / "characters", Path(tmp) / "out"
+            (src / "Hamza").mkdir(parents=True)
+            sheet()[0].convert("RGB").save(src / "Hamza" / "Hamza.expressions.jpg")
+            self.assertEqual(b.build(src, out), [])
 
 
 if __name__ == "__main__":
