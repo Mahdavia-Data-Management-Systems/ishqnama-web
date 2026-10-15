@@ -1,0 +1,27 @@
+.episode {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.listen {
+  align-self: flex-start;
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--fill-primary);
+  color: var(--text-on-dark);
+  font: inherit;
+  font-size: var(--text-md);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.listen:hover { background: var(--fill-primary-hover); }
+.listen:active { background: var(--fill-primary-press); }
+.listen:disabled { opacity: 0.6; cursor: default; }
+
+.listen:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}

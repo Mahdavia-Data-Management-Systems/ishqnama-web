@@ -4,3 +4,5 @@ out/
 .env.local
 .env*.local
 *.tsbuildinfo
+.venv-podcast/
+__pycache__/

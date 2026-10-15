@@ -1,0 +1,14 @@
+# Dependencies of scripts/diarize_podcast.py. Install into a Python 3.13 venv:
+#   py -3.13 -m venv .venv-podcast
+#   .venv-podcast/Scripts/python -m pip install -r scripts/podcast-requirements.txt
+# CPU-only torch keeps the install around 1 GB instead of several.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1
+torchaudio==2.11.0
+silero-vad==6.2.3
+speechbrain==1.1.2
+scikit-learn==1.9.1
+librosa==1.0.0
+numpy==2.5.4
+av==19.0.1
+faster-whisper==1.2.1

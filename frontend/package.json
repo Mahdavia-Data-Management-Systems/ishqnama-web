@@ -17,7 +17,8 @@
     "recitation:build": "node scripts/build-recitation-timings.mjs",
     "recitation:test": "node --test scripts/test-build-recitation-timings.mjs scripts/test-upload-recitation.mjs",
     "recitation:fetch": "node scripts/fetch-recitation.mjs",
-    "recitation:upload": "node scripts/upload-recitation.mjs"
+    "recitation:upload": "node scripts/upload-recitation.mjs",
+    "mascots:build": "python scripts/build_mascots.py"
   },
   "dependencies": {
     "@azure/msal-browser": "^5.19.0",

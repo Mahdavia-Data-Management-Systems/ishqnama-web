@@ -1,0 +1,230 @@
+"""Tests for diarize_podcast.py.
+
+The pure-logic tests run anywhere. The end-to-end test needs the podcast venv
+(torch and friends, see podcast-requirements.txt) and Windows, whose built-in
+voices make the fixture, and skips itself otherwise:
+
+    .venv-podcast/Scripts/python -m unittest scripts/test_diarize_podcast.py
+"""
+
+import importlib.util
+import json
+import platform
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
+import diarize_podcast as d  # noqa: E402
+
+HERE = Path(__file__).parent
+
+
+def seg(cluster, from_ms, to_ms):
+    return {"cluster": cluster, "fromMs": from_ms, "toMs": to_ms}
+
+
+class MergeSegmentsTest(unittest.TestCase):
+    def test_short_pause_inside_one_speaker_is_folded_into_the_turn(self):
+        turns = d.merge_segments([seg(0, 0, 3000), seg(0, 3500, 6000)])
+        self.assertEqual(turns, [seg(0, 0, 6000)])
+
+    def test_long_pause_keeps_two_turns(self):
+        turns = d.merge_segments([seg(0, 0, 3000), seg(0, 3000 + d.MAX_GAP_MS, 8000)])
+        self.assertEqual(len(turns), 2)
+
+    def test_short_run_between_one_speaker_is_absorbed(self):
+        turns = d.merge_segments([seg(0, 0, 3000), seg(1, 3000, 3300), seg(0, 3300, 6000)])
+        self.assertEqual(turns, [seg(0, 0, 6000)])
+
+    def test_short_run_joins_its_own_speaker_across_a_long_pause(self):
+        turns = d.merge_segments([seg(0, 0, 5000), seg(1, 5000, 5300), seg(1, 5300 + d.MAX_GAP_MS, 9000)])
+        self.assertEqual(turns, [seg(0, 0, 5000), seg(1, 5000, 9000)])
+
+    def test_short_run_between_different_speakers_joins_the_longer_neighbour(self):
+        turns = d.merge_segments([seg(0, 0, 5000), seg(1, 5000, 5300), seg(2, 5300, 7000)])
+        self.assertEqual(turns, [seg(0, 0, 5300), seg(2, 5300, 7000)])
+
+    def test_short_opening_run_joins_the_turn_after_it(self):
+        turns = d.merge_segments([seg(1, 0, 200), seg(0, 200, 4000)])
+        self.assertEqual(turns, [seg(0, 0, 4000)])
+
+
+class BuildTurnsTest(unittest.TestCase):
+    def test_windows_vote_into_turns_bounded_by_speech(self):
+        regions = [(0, 5000), (6000, 11000)]
+        windows = [(0, 1500), (250, 1750), (500, 2000), (3500, 5000), (6000, 7500), (9500, 11000)]
+        labels = [0, 0, 0, 0, 1, 1]
+        turns = d.build_turns(regions, windows, labels, 11000)
+        self.assertEqual([t["cluster"] for t in turns], [0, 1])
+        self.assertEqual(turns[0]["fromMs"], 0)
+        self.assertEqual(turns[0]["toMs"], 5000)
+        self.assertEqual(turns[1]["fromMs"], 6000)
+        self.assertEqual(turns[1]["toMs"], 11000)
+
+    def test_boundary_inside_a_region_lands_between_the_windows(self):
+        regions = [(0, 6000)]
+        windows = [(0, 1500), (500, 2000), (1000, 2500), (3000, 4500), (3500, 5000), (4000, 5500)]
+        labels = [0, 0, 0, 1, 1, 1]
+        turns = d.build_turns(regions, windows, labels, 6000)
+        self.assertEqual([t["cluster"] for t in turns], [0, 1])
+        self.assertGreaterEqual(turns[0]["toMs"], 2500)
+        self.assertLessEqual(turns[1]["fromMs"], 3100)
+
+
+class NameSpeakersTest(unittest.TestCase):
+    speakers = d.parse_speakers("hamza=low,zoya=high")
+
+    def test_lower_pitch_is_the_low_voice(self):
+        mapping, confidence = d.name_speakers({0: 190.0, 1: 105.0}, self.speakers, None)
+        self.assertEqual(mapping, {1: "hamza", 0: "zoya"})
+        self.assertEqual(confidence, "high")
+
+    def test_close_pitches_are_low_confidence(self):
+        _, confidence = d.name_speakers({0: 150.0, 1: 140.0}, self.speakers, None)
+        self.assertEqual(confidence, "low")
+
+    def test_override_wins(self):
+        mapping, confidence = d.name_speakers({0: 190.0, 1: 105.0}, self.speakers, d.parse_map("hamza=0,zoya=1"))
+        self.assertEqual(mapping, {0: "hamza", 1: "zoya"})
+        self.assertEqual(confidence, "override")
+
+    def test_speakers_spec_needs_one_low_and_one_high(self):
+        with self.assertRaises(SystemExit):
+            d.parse_speakers("hamza=low,zoya=low")
+
+
+class OneVoiceTest(unittest.TestCase):
+    def test_single_name_cast_and_lone_voice_by_pitch(self):
+        self.assertEqual(d.parse_speakers("zoya"), [("zoya", None)])
+        cast = d.parse_speakers("hamza=low,zoya=high")
+        self.assertEqual(d.name_speakers({0: 211.0}, cast, None), ({0: "zoya"}, "high"))
+        self.assertEqual(d.name_speakers({0: 97.0}, cast, None), ({0: "hamza"}, "high"))
+        self.assertEqual(d.name_speakers({0: 150.0}, cast, None)[1], "low")
+        self.assertEqual(d.name_speakers({0: 150.0}, d.parse_speakers("hamza"), None), ({0: "hamza"}, "high"))
+
+    def test_two_voices_with_a_single_name_cast_is_refused(self):
+        with self.assertRaises(SystemExit):
+            d.name_speakers({0: 100.0, 1: 200.0}, d.parse_speakers("hamza"), None)
+
+    def test_close_clusters_are_one_voice_and_far_clusters_are_two(self):
+        import math
+        def ray(angle):
+            return [math.cos(angle), math.sin(angle), 0.0]
+        close = [ray(0.0)] * 10 + [ray(0.3)] * 10          # 0.3 rad apart: cosine distance 0.045
+        far = [ray(0.0)] * 10 + [ray(math.pi / 2)] * 10    # a right angle: cosine distance 1
+        labels = [0] * 10 + [1] * 10
+        self.assertTrue(d.looks_like_one_voice(close, labels))
+        self.assertFalse(d.looks_like_one_voice(far, labels))
+        self.assertAlmostEqual(d.centroid_distance(far, labels), 1.0)
+
+    def test_long_turn_splits_at_its_widest_pause(self):
+        regions = [(0, 20000), (20400, 45000), (46000, 70000)]
+        turns = d.split_long_turns([seg(0, 0, 70000)], regions)
+        self.assertEqual([(t["fromMs"], t["toMs"]) for t in turns], [(0, 20000), (20400, 45000), (46000, 70000)])
+
+    def test_a_pause_near_the_edge_never_makes_a_sliver(self):
+        regions = [(0, 31000), (31400, 31900), (32700, 50000)]
+        turns = d.split_long_turns([seg(0, 0, 50000)], regions)
+        self.assertEqual([(t["fromMs"], t["toMs"]) for t in turns], [(0, 31900), (32700, 50000)])
+
+    def test_turn_without_an_inner_pause_is_left_whole(self):
+        turns = d.split_long_turns([seg(0, 0, 70000)], [(0, 70000)])
+        self.assertEqual(turns, [seg(0, 0, 70000)])
+
+
+class AttachWordsTest(unittest.TestCase):
+    def test_words_go_to_the_turn_holding_their_midpoint_else_the_nearest(self):
+        turns = [seg(0, 0, 2000), seg(1, 3000, 5000)]
+        d.attach_words(turns, [(100, 500, " hello"), (1800, 2300, "there"), (2400, 2700, "um"), (3100, 3500, "yes")])
+        self.assertEqual(turns[0]["text"], "hello there")
+        self.assertEqual(turns[1]["text"], "um yes")
+
+
+class TopicTest(unittest.TestCase):
+    def test_title_and_caption_are_written_when_given_and_left_out_otherwise(self):
+        self.assertEqual(d.topic_fields("جملہ مستأنفہ", "The resumptive clause"), {"title": "جملہ مستأنفہ", "caption": "The resumptive clause"})
+        self.assertEqual(d.topic_fields(None, None), {})
+        self.assertEqual(d.topic_fields(" Title ", None), {"title": "Title"})
+
+
+class CheckTimelineTest(unittest.TestCase):
+    def timeline(self, **overrides):
+        base = {
+            "version": d.TIMELINE_VERSION,
+            "durationMs": 10000,
+            "speakers": {"hamza": {}, "zoya": {}},
+            "expressionsReviewed": True,
+            "turns": [
+                {"speaker": "zoya", "fromMs": 0, "toMs": 4000, "expression": "speaking", "text": ""},
+                {"speaker": "hamza", "fromMs": 4500, "toMs": 9000, "expression": "thoughtful", "text": ""},
+            ],
+        }
+        base.update(overrides)
+        return base
+
+    def test_sound_timeline_has_no_problems(self):
+        self.assertEqual(d.check_timeline(self.timeline()), [])
+
+    def test_unreviewed_expressions_are_a_problem(self):
+        problems = d.check_timeline(self.timeline(expressionsReviewed=False))
+        self.assertTrue(any("expressionsReviewed" in p for p in problems))
+
+    def test_overlap_unknown_speaker_and_bad_expression_are_reported(self):
+        turns = [
+            {"speaker": "zoya", "fromMs": 0, "toMs": 5000, "expression": "speaking"},
+            {"speaker": "ali", "fromMs": 4000, "toMs": 9000, "expression": "listening"},
+        ]
+        problems = d.check_timeline(self.timeline(turns=turns))
+        self.assertEqual(len(problems), 3, problems)
+
+
+HAS_MODELS = all(importlib.util.find_spec(m) for m in ("torch", "silero_vad", "speechbrain", "librosa", "av"))
+
+
+@unittest.skipUnless(platform.system() == "Windows" and HAS_MODELS, "needs Windows voices and the podcast venv")
+class EndToEndTest(unittest.TestCase):
+    def test_one_voice_fixture_is_detected_and_named_by_pitch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(
+                ["powershell", "-NoProfile", "-File", str(HERE / "make_podcast_fixture.ps1"), "-OutDir", tmp,
+                 "-MaleVoice", "Microsoft Zira Desktop"],
+                check=True, capture_output=True,
+            )
+            out = Path(tmp) / "conversation.timeline.json"
+            self.assertEqual(d.main([str(Path(tmp) / "conversation.wav"), "--no-transcript", "--out", str(out)]), 0)
+            timeline = json.loads(out.read_text(encoding="utf-8"))
+        self.assertEqual(timeline["voices"], 1)
+        self.assertEqual(timeline["voiceDetection"], "auto")
+        self.assertEqual(list(timeline["speakers"]), ["zoya"])
+        self.assertTrue(all(t["speaker"] == "zoya" for t in timeline["turns"]))
+
+    def test_fixture_turns_and_voices_are_recovered(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            subprocess.run(
+                ["powershell", "-NoProfile", "-File", str(HERE / "make_podcast_fixture.ps1"), "-OutDir", tmp],
+                check=True, capture_output=True,
+            )
+            expected = json.loads((Path(tmp) / "conversation.expected.json").read_text(encoding="utf-8"))
+            out = Path(tmp) / "conversation.timeline.json"
+            code = d.main([str(Path(tmp) / "conversation.wav"), "--no-transcript", "--out", str(out)])
+            self.assertEqual(code, 0)
+            timeline = json.loads(out.read_text(encoding="utf-8"))
+
+        self.assertEqual(timeline["pitchConfidence"], "high")
+        self.assertEqual(timeline["voices"], 2)
+        self.assertEqual(len(timeline["turns"]), len(expected["turns"]))
+        voice_of = {"male": "hamza", "female": "zoya"}
+        for got, want in zip(timeline["turns"], expected["turns"]):
+            self.assertEqual(got["speaker"], voice_of[want["speaker"]])
+            self.assertLess(abs(got["fromMs"] - want["fromMs"]), 400, (got, want))
+            # Synthetic turns end with the voice's own trailing silence, so the
+            # detected end may come earlier; it must never run late into the pause.
+            self.assertLess(got["toMs"] - want["toMs"], 300, (got, want))
+            self.assertGreater(got["toMs"], want["toMs"] - 1200, (got, want))
+
+
+if __name__ == "__main__":
+    unittest.main()
