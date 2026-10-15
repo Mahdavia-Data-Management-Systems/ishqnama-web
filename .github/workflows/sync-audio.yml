@@ -28,7 +28,7 @@ jobs:
       BUCKET: r2:ishqnama-audio
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Not Ubuntu's apt rclone (1.60): it uploads a URL's stream with chunked transfer encoding,
       # which R2 refuses with 501 NotImplemented. The release is pinned and checked against the
