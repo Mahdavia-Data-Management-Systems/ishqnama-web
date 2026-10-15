@@ -2,3 +2,4 @@
 # through "require code owner review"; it only binds contributors who cannot bypass the ruleset.
 /.github/  @noormahdi
 /infra/    @noormahdi
+/audio/    @noormahdi
