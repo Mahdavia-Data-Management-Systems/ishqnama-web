@@ -21,9 +21,9 @@ const tiny: RecitationTimings = {
 
 describe("chapterAudioUrl", () => {
   it("builds the versioned, zero-padded path on the audio origin", () => {
-    expect(chapterAudioUrl(tiny, 2)).toBe("https://audio.ishqnama.com/recitations/v3/test-reciter/002.mp3");
+    expect(chapterAudioUrl(tiny, 2)).toBe("https://audio.ishqnama.com/recitations/test-reciter/v3/002.mp3");
     expect(chapterAudioUrl(ABDUL_BASIT_MURATTAL, 114)).toBe(
-      "https://audio.ishqnama.com/recitations/v1/abdul-basit-murattal/114.mp3",
+      "https://audio.ishqnama.com/recitations/abdul-basit-murattal/v1/114.mp3",
     );
   });
 });
@@ -31,7 +31,7 @@ describe("chapterAudioUrl", () => {
 describe("clipFor", () => {
   it("reads a numbered verse out of its own chapter's file", () => {
     expect(clipFor(tiny, 2, 2)).toEqual({
-      url: "https://audio.ishqnama.com/recitations/v3/test-reciter/002.mp3",
+      url: "https://audio.ishqnama.com/recitations/test-reciter/v3/002.mp3",
       fromMs: 6200,
       toMs: 12000,
       title: "al-Baqarah",
@@ -42,7 +42,7 @@ describe("clipFor", () => {
 
   it("plays verse 0 of any chapter but 9 as the basmala from chapter 1's file", () => {
     const clip = clipFor(tiny, 2, 0);
-    expect(clip.url).toBe("https://audio.ishqnama.com/recitations/v3/test-reciter/001.mp3");
+    expect(clip.url).toBe("https://audio.ishqnama.com/recitations/test-reciter/v3/001.mp3");
     expect(clip.fromMs).toBe(0);
     expect(clip.toMs).toBe(4000);
     expect(clip.subtitle).toBe("Bismillah");
@@ -88,7 +88,7 @@ describe("versePlaylist", () => {
 
   it("uses the bundled recitation by default", () => {
     const p = versePlaylist("quran/112", [{ chapter: 112, verse: 1 }]);
-    expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/v1/abdul-basit-murattal/112.mp3");
+    expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/abdul-basit-murattal/v1/112.mp3");
     expect(p.clips[0].title).toBe("al-Ikhlāṣ");
     expect(p.reciter).toBe("Abdul Basit Abdul Samad");
   });

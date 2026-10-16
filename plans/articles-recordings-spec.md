@@ -67,7 +67,7 @@ no padding, of HMAC-SHA256(key, "<path>\n<exp>")>`, where `<path>` is the URL pa
 leading slash and the `/recordings/` prefix. Keys are `nooreimaan/<slug>/<file>.mp3` (the Worker
 strips `/recordings/` from the path to get the bucket key), file names restricted to
 `[a-z0-9-]+\.mp3` by the manifest check, so there is no percent-encoding ambiguity. Lifetime 24 h.
-The prefix is free today: the recitation lives under `/recitations/v1/`, and nothing else is in
+The prefix is free today: the recitation lives under `/recitations/<id>/v1/`, and nothing else is in
 the public bucket.
 
 **Worker** `workers/recordings.js` (plain ES module, no build step, no dependencies): GET/HEAD only
@@ -106,7 +106,7 @@ vector shared with the C# signer test, expired and tampered links, a Range reque
 ## Upload tooling
 
 - `frontend/scripts/upload-recordings.mjs` (`npm run recordings:upload`, `--check` for validation
-  only), modelled on `upload-recitation.mjs`: reads the manifest, requires every listed file under
+  only), modelled on the former `upload-recitation.mjs` (removed when the recitation moved to the manifest-driven `sync-audio.yml`): reads the manifest, requires every listed file under
   the gitignored `audio/recordings/nooreimaan/<slug>/`, requires the `r2:` remote, then
   `rclone copy` (never `sync`, so nothing is deleted from the bucket) to
   `r2:ishqnama-recordings/nooreimaan` with `--checksum`; no cache header (the Worker sets it).
@@ -177,4 +177,4 @@ Infra: `infra/environments/cloudflare/{recordings.tf,providers.tf,outputs.tf}`,
 6. After deploy: `terraform apply` of the cloudflare workspace creates the bucket, Worker and
    route; `npm run recordings:upload`; on dev.ishqnama.com a signed link plays, the same link with
    `exp` edited returns 403, the raw key with no query returns 403, and a recitation file
-   (`/recitations/v1/abdul-basit-murattal/001.mp3`) still plays untouched.
+   (`/recitations/abdul-basit-murattal/v1/001.mp3`) still plays untouched.

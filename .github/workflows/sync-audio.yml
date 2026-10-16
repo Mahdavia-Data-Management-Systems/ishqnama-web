@@ -2,8 +2,9 @@ name: Sync Audio
 
 # Copies audio/ to the root of the ishqnama-audio R2 bucket behind https://audio.ishqnama.com.
 # Recordings too big for git are listed by URL in a .tarteel.json manifest in the folder they belong
-# to; any of those the bucket does not have yet is streamed straight from that URL into the bucket
-# (`rclone copyurl`, nothing written to disk). Neither step deletes anything, so files missing from
+# to (a Quran recitation's 114 chapter files, written by the onboarding-tarteel-audio skill under
+# audio/recitations/<id>/v<N>/); any of those the bucket does not have yet is streamed straight from
+# that URL into the bucket (`rclone copyurl`, nothing written to disk). Neither step deletes anything, so files missing from
 # the checkout stay in the bucket.
 on:
   workflow_call:

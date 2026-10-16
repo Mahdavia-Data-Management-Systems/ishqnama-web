@@ -96,20 +96,14 @@ the owner's QUL account) holds two JSON files and no audio:
 - `segments.json`: 6,236 entries keyed `"c:v"`, each `{ timestamp_from, timestamp_to,
   duration_ms, duration_sec, segments }` with `segments` as `[[wordPosition, fromMs, toMs], …]`.
 
-The MP3s are fetched from those URLs by `npm run recitation:fetch`
-(`frontend/scripts/fetch-recitation.mjs`): 114 files, 128 kbps CBR MP3, about 1.8 GB in all
-(al-Baqarah is 155 MB). The script skips a file whose size already matches the CDN's
-`Content-Length`, so it can be rerun. The originals are kept as they are; re-encoding to a
-lower bitrate for readers on phone data is a possible later step, not part of this work.
+The MP3s (114 files, 128 kbps CBR MP3, about 1.8 GB in all; al-Baqarah is 155 MB) never
+touch the repo or the owner's machine: `sync-audio.yml` streams them from those URLs into the
+bucket (see **Upload**). The originals are kept as they are; re-encoding to a lower bitrate
+for readers on phone data is a possible later step, not part of this work.
 
-Everything lives under `audio/.tarteel/` (gitignored):
-
-```
-audio/.tarteel/
-  surah-recitation-abdul-basit-abd-us-samad-murattal.zip
-  export/segments.json, export/surah.json      the unpacked package
-  mp3/001.mp3 … 114.mp3                        from recitation:fetch
-```
+The package is kept anywhere by the owner (it is 650 KB, downloaded with their QUL account);
+the onboarding script unpacks its two files into the gitignored
+`.ishqnama/audio/tarteel/<package name>/`.
 
 The export has been checked against our data: every chapter's verse count matches
 `src/data/suras.ts`; chapter 1 is as the remap table says (1:7 has nine word segments);
@@ -118,8 +112,10 @@ defects are catalogued in `plans/recitation-timing-issues.md`.
 
 ### The timings build
 
-`frontend/scripts/build-recitation-timings.mjs` (`npm run recitation:build`) reads the export
-and writes one checked-in file, `frontend/src/data/recitations/abdul-basit-murattal.ts`:
+`frontend/scripts/onboard_recitation.py`, driven by the project skill
+`.claude/skills/onboarding-tarteel-audio/` (originally `build-recitation-timings.mjs` under
+`npm run recitation:build`), reads the export and writes one checked-in file,
+`frontend/src/data/recitations/abdul-basit-murattal.ts`:
 
 ```ts
 import type { RecitationTimings } from "@/lib/recitation-playlist";
@@ -162,10 +158,11 @@ data, so a hand edit cannot break it either.
 ### Audio on R2
 
 One bucket, `ishqnama-audio`, behind the custom domain `https://audio.ishqnama.com`. Objects
-live at `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3`, the originals as fetched,
-with `Cache-Control: public, max-age=31536000, immutable`. A changed recording gets
+live at `/recitations/abdul-basit-murattal/v1/001.mp3` … `114.mp3`, the originals as Tarteel
+serves them, with `Cache-Control: public, max-age=31536000, immutable`. A changed recording gets
 `/v2/` in its path and `version: 2` in the timings, mirroring the rule for fonts under
-`/fonts/`. One bucket serves dev, prod and localhost; audio is not environment data.
+`/fonts/`. (The path was `/recitations/v1/<id>/` until the onboarding skill, which lays the
+manifests out as `audio/recitations/<id>/v<N>/`.) One bucket serves dev, prod and localhost; audio is not environment data.
 
 R2 serves HTTP Range requests, which seeking inside a two-hour al-Baqarah file depends on, and
 the custom domain puts Cloudflare's cache in front.
@@ -414,8 +411,9 @@ Documented step by step in a new `infra/README.md` section, "Recitation audio on
 3. CORS policy on the bucket: `AllowedOrigins ["*"]`, `AllowedMethods ["GET", "HEAD"]`,
    `AllowedHeaders ["Range"]`, `ExposeHeaders ["Content-Length", "Content-Range",
    "Accept-Ranges"]`, `MaxAgeSeconds 86400`. Public, read-only content.
-4. An R2 API token with Object Read & Write on that bucket only, kept in the owner's
-   `rclone` config on their machine; never in CI, never in the repo.
+4. An R2 API token with Object Read & Write on that bucket only, kept as the `prod`
+   environment's `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` secrets for `sync-audio.yml`;
+   never in the repo, and no longer on the owner's machine.
 5. Release prerequisites: confirm QUL's terms allow hosting this recording, and credit the
    reciter and QUL on the About page.
 
@@ -424,23 +422,18 @@ free egress, reads well under 10 M a month: $0.
 
 ### Upload
 
-`npm run recitation:upload` runs `frontend/scripts/upload-recitation.mjs`: it checks that
-`rclone` is on the path and a remote named `r2` exists, runs the timings build first (so a
-bad export never gets uploaded), then
-
-```
-rclone sync audio/.tarteel/mp3 r2:ishqnama-audio/recitations/v1/abdul-basit-murattal \
-  --checksum --header-upload "Cache-Control: public, max-age=31536000, immutable" --progress
-```
-
-A second run uploads nothing. `rclone` is a documented local tool, as Python with `fonttools`
-is for the fonts and Chrome is for the posters.
+The onboarding skill writes the 114 CDN URLs to `audio/recitations/<id>/v<N>/.tarteel.json`.
+`sync-audio.yml`, run by `cloudflare-release.yml`, lists the bucket folder and streams every
+URL it lacks straight from Tarteel's CDN with `rclone copyurl` under the immutable cache
+header; it never deletes. A second run uploads nothing. (Originally the owner fetched the
+files with `npm run recitation:fetch` and pushed them with `npm run recitation:upload` over a
+local `rclone` remote; both scripts are gone.)
 
 ### Testing
 
-- `frontend/scripts/test-build-recitation-timings.mjs` (`npm run recitation:test`, Node's
-  test runner) with a fixture export in the package's shape: the al-Fatiha remap, the
-  basmala extraction, the overlap report, and each assertion failing on bad input.
+- `frontend/scripts/test_onboard_recitation.py` (`python -m unittest`) with a fixture export
+  in the package's shape: the al-Fatiha remap, the basmala extraction, the overlap report,
+  each assertion failing on bad input, the URL check, the version choice and a zip end to end.
 - `src/data/__tests__/recitation-timings.test.ts`: the checked-in data against `suras`,
   ordered and non-overlapping.
 - `src/lib/__tests__/recitation-playlist.test.ts`: verse 0 → the basmala clip from file 1,

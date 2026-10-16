@@ -4,7 +4,7 @@ import { AUDIO_COPY } from "@/config/audio-copy";
 import { showsBismillah } from "@/lib/verse-lists";
 import type { VerseListGroupDto } from "@/types/lists";
 
-/** Verse timings of one surah-by-surah recitation, as `scripts/build-recitation-timings.mjs` writes them. */
+/** Verse timings of one surah-by-surah recitation, as `scripts/onboard_recitation.py` writes them. */
 export interface RecitationTimings {
   id: string;
   version: number;
@@ -37,8 +37,13 @@ export interface Playlist {
   reciter?: string;
 }
 
+/**
+ * The chapter's file in the bucket: the folder `sync-audio.yml` fills from the manifest
+ * `audio/recitations/<id>/v<N>/.tarteel.json`, so a new version is a new folder and the old one
+ * stays for readers whose caches still hold it.
+ */
 export function chapterAudioUrl(recitation: RecitationTimings, chapter: number): string {
-  return `${RECITATION_AUDIO_ORIGIN}/recitations/v${recitation.version}/${recitation.id}/${String(chapter).padStart(3, "0")}.mp3`;
+  return `${RECITATION_AUDIO_ORIGIN}/recitations/${recitation.id}/v${recitation.version}/${String(chapter).padStart(3, "0")}.mp3`;
 }
 
 function chapterName(chapter: number): string {

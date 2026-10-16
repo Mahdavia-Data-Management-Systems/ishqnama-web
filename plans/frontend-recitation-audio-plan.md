@@ -10,6 +10,8 @@
 
 **Spec:** `plans/frontend-recitation-audio-spec.md` (data defects: `plans/recitation-timing-issues.md`)
 
+> **Since executed:** the `build-recitation-timings.mjs`, `fetch-recitation.mjs` and `upload-recitation.mjs` scripts and their `npm run recitation:*` commands below were replaced by `frontend/scripts/onboard_recitation.py` under the project skill `.claude/skills/onboarding-tarteel-audio/`, and the bucket path became `/recitations/<id>/v<N>/`; `sync-audio.yml` streams the files from Tarteel's CDN. The listings below are the history of the first implementation.
+
 ## Global Constraints
 
 - Reader-facing copy never says "player", "audio file", "stream", "load", "service", "server", "API", "session"; the reader hears a "recitation" or a "recording". Sentence case, under twelve words. Enforced by `src/config/__tests__/audio-copy.test.ts`.

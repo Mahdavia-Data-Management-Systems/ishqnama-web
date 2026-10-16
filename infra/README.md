@@ -328,19 +328,14 @@ Library resource 408) is served from one Cloudflare R2 bucket shared by every en
    key and secret to the `prod` GitHub environment as the secrets `R2_ACCESS_KEY_ID` and
    `R2_SECRET_ACCESS_KEY` (step 3 above): `sync-audio.yml`, which `cloudflare-release.yml` runs
    after the Terraform apply, reads them, and without them its first run fails on an empty
-   access key. For local uploads, also put it in the owner's `rclone` config as a remote named
-   `r2` (`rclone config`, type `s3`, provider `Cloudflare`, the token's access key and secret,
-   endpoint `https://<account id>.r2.cloudflarestorage.com`, `acl` `private`). It is never in
-   the repository. `rclone config show r2` must list `access_key_id`, `secret_access_key` and
-   `endpoint`: a remote with only `type` and `provider` sends unsigned requests, which R2
-   rejects as anonymous and rclone reports as a failed `CreateBucket`.
-5. From `frontend/`: `npm run recitation:fetch` (once, 1.8 GB from Tarteel's CDN into
-   `audio/.tarteel/mp3/`), then `npm run recitation:upload`. Files land at
-   `/recitations/v1/abdul-basit-murattal/001.mp3` … `114.mp3` with a one-year `immutable`
-   cache header; a changed recording goes under `/v2/` with `version: 2` in the timings.
-   The sync makes the bucket match the local folder, so the script refuses to run unless all
-   114 files are present locally: the fetched files may be deleted to free 1.8 GB, but a
-   thinned folder can never delete the recitation from the bucket.
+   access key. No local `rclone` setup is needed: nothing is uploaded from a machine.
+5. Onboard the recitation with the project skill `.claude/skills/onboarding-tarteel-audio/`
+   (it drives `frontend/scripts/onboard_recitation.py` on the QUL package zip), which writes
+   the chapter URLs to `audio/recitations/<id>/v<N>/.tarteel.json` and the timings to
+   `frontend/src/data/recitations/<id>.ts`. Once that is merged, run `cloudflare-release.yml`:
+   `sync-audio.yml` streams every listed file the bucket lacks straight from Tarteel's CDN to
+   `/recitations/<id>/v<N>/001.mp3` … `114.mp3` with a one-year `immutable` cache header and
+   never deletes, so a changed recording is a new `v<N+1>` folder beside the old one.
 
 Release prerequisites: confirm Tarteel's terms allow hosting this recording, and keep the
 credit to the reciter and QUL on the About page.
