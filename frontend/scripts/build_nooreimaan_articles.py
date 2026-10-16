@@ -185,16 +185,33 @@ def convert(source_html: str, manifest: list[dict]) -> list[dict]:
     ]
 
 
+def carry_reflections(essays: list[dict], out_dir: Path) -> list[dict]:
+    """Gives each converted essay the `reflections` its current file holds (`[]` when none), since the
+    source knows nothing of them: they are added later by diarize_podcast.py. A file whose slug is no
+    longer an essay but still has reflections fails the build rather than losing them."""
+    kept: dict[str, list] = {}
+    for path in out_dir.glob("*.json"):
+        kept[path.stem] = json.loads(path.read_text(encoding="utf-8")).get("reflections", [])
+    slugs = {e["slug"] for e in essays}
+    orphans = sorted(slug for slug, reflections in kept.items() if reflections and slug not in slugs)
+    if orphans:
+        raise ValueError(f"reflections on essays no longer in the manifest: {orphans}")
+    return [{**e, "reflections": kept.get(e["slug"], [])} for e in essays]
+
+
+def essay_text(essay: dict) -> str:
+    return json.dumps(essay, ensure_ascii=False, indent=1) + "\n"
+
+
 def main(argv: list[str]) -> None:
     source = Path(argv[1]) if len(argv) > 1 else DEFAULT_SOURCE
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    essays = convert(source.read_text(encoding="utf-8"), manifest)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    essays = carry_reflections(convert(source.read_text(encoding="utf-8"), manifest), OUT_DIR)
     for old in OUT_DIR.glob("*.json"):
         old.unlink()
     for essay in essays:
-        text = json.dumps(essay, ensure_ascii=False, indent=1) + "\n"
-        (OUT_DIR / f"{essay['slug']}.json").write_text(text, encoding="utf-8", newline="\n")
+        (OUT_DIR / f"{essay['slug']}.json").write_text(essay_text(essay), encoding="utf-8", newline="\n")
     print(f"Wrote {len(essays)} essays to {OUT_DIR}")
 
 

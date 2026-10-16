@@ -1,7 +1,10 @@
 """Tests for build_nooreimaan_articles. Run from frontend/: python -m unittest discover -s scripts -p "test_*.py" """
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from build_nooreimaan_articles import convert
+from build_nooreimaan_articles import carry_reflections, convert
 
 MANIFEST = [{"slug": "naskh", "title": "Naskh", "urduTitle": "نسخ"}]
 
@@ -137,6 +140,41 @@ class ConvertTests(unittest.TestCase):
         manifest = [{"slug": "ghazwa", "title": "Ghazwa", "urduTitle": "غزوۂ ہند"}]
         out = convert(doc(heading("غزوہ\u0654 ہند")), manifest)
         self.assertEqual(out, [{"slug": "ghazwa", "urduTitle": "غزوۂ ہند", "blocks": []}])
+
+
+REFLECTION = {"title": "نسخ", "url": "articles/nooreimaan/naskh.timeline.v1.json"}
+
+
+class CarryReflectionsTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write(self, slug: str, essay: dict):
+        (self.dir / f"{slug}.json").write_text(json.dumps(essay, ensure_ascii=False), encoding="utf-8")
+
+    def test_keeps_the_reflections_the_current_file_holds(self):
+        self.write("naskh", {"slug": "naskh", "blocks": [], "reflections": [REFLECTION]})
+        out = carry_reflections([{"slug": "naskh", "urduTitle": "نسخ", "blocks": [1]}], self.dir)
+        self.assertEqual(out, [{"slug": "naskh", "urduTitle": "نسخ", "blocks": [1], "reflections": [REFLECTION]}])
+        self.assertEqual(list(out[0])[-1], "reflections")
+
+    def test_gives_an_empty_list_to_a_new_essay_or_a_file_without_reflections(self):
+        self.write("hazf", {"slug": "hazf", "blocks": []})
+        out = carry_reflections([{"slug": "hazf", "blocks": []}, {"slug": "naskh", "blocks": []}], self.dir)
+        self.assertEqual([e["reflections"] for e in out], [[], []])
+
+    def test_fails_when_an_essay_no_longer_in_the_manifest_has_reflections(self):
+        self.write("gone", {"slug": "gone", "blocks": [], "reflections": [REFLECTION]})
+        with self.assertRaisesRegex(ValueError, "gone"):
+            carry_reflections([{"slug": "naskh", "blocks": []}], self.dir)
+
+    def test_drops_an_old_essay_without_reflections_quietly(self):
+        self.write("gone", {"slug": "gone", "blocks": [], "reflections": []})
+        self.assertEqual(len(carry_reflections([{"slug": "naskh", "blocks": []}], self.dir)), 1)
 
 
 if __name__ == "__main__":

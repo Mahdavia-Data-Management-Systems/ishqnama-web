@@ -13,6 +13,9 @@ Usage:
         [--map hamza=1,zoya=0] [--whisper-model small] [--no-transcript]
     python scripts/diarize_podcast.py --check FILE
     python scripts/diarize_podcast.py --release FILE [--into FOLDER]
+        [--article SLUG [--title "..."] [--caption "..."] [--description "..."]]
+    python scripts/diarize_podcast.py --attach RELEASED_TIMELINE --article SLUG
+        [--title "..."] [--caption "..."] [--description "..."]
 
 The recording can be anywhere; the draft timeline is written beside it as
 <episode>.timeline.json, where the episode is the recording's own name unless
@@ -24,6 +27,14 @@ bucket under a one-year immutable cache header) under versioned names,
 timeline's `audio` at the versioned recording. Each file's version is one
 more than the highest already there; a recording identical to a released
 version keeps that version, so a corrected timeline adds only itself.
+
+--article SLUG (with --release, or --attach for a timeline already released)
+adds the recording to that Noor e Imaan essay's `reflections` in
+backend/src/Ishqnama.Application/Articles/NoorEImaan/<slug>.json, with `url`
+the released timeline's path under /podcasts/. An essay holds one reflection
+per episode: a newer version replaces the older one's `url`. --title and
+--caption set the reflection's own (else the timeline's), and --description
+adds a few sentences the timeline does not carry.
 
 A recording with one voice (a solo brief) is detected on its own: when the
 two clusters of a two-way split sit close together, they are one speaker,
@@ -45,6 +56,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -73,6 +85,13 @@ TIMELINE_VERSION = 1
 DRAFT_SUFFIX = ".timeline.json"
 # Where released episodes live: the repo's audio/ folder is laid out like the bucket.
 RELEASE_DIR = Path(__file__).resolve().parents[2] / "audio" / "podcasts" / "articles" / "nooreimaan"
+# The essays a released recording can be attached to as a reflection (a recording need not be: it can
+# stand alone and play elsewhere on the site). A reflection's `url` is the released timeline's path
+# under the bucket's /podcasts/, which the repo's audio/podcasts/ folder mirrors, so any released
+# episode can be attached, wherever under /podcasts/ it lives.
+ESSAYS_DIR = Path(__file__).resolve().parents[2] / "backend" / "src" / "Ishqnama.Application" / "Articles" / "NoorEImaan"
+PODCASTS_FOLDER = "podcasts"
+REFLECTION_URL = re.compile(r"^((?:[a-z0-9_-]+/)*[a-z0-9_-]+)\.timeline\.v([1-9][0-9]*)\.json$")
 CACHE_DIR = Path(os.environ.get("ISHQNAMA_PODCAST_CACHE", Path.home() / ".cache" / "ishqnama-podcast"))
 
 
@@ -475,7 +494,12 @@ def _same_file(a: Path, b: Path) -> bool:
 
 
 def release(path: str, into: str | None) -> int:
-    """Move a reviewed draft timeline and its recording into the served folder under versioned names."""
+    return 0 if release_files(path, into) else 1
+
+
+def release_files(path: str, into: str | None) -> Path | None:
+    """Move a reviewed draft timeline and its recording into the served folder under versioned names.
+    The released timeline's path, or None when the draft fails the check."""
     draft = Path(path)
     episode = episode_of(draft)
     timeline = json.loads(draft.read_text(encoding="utf-8"))
@@ -484,7 +508,7 @@ def release(path: str, into: str | None) -> int:
         for problem in problems:
             print(problem)
         print("not released: fix the timeline and run --check first")
-        return 1
+        return None
     recording = draft.with_name(timeline["audio"])
     if not recording.is_file():
         raise SystemExit(f"the recording {recording} the timeline names is not beside it")
@@ -502,6 +526,97 @@ def release(path: str, into: str | None) -> int:
         log(f"moved the recording to {folder / plan['audio']}")
     draft.unlink()
     log(f"released the timeline as {folder / plan['timeline']}, naming {plan['audio']}")
+    return folder / plan["timeline"]
+
+
+def reflection_episode(url: str) -> tuple[str, int] | None:
+    """(episode path, version) of a reflection's `url`, e.g. ("articles/nooreimaan/naskh", 1), or None
+    when it is not a released timeline's path under /podcasts/."""
+    match = REFLECTION_URL.match(url)
+    return (match.group(1), int(match.group(2))) if match else None
+
+
+def podcasts_root(folder: Path) -> Path:
+    """The `podcasts` folder a release folder sits in: the root a reflection's `url` is relative to."""
+    for parent in (folder, *folder.parents):
+        if parent.name == PODCASTS_FOLDER:
+            return parent
+    raise SystemExit(f"{folder} is not inside a {PODCASTS_FOLDER}/ folder, so its timelines have no /podcasts/ path")
+
+
+def upsert_reflection(reflections: list[dict], url: str, timeline: dict, overrides: dict, old_timeline) -> list[dict]:
+    """The essay's reflections with the released timeline at `url` added, or replacing the reflection
+    of an older (or the same) version of that episode.
+
+    `overrides` holds the title, caption and description given on the command line. `old_timeline(url)`
+    loads the timeline a reflection points at today (None when it cannot), so a title or caption still
+    equal to the old timeline's follows the new one while a hand-edited one is kept. The description is
+    kept unless a new one is given.
+    """
+    episode, version = reflection_episode(url)
+    for i, reflection in enumerate(reflections):
+        current = reflection_episode(reflection.get("url", ""))
+        if not current or current[0] != episode:
+            continue
+        if current[1] > version:
+            raise SystemExit(f"{reflection['url']} is already attached, newer than {url}")
+        old = old_timeline(reflection["url"]) or {}
+        updated = {}
+        for field in ("title", "caption"):
+            if overrides.get(field):
+                updated[field] = overrides[field]
+            elif reflection.get(field) and reflection[field] != old.get(field):
+                updated[field] = reflection[field]
+            elif timeline.get(field):
+                updated[field] = timeline[field]
+        description = overrides.get("description") or reflection.get("description")
+        return reflections[:i] + [_reflection(updated, description, url)] + reflections[i + 1:]
+    added = {field: overrides.get(field) or timeline.get(field) for field in ("title", "caption")}
+    return reflections + [_reflection(added, overrides.get("description"), url)]
+
+
+def _reflection(fields: dict, description: str | None, url: str) -> dict:
+    """A reflection with its keys in order: title, caption, description, url (the empty ones left out)."""
+    if not fields.get("title"):
+        raise SystemExit(f"{url} has no title: give the reflection one with --title")
+    reflection = {k: v for k, v in fields.items() if v}
+    if description:
+        reflection["description"] = description
+    reflection["url"] = url
+    return reflection
+
+
+def attach(timeline_path: Path, slug: str, overrides: dict, essays: str | None) -> int:
+    """Add a released timeline, anywhere under a podcasts/ folder, to an essay's reflections."""
+    timeline_path = Path(timeline_path).resolve()
+    if not timeline_path.is_file():
+        raise SystemExit(f"{timeline_path} does not exist: release the recording first")
+    folder = timeline_path.parent
+    root = podcasts_root(folder)
+    url = timeline_path.relative_to(root).as_posix()
+    if not reflection_episode(url):
+        raise SystemExit(f"{url} is not <episode>.timeline.vN.json with lowercase names")
+    essay_path = (Path(essays) if essays else ESSAYS_DIR) / f"{slug}.json"
+    if not essay_path.is_file():
+        raise SystemExit(f"no essay {slug}: {essay_path} does not exist")
+    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+    problems = check_timeline(timeline)
+    if not (folder / timeline.get("audio", "")).is_file():
+        problems.append(f"the recording {timeline.get('audio')} the timeline names is not released beside it")
+    if problems:
+        for problem in problems:
+            print(problem)
+        print(f"not attached to {slug}")
+        return 1
+
+    def old_timeline(old_url: str) -> dict | None:
+        path = root / old_url
+        return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+
+    essay = json.loads(essay_path.read_text(encoding="utf-8"))
+    essay["reflections"] = upsert_reflection(essay.get("reflections", []), url, timeline, overrides, old_timeline)
+    essay_path.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    log(f"attached {url} to {slug}: {len(essay['reflections'])} reflection(s)")
     return 0
 
 
@@ -722,13 +837,27 @@ def main(argv=None) -> int:
     parser.add_argument("--check", metavar="FILE", help="validate a timeline file instead of making one")
     parser.add_argument("--release", metavar="FILE", help="move a checked draft timeline and its recording into the served folder under versioned names")
     parser.add_argument("--into", metavar="FOLDER", help=f"the served folder for --release (default {RELEASE_DIR})")
+    parser.add_argument("--attach", metavar="FILE", help="add a released timeline to the --article essay's reflections")
+    parser.add_argument("--article", metavar="SLUG", help="the Noor e Imaan essay the released recording is a reflection on (with --release or --attach)")
+    parser.add_argument("--description", help="a few sentences on the recording, for the essay's reflection")
+    parser.add_argument("--essays", metavar="FOLDER", help=f"the essays folder for --article (default {ESSAYS_DIR})")
     args = parser.parse_args(argv)
     if args.voices != "auto":
         args.voices = int(args.voices)
     if args.check:
         return check(args.check)
+    overrides = {k: v.strip() for k, v in (("title", args.title), ("caption", args.caption), ("description", args.description)) if v and v.strip()}
+    if args.attach:
+        if not args.article:
+            parser.error("--attach needs --article SLUG")
+        return attach(Path(args.attach), args.article, overrides, args.essays)
     if args.release:
-        return release(args.release, args.into)
+        if args.description and not args.article:
+            parser.error("--description needs --article SLUG")
+        released = release_files(args.release, args.into)
+        if not released:
+            return 1
+        return attach(released, args.article, overrides, args.essays) if args.article else 0
     if not args.audio:
         parser.error("an audio file is required (or --check FILE)")
     return run(args)

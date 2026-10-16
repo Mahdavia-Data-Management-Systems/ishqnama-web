@@ -16,7 +16,7 @@ vi.mock("@/lib/api-readiness", () => ({
 }));
 
 const mockedGet = vi.mocked(getNoorEImaanEssay);
-const essay = (slug: string): EssayDto => ({ slug, urduTitle: slug, blocks: [] });
+const essay = (slug: string): EssayDto => ({ slug, urduTitle: slug, blocks: [], reflections: [] });
 
 async function flush() {
   await act(async () => {

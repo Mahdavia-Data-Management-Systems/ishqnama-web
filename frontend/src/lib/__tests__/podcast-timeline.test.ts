@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { episodeUrls, mascotStates, parseTimeline, turnAt, type PodcastTimeline } from "../podcast-timeline";
+import { episodeUrls, mascotStates, parseTimeline, reflectionEpisode, turnAt, type PodcastTimeline } from "../podcast-timeline";
 
 const timeline: PodcastTimeline = {
   version: 1,
@@ -88,5 +88,27 @@ describe("episodeUrls", () => {
     expect(() => episodeUrls("articles/nooreimaan/naskh", 0)).toThrow(/version/);
     expect(() => episodeUrls("articles/nooreimaan/naskh", 1.5)).toThrow(/version/);
     expect(() => episodeUrls("articles/nooreimaan/naskh", Number.NaN)).toThrow(/version/);
+  });
+});
+
+describe("reflectionEpisode", () => {
+  it("reads the episode and version from a released timeline's path, wherever under /podcasts/ it is", () => {
+    expect(reflectionEpisode("articles/nooreimaan/naskh.timeline.v1.json")).toEqual({ episode: "articles/nooreimaan/naskh", version: 1 });
+    expect(reflectionEpisode("talks/sabr_brief.timeline.v12.json")).toEqual({ episode: "talks/sabr_brief", version: 12 });
+    const { episode, version } = reflectionEpisode("articles/nooreimaan/naskh.timeline.v2.json");
+    expect(episodeUrls(episode, version).timeline).toBe("https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh.timeline.v2.json");
+  });
+
+  it("refuses anything that is not a released timeline's relative path", () => {
+    for (const url of [
+      "articles/nooreimaan/naskh.v1.m4a",
+      "articles/nooreimaan/naskh.timeline.v0.json",
+      "articles/nooreimaan/naskh.timeline.json",
+      "../naskh.timeline.v1.json",
+      "/articles/naskh.timeline.v1.json",
+      "https://audio.ishqnama.com/podcasts/naskh.timeline.v1.json",
+    ]) {
+      expect(() => reflectionEpisode(url), url).toThrow(/released timeline/);
+    }
   });
 });

@@ -118,3 +118,14 @@ export function episodeUrls(episode: string, version: number, origin: string = P
   const folder = episode.includes("/") ? `${base}${episode.slice(0, episode.lastIndexOf("/") + 1)}` : base;
   return { timeline: `${base}${episode}.timeline.v${version}.json`, folder };
 }
+
+/**
+ * The episode and version an essay reflection's `url` names, for `episodeUrls`/`useEpisode`:
+ * `articles/nooreimaan/naskh.timeline.v1.json` is `{ episode: "articles/nooreimaan/naskh",
+ * version: 1 }`. The same pattern the API checks the essays against at startup.
+ */
+export function reflectionEpisode(url: string): { episode: string; version: number } {
+  const match = /^((?:[a-z0-9_-]+\/)*[a-z0-9_-]+)\.timeline\.v([1-9][0-9]*)\.json$/.exec(url);
+  if (!match) throw new Error(`not a released timeline: ${url}`);
+  return { episode: match[1], version: Number(match[2]) };
+}

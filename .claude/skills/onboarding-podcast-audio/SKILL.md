@@ -15,7 +15,8 @@ recording. The site plays that timeline against the audio: the speaking
 mascot's avatar glows and shows the turn's expression. Your part is what
 the script cannot do: ask where the recording is, run the script, judge the
 voices, choose each turn's expression from the transcript, mark the file
-reviewed, and release the pair into the served folder.
+reviewed, release the pair into the served folder, and attach it to the
+essays it is a reflection on, if any.
 
 ## Setup, once per machine
 
@@ -48,6 +49,12 @@ user already reviewed, start at step 5; to redo one, at step 1.
      itself with: the title in the recording's script, the caption one
      line under it (the article's Urdu title and its English title make a
      good pair). Ask unless the request gives them.
+   - **The essay or essays it is a reflection on.** Optional: a recording
+     can stand alone and play elsewhere on the site. When it belongs to
+     Noor e Imaan essays, their slugs (the file names in
+     `backend/src/Ishqnama.Application/Articles/NoorEImaan/`, e.g. `naskh`)
+     and, if the user wants one, a description of a few sentences for the
+     essay page.
 
    A request that already states any of these is not asked for them
    again. Ask with `AskUserQuestion` when it is available, else in
@@ -108,8 +115,26 @@ user already reviewed, start at step 5; to redo one, at step 1.
    yourself, and never edit a released file: redo the draft and release
    again. The new files are untracked until the user commits them; the
    skill does not commit.
+
+   When the recording is a reflection on an essay, add
+   `--article <slug>` (and `--description "<text>"` when given) to the
+   release. It adds the recording to that essay's `reflections` in its
+   JSON, titled and captioned from the timeline, with `url` the released
+   timeline's path under `/podcasts/`; a new version of an episode already
+   on the essay replaces its `url` and keeps a hand-edited title and the
+   description. For a second essay, or a recording released earlier, attach
+   without releasing again:
+
+   ```
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py --attach "../audio/podcasts/articles/nooreimaan/<episode>.timeline.vN.json" --article <slug>
+   ```
+
+   `--title` and `--caption` there set the reflection's own. It refuses an
+   unknown essay, a timeline outside `audio/podcasts/`, one failing the
+   check, or one whose recording is not released beside it.
 7. Report: the episode's name and the two released paths with their
-   versions (and that an unchanged recording kept its version, when it
+   versions, each essay the recording was attached to (or that it stands
+   alone) (and that an unchanged recording kept its version, when it
    did), voices and detection, turn count, each mascot's median pitch,
    every turn marked laughing or thoughtful with the words that decided
    it, and anything odd (a turn under a second, a turn over 30 s with no
@@ -161,5 +186,6 @@ repo, laid out as the bucket serves them under `/podcasts/`.
 | Setting `expressionsReviewed` before reading every turn | Read all the turns, then set it |
 | Editing `fromMs` or `toMs` by hand | Boundaries come from the audio; rerun with other flags instead |
 | Committing `.venv-podcast`, model caches, drafts or scratch files | Only the released pair under `audio/podcasts/` belongs in the repo |
+| Writing or editing an essay's `reflections` by hand, or attaching every recording to some essay | `--article` on the release, or `--attach`; a recording with no essay stays unattached |
 
 Three or more voices are not supported: the cast is one or two mascots.

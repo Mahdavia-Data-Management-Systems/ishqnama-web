@@ -49,4 +49,71 @@ public sealed class ArticleServiceTests
         => Assert.Equal(
             _service.GetNoorEImaanEssay("naskh")!.ETag,
             new ArticleService().GetNoorEImaanEssay("naskh")!.ETag);
+
+    [Fact]
+    public void Every_essay_has_a_reflections_array()
+    {
+        foreach (var slug in _service.NoorEImaanSlugs)
+        {
+            using var doc = JsonDocument.Parse(_service.GetNoorEImaanEssay(slug)!.Json);
+            Assert.Equal(JsonValueKind.Array, doc.RootElement.GetProperty("reflections").ValueKind);
+        }
+    }
+
+    // A reflection can only point at a recording that was released into the repo's audio/podcasts/,
+    // the folder sync-audio.yml copies to the bucket under /podcasts/.
+    [Fact]
+    public void Every_reflection_names_a_released_timeline_and_its_recording()
+    {
+        var podcasts = Path.Combine(RepoRoot(), "audio", "podcasts");
+        foreach (var slug in _service.NoorEImaanSlugs)
+        {
+            using var doc = JsonDocument.Parse(_service.GetNoorEImaanEssay(slug)!.Json);
+            foreach (var reflection in doc.RootElement.GetProperty("reflections").EnumerateArray())
+            {
+                var timelinePath = Path.Combine(podcasts, reflection.GetProperty("url").GetString()!);
+                Assert.True(File.Exists(timelinePath), $"{slug}: {timelinePath} is not released");
+                using var timeline = JsonDocument.Parse(File.ReadAllText(timelinePath));
+                var audio = Path.Combine(Path.GetDirectoryName(timelinePath)!, timeline.RootElement.GetProperty("audio").GetString()!);
+                Assert.True(File.Exists(audio), $"{slug}: {audio} is not released beside its timeline");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("""{"reflections": []}""")]
+    [InlineData("""{"reflections": [{"title": "نسخ", "url": "articles/nooreimaan/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "caption": "c", "description": "d", "url": "talks/sabr_brief.timeline.v12.json"}]}""")]
+    public void Sound_reflections_pass(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        ArticleService.ValidateReflections("naskh", doc.RootElement);
+    }
+
+    [Theory]
+    [InlineData("""{}""")]
+    [InlineData("""{"reflections": {}}""")]
+    [InlineData("""{"reflections": ["articles/nooreimaan/naskh.timeline.v1.json"]}""")]
+    [InlineData("""{"reflections": [{"url": "articles/nooreimaan/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": " ", "url": "articles/nooreimaan/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "url": "https://audio.ishqnama.com/podcasts/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "url": "articles/nooreimaan/naskh.v1.m4a"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "url": "../naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "url": "naskh.timeline.v0.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "caption": 3, "url": "naskh.timeline.v1.json"}]}""")]
+    public void Unsound_reflections_fail_naming_the_essay(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var error = Assert.Throws<InvalidOperationException>(() => ArticleService.ValidateReflections("naskh", doc.RootElement));
+        Assert.Contains("'naskh'", error.Message);
+    }
+
+    private static string RepoRoot()
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+            if (Directory.Exists(Path.Combine(dir.FullName, "audio", "podcasts")))
+                return dir.FullName;
+        throw new InvalidOperationException("No audio/podcasts folder above the test assembly.");
+    }
 }

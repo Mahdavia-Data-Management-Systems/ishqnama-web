@@ -20,10 +20,25 @@ export type Block =
   | { type: "h2"; id: string; runs: Run[] }
   | { type: "pair"; rows: PairRow[] };
 
+/**
+ * A podcast recording about the essay, attached by `scripts/diarize_podcast.py --article`.
+ * `url` is the released timeline's path under the audio origin's `/podcasts/`, e.g.
+ * `articles/nooreimaan/naskh.timeline.v1.json`; `reflectionEpisode()` turns it into the
+ * episode and version the player takes.
+ */
+export interface Reflection {
+  title: string;
+  caption?: string;
+  description?: string;
+  url: string;
+}
+
 export interface EssayDto {
   slug: string;
   urduTitle: string;
   blocks: Block[];
+  /** In display order; empty for an essay without recordings, which most are. */
+  reflections: Reflection[];
 }
 
 /** What the static pages know about an essay: never its text. */

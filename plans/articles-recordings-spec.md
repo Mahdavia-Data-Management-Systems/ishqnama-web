@@ -1,5 +1,10 @@
 # Articles: recordings
 
+**Superseded 2026-10-16 by `plans/articles-reflections-plan.md`:** recordings on an essay are
+now the essay JSON's `reflections`, pointing at podcast timelines in the public bucket under
+`/podcasts/`; the separate manifest, the private bucket, the Worker and the signed links below
+are not built. Kept as background only.
+
 **Status: reviewed with the user (2026-10-14), to be implemented.** The implementation plan goes in
 `plans/articles-recordings-plan.md`. The companion work, essays in other languages, is postponed
 indefinitely and kept apart in `plans/articles-translations-spec.md`; nothing here depends on it.

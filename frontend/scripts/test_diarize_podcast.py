@@ -246,6 +246,123 @@ class ReleaseTest(unittest.TestCase):
             self.assertTrue(draft.exists() and (src / "raw.m4a").exists())
 
 
+class ReflectionTest(unittest.TestCase):
+    """--article and --attach: a released recording becomes a reflection on an essay."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.src, self.dest, self.essays = root / "src", root / "podcasts" / "articles" / "nooreimaan", root / "essays"
+        self.src.mkdir()
+        self.essays.mkdir()
+        self.essay = self.essays / "naskh.json"
+        self.essay.write_text(json.dumps({"slug": "naskh", "urduTitle": "نسخ", "blocks": [], "reflections": []}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def draft(self, episode="naskh", audio_bytes=b"recording-one", **topic):
+        path = ReleaseTest.draft(self, self.src, episode, audio_bytes=audio_bytes)
+        timeline = json.loads(path.read_text(encoding="utf-8"))
+        timeline.update(topic)
+        path.write_text(json.dumps(timeline, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return path
+
+    def run_main(self, *args):
+        return d.main([*args, "--into", str(self.dest), "--essays", str(self.essays)])
+
+    def reflections(self):
+        return json.loads(self.essay.read_text(encoding="utf-8"))["reflections"]
+
+    def test_release_with_an_article_adds_the_reflection_with_the_timelines_title_and_caption(self):
+        draft = self.draft(title="نسخ", caption="Naskh (abrogation)")
+        self.assertEqual(self.run_main("--release", str(draft), "--article", "naskh", "--description", "A brief."), 0)
+        self.assertEqual(self.reflections(), [{
+            "title": "نسخ", "caption": "Naskh (abrogation)", "description": "A brief.",
+            "url": "articles/nooreimaan/naskh.timeline.v1.json",
+        }])
+        text = self.essay.read_text(encoding="utf-8")
+        self.assertTrue(text.startswith('{\n "slug": "naskh",\n "urduTitle": "نسخ"'))
+        self.assertTrue(text.endswith("}\n"))
+
+    def test_a_new_version_replaces_the_url_keeps_a_hand_edited_title_and_the_description(self):
+        self.run_main("--release", str(self.draft(title="old title", caption="old caption")), "--article", "naskh", "--description", "Kept.")
+        essay = json.loads(self.essay.read_text(encoding="utf-8"))
+        essay["reflections"][0]["title"] = "edited by hand"
+        self.essay.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        self.run_main("--release", str(self.draft(audio_bytes=b"recording-two", title="new title", caption="new caption")), "--article", "naskh")
+        self.assertEqual(self.reflections(), [{
+            "title": "edited by hand", "caption": "new caption", "description": "Kept.",
+            "url": "articles/nooreimaan/naskh.timeline.v2.json",
+        }])
+
+    def test_attach_adds_an_already_released_timeline_and_another_episode_is_appended(self):
+        d.main(["--release", str(self.draft(title="one")), "--into", str(self.dest)])
+        d.main(["--release", str(self.draft("naskh_talk", audio_bytes=b"talk", title="two")), "--into", str(self.dest)])
+        self.assertEqual(self.reflections(), [])
+        self.assertEqual(self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"), "--article", "naskh"), 0)
+        self.assertEqual(self.run_main("--attach", str(self.dest / "naskh_talk.timeline.v1.json"), "--article", "naskh", "--title", "given"), 0)
+        self.assertEqual([(r["title"], r["url"]) for r in self.reflections()], [
+            ("one", "articles/nooreimaan/naskh.timeline.v1.json"),
+            ("given", "articles/nooreimaan/naskh_talk.timeline.v1.json"),
+        ])
+
+    def test_attaching_an_older_version_than_the_one_attached_is_refused(self):
+        self.run_main("--release", str(self.draft(title="t")), "--article", "naskh")
+        self.run_main("--release", str(self.draft(audio_bytes=b"two", title="t")), "--article", "naskh")
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"), "--article", "naskh")
+        self.assertEqual([r["url"] for r in self.reflections()], ["articles/nooreimaan/naskh.timeline.v2.json"])
+
+    def test_an_unknown_essay_a_timeline_outside_the_folder_and_a_missing_article_are_refused(self):
+        d.main(["--release", str(self.draft(title="t")), "--into", str(self.dest)])
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"), "--article", "nope")
+        stray = self.src / "naskh.timeline.v1.json"
+        stray.write_text((self.dest / "naskh.timeline.v1.json").read_text(encoding="utf-8"), encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(stray), "--article", "naskh")
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"))
+        self.assertEqual(self.reflections(), [])
+
+    def test_a_timeline_naming_a_recording_not_beside_it_is_not_attached(self):
+        d.main(["--release", str(self.draft(title="t")), "--into", str(self.dest)])
+        released = self.dest / "naskh.timeline.v1.json"
+        timeline = json.loads(released.read_text(encoding="utf-8"))
+        timeline["audio"] = "naskh.m4a"  # as mustanifa_brief.timeline.v1.json does
+        released.write_text(json.dumps(timeline, ensure_ascii=False), encoding="utf-8")
+        self.assertEqual(self.run_main("--attach", str(released), "--article", "naskh"), 1)
+        self.assertEqual(self.reflections(), [])
+
+    def test_a_reflection_needs_a_title(self):
+        self.run_main("--release", str(self.draft()), "--into", str(self.dest))
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"), "--article", "naskh")
+        self.assertEqual(self.run_main("--attach", str(self.dest / "naskh.timeline.v1.json"), "--article", "naskh", "--title", "نسخ"), 0)
+
+    def test_a_recording_released_outside_the_essays_folder_can_be_attached(self):
+        elsewhere = self.dest.parents[1] / "talks"
+        d.main(["--release", str(self.draft("sabr", title="صبر")), "--into", str(elsewhere)])
+        self.assertEqual(self.reflections(), [])
+        self.assertEqual(self.run_main("--attach", str(elsewhere / "sabr.timeline.v1.json"), "--article", "naskh"), 0)
+        self.assertEqual([r["url"] for r in self.reflections()], ["talks/sabr.timeline.v1.json"])
+
+    def test_a_folder_outside_podcasts_has_no_url(self):
+        outside = Path(self.tmp.name) / "loose"
+        d.main(["--release", str(self.draft(title="t")), "--into", str(outside)])
+        with self.assertRaises(SystemExit):
+            self.run_main("--attach", str(outside / "naskh.timeline.v1.json"), "--article", "naskh")
+
+    def test_reflection_episode_reads_only_released_timeline_paths(self):
+        self.assertEqual(d.reflection_episode("articles/nooreimaan/mustanifa_brief.timeline.v12.json"), ("articles/nooreimaan/mustanifa_brief", 12))
+        self.assertEqual(d.reflection_episode("sabr.timeline.v1.json"), ("sabr", 1))
+        for url in ("articles/nooreimaan/naskh.timeline.v0.json", "articles/nooreimaan/Naskh.timeline.v1.json",
+                    "/articles/naskh.timeline.v1.json", "articles/nooreimaan/naskh.v1.m4a", "../naskh.timeline.v1.json",
+                    "https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh.timeline.v1.json"):
+            self.assertIsNone(d.reflection_episode(url), url)
+
+
 class CheckTimelineTest(unittest.TestCase):
     def timeline(self, **overrides):
         base = {

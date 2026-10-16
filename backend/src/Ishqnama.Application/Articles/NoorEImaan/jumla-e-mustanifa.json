@@ -184,5 +184,12 @@
     }
    ]
   }
+ ],
+ "reflections": [
+  {
+   "title": "جملہ مستأنفہ",
+   "caption": "Jumla-e-mustanifa, the resumptive clause, from Noor e Imaan",
+   "url": "articles/nooreimaan/mustanifa_brief.timeline.v1.json"
+  }
  ]
 }

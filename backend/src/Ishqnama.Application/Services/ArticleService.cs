@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Ishqnama.Application.Services;
 
@@ -36,6 +37,7 @@ public sealed class ArticleService
             var declared = doc.RootElement.GetProperty("slug").GetString();
             if (declared != slug)
                 throw new InvalidOperationException($"Essay resource '{name}' declares slug '{declared}'.");
+            ValidateReflections(slug, doc.RootElement);
 
             _essays[slug] = new EssayResource(json, ComputeETag(json));
         }
@@ -45,6 +47,48 @@ public sealed class ArticleService
 
     /// <summary>The essay's JSON and content ETag, or null when no essay has that slug.</summary>
     public EssayResource? GetNoorEImaanEssay(string slug) => _essays.GetValueOrDefault(slug);
+
+    /// <summary>
+    /// A reflection's <c>url</c>: a released podcast timeline's path under the audio origin's
+    /// <c>/podcasts/</c>, as <c>frontend/scripts/diarize_podcast.py</c> writes it.
+    /// </summary>
+    public static readonly Regex ReflectionUrl = new(
+        @"^(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.timeline\.v[1-9][0-9]*\.json$", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Checks an essay's <c>reflections</c>: present, an array (empty for an essay without
+    /// recordings), each an object with a non-empty <c>title</c>, a <c>url</c> matching
+    /// <see cref="ReflectionUrl"/>, and <c>caption</c>/<c>description</c> strings when given.
+    /// Throws naming the essay and the reflection, so a bad file fails the tests in CI (and, in the
+    /// API, the first essay request, when this singleton is built).
+    /// </summary>
+    public static void ValidateReflections(string slug, JsonElement essay)
+    {
+        if (!essay.TryGetProperty("reflections", out var reflections) || reflections.ValueKind != JsonValueKind.Array)
+            throw new InvalidOperationException($"Essay '{slug}' has no reflections array.");
+
+        var index = 0;
+        foreach (var reflection in reflections.EnumerateArray())
+        {
+            string? Problem()
+            {
+                if (reflection.ValueKind != JsonValueKind.Object)
+                    return "is not an object";
+                if (!reflection.TryGetProperty("title", out var title) || title.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(title.GetString()))
+                    return "has no title";
+                if (!reflection.TryGetProperty("url", out var url) || url.ValueKind != JsonValueKind.String || !ReflectionUrl.IsMatch(url.GetString()!))
+                    return "has no url to a released timeline under /podcasts/";
+                foreach (var optional in new[] { "caption", "description" })
+                    if (reflection.TryGetProperty(optional, out var value) && value.ValueKind != JsonValueKind.String)
+                        return $"has a {optional} that is not a string";
+                return null;
+            }
+
+            if (Problem() is { } problem)
+                throw new InvalidOperationException($"Essay '{slug}' reflection {index} {problem}.");
+            index++;
+        }
+    }
 
     private static string ComputeETag(string json)
     {
