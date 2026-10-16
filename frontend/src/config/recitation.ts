@@ -1,4 +1,5 @@
 import { ABDUL_BASIT_MURATTAL } from "@/data/recitations/abdul-basit-murattal";
+import { MISHARI_RASHID_AL_AFASY_MURATTAL } from "@/data/recitations/mishari-rashid-al-afasy-murattal";
 import type { RecitationTimings } from "@/lib/recitation-playlist";
 
 /**
@@ -20,6 +21,7 @@ export interface RecitationOption {
 
 /** Every recitation on offer, in the order the Reciter setting lists them. */
 export const RECITATIONS: readonly RecitationOption[] = [
+  { name: "Mishari Rashid al-Afasy - Murattal", reciter: "Mishari Rashid al-Afasy", timings: MISHARI_RASHID_AL_AFASY_MURATTAL },
   { name: "Abdul Basit Abdul Samad - Murattal", reciter: "Abdul Basit Abdul Samad", timings: ABDUL_BASIT_MURATTAL },
 ];
 

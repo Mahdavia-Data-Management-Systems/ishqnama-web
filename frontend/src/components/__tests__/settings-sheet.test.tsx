@@ -146,11 +146,14 @@ describe("SettingsSheet recitation section", () => {
     expect(names).toEqual(["General settings", "Reader settings", "Recitation settings"]);
   });
 
-  it("offers the one reciter and the continue switch, on", () => {
+  it("offers the reciters, Mishari first, Abdul Basit chosen, and the continue switch, on", () => {
     renderSheet({ expandedSection: "recitation" });
     expect(recitationToggle().getAttribute("aria-expanded")).toBe("true");
     const reciter = screen.getByRole("combobox", { name: "Reciter" }) as HTMLSelectElement;
-    expect(Array.from(reciter.options).map((o) => o.textContent)).toEqual(["Abdul Basit Abdul Samad - Murattal"]);
+    expect(Array.from(reciter.options).map((o) => o.textContent)).toEqual([
+      "Mishari Rashid al-Afasy - Murattal",
+      "Abdul Basit Abdul Samad - Murattal",
+    ]);
     expect(reciter.value).toBe("abdul-basit-murattal");
     expect(screen.getByRole("switch", { name: "Continue to the next verse" }).getAttribute("aria-checked")).toBe("true");
   });

@@ -9,15 +9,18 @@ import {
 } from "@/config/recitation";
 
 describe("recitations", () => {
-  it("offers Abdul Basit's murattal as the one reciter, and the default", () => {
+  it("offers Mishari al-Afasy's murattal first, as the default, then Abdul Basit's", () => {
     expect(RECITATIONS.map((r) => ({ id: r.timings.id, name: r.name, reciter: r.reciter }))).toEqual([
+      { id: "mishari-rashid-al-afasy-murattal", name: "Mishari Rashid al-Afasy - Murattal", reciter: "Mishari Rashid al-Afasy" },
       { id: "abdul-basit-murattal", name: "Abdul Basit Abdul Samad - Murattal", reciter: "Abdul Basit Abdul Samad" },
     ]);
     expect(RECITATION).toBe(RECITATIONS[0]);
+    expect(RECITATION.timings.id).toBe("mishari-rashid-al-afasy-murattal");
   });
 
   it("finds a recitation by its id and falls back to the default for an unknown one", () => {
-    expect(recitationById("abdul-basit-murattal")).toBe(RECITATION);
+    expect(recitationById("mishari-rashid-al-afasy-murattal")).toBe(RECITATION);
+    expect(recitationById("abdul-basit-murattal")).toBe(RECITATIONS[1]);
     expect(recitationById("someone-else")).toBe(RECITATION);
     expect(recitationById(undefined)).toBe(RECITATION);
   });

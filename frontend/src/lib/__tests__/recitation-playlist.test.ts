@@ -86,11 +86,11 @@ describe("versePlaylist", () => {
     expect(p.clips.map((c) => c.ref)).toEqual([{ chapter: 2, verse: 0 }, { chapter: 2, verse: 1 }]);
   });
 
-  it("uses the bundled recitation by default", () => {
+  it("uses the default recitation, Mishari al-Afasy, when none is given", () => {
     const p = versePlaylist("quran/112", [{ chapter: 112, verse: 1 }]);
-    expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/abdul-basit-murattal/v1/112.mp3");
+    expect(p.clips[0].url).toBe("https://audio.ishqnama.com/recitations/mishari-rashid-al-afasy-murattal/v1/112.mp3");
     expect(p.clips[0].title).toBe("al-Ikhlāṣ");
-    expect(p.reciter).toBe("Abdul Basit Abdul Samad");
+    expect(p.reciter).toBe("Mishari Rashid al-Afasy");
   });
 });
 
