@@ -81,6 +81,7 @@ export default function ReaderToolbar({
               value={mode}
               onChange={(v) => onModeChange(v as ReadingMode)}
               size="sm"
+              collapseBelow="sm"
             />
           )}
           {lang && onLangChange && (
@@ -89,6 +90,7 @@ export default function ReaderToolbar({
               value={lang}
               onChange={(v) => onLangChange(v as TranslationLang)}
               size="sm"
+              collapseBelow="sm"
             />
           )}
           {/* Alone in the bar, it stays and keeps its label on the narrowest phones */}

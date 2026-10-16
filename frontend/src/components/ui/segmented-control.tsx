@@ -17,6 +17,12 @@ interface SegmentedControlProps {
   onChange: (value: string) => void;
   size?: "sm" | "md";
   className?: string;
+  /**
+   * Below the named breakpoint ("sm" is 640px) a button shows its icon and short label
+   * instead of its full label, when it has one; the aria-label still names it in full.
+   * Left out, the full label shows at every width.
+   */
+  collapseBelow?: "sm";
 }
 
 export default function SegmentedControl({
@@ -25,9 +31,14 @@ export default function SegmentedControl({
   onChange,
   size = "md",
   className = "",
+  collapseBelow,
 }: SegmentedControlProps) {
   return (
-    <div className={`${styles.wrapper} ${styles[size]} ${className}`} role="tablist">
+    <div
+      className={`${styles.wrapper} ${styles[size]} ${className}`}
+      role="tablist"
+      {...(collapseBelow ? { "data-collapse": collapseBelow } : {})}
+    >
       {options.map((option) => (
         <button
           key={option.value}
@@ -37,6 +48,7 @@ export default function SegmentedControl({
           onClick={() => onChange(option.value)}
           className={`${styles.segment} ${value === option.value ? styles.active : ""}`}
           {...(option.icon ? { "data-seg-has-icon": "" } : {})}
+          {...(option.icon || option.shortLabel ? { "data-seg-compact": "" } : {})}
         >
           {option.icon && <span data-seg-content="icon">{option.icon}</span>}
           {option.shortLabel && <span data-seg-content="short">{option.shortLabel}</span>}

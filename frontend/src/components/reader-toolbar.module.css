@@ -140,19 +140,6 @@
     width: 28px;
   }
 
-  .controls [data-seg-content="full"] {
-    display: none;
-  }
-
-  .controls [data-seg-content="icon"],
-  .controls [data-seg-content="short"] {
-    display: inline-flex;
-  }
-
-  .controls button[data-seg-has-icon] {
-    padding: 0 var(--space-2);
-  }
-
   .fontLabel {
     display: none;
   }

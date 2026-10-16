@@ -51,3 +51,21 @@
 .segment [data-seg-content="short"] {
   display: none;
 }
+
+/* With collapseBelow="sm", a button that has an icon or short label shows that
+   instead of its full label on small screens. Kept here, in the component's own
+   stylesheet, so the switch never depends on which stylesheet the page loads first. */
+@media (max-width: 640px) {
+  .wrapper[data-collapse="sm"] .segment[data-seg-compact] [data-seg-content="full"] {
+    display: none;
+  }
+
+  .wrapper[data-collapse="sm"] .segment[data-seg-compact] [data-seg-content="icon"],
+  .wrapper[data-collapse="sm"] .segment[data-seg-compact] [data-seg-content="short"] {
+    display: inline-flex;
+  }
+
+  .wrapper[data-collapse="sm"] .segment[data-seg-has-icon] {
+    padding: 0 var(--space-2);
+  }
+}
