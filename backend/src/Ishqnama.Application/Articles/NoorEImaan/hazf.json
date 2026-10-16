@@ -499,5 +499,11 @@
    ]
   }
  ],
- "reflections": []
+ "reflections": [
+  {
+   "title": "حذف",
+   "caption": "Hazf, ellipsis, from Noor e Imaan",
+   "url": "articles/nooreimaan/hazf_brief.timeline.v1.json"
+  }
+ ]
 }
