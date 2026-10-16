@@ -32,7 +32,7 @@ jobs:
       api_image_version: ${{ steps.version.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # full history so all api-v* tags are visible
 
