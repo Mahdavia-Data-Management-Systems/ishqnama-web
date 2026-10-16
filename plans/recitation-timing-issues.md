@@ -221,3 +221,11 @@ The next verse's first word starts before this verse's last word ends. Only matt
 ## How to fix
 
 For each verse, play the chapter file around the listed offsets, decide the true boundary, and add an entry to the overrides file the build applies (`[chapter, verse, fromMs, toMs]`, in Tarteel's numbering). Then rebuild (`npm run recitation:build`); the build's report should shrink with every fix. Sections 3–5 are the same defects seen from three sides, so one override usually clears a row in each.
+
+## Other recitations
+
+- **Mishari Rashid al-Afasy, murattal** (`surah-recitation-mishari-al-afasy.zip`, onboarded
+  2026-10-16 as `mishari-rashid-al-afasy-murattal` v1): the onboarding script found **no
+  verse-level overlaps** (section 3's check); every chapter's verse count matched and 1:7 had
+  its nine word segments. The gap, word-segment and duration checks of sections 2, 4, 5 and 6
+  have not been run on this export.
