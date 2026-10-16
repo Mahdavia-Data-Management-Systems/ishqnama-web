@@ -714,5 +714,11 @@
    ]
   }
  ],
- "reflections": []
+ "reflections": [
+  {
+   "title": "استثناء منقطع",
+   "caption": "Istisna munqati, the disjoined exception, from Noor e Imaan",
+   "url": "articles/nooreimaan/munqate_brief.timeline.v1.json"
+  }
+ ]
 }
