@@ -1,4 +1,8 @@
 .main {
+  /* <body> is a column flexbox, and a flex item with auto side margins is not stretched: without
+     a width it shrinks to fit its content, which differs between the essay and its Reflections
+     page, and the shared head above would move with it. */
+  width: 100%;
   max-width: var(--max-width-reader);
   margin: 0 auto;
   padding: var(--space-12) var(--space-6) var(--space-20);

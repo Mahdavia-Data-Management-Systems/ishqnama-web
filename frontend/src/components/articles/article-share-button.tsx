@@ -17,7 +17,7 @@ interface ArticleShareButtonProps {
   /** The message the link travels with; the essay text itself is never shared. */
   text: string;
   /** Which kind of page, for telemetry only. */
-  page: "index" | "essay";
+  page: "index" | "essay" | "reflections";
 }
 
 /** Shares an articles page's link through the system share sheet, or copies it. */

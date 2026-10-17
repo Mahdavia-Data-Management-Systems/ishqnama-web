@@ -285,6 +285,13 @@ class ReflectionTest(unittest.TestCase):
         self.assertTrue(text.startswith('{\n "slug": "naskh",\n "urduTitle": "نسخ"'))
         self.assertTrue(text.endswith("}\n"))
 
+    def test_attaching_rewrites_the_static_pages_reflections_index_beside_the_essays_folder(self):
+        index_path = self.essays.parent / "nooreimaan-reflections.json"
+        self.assertFalse(index_path.exists())
+        self.run_main("--release", str(self.draft(title="نسخ", caption="Naskh (abrogation)")), "--article", "naskh")
+        self.assertEqual(json.loads(index_path.read_text(encoding="utf-8")), {"naskh": self.reflections()})
+        self.assertEqual(list(json.loads(index_path.read_text(encoding="utf-8"))["naskh"][0]), ["title", "caption", "url"])
+
     def test_a_new_version_replaces_the_url_keeps_a_hand_edited_title_and_the_description(self):
         self.run_main("--release", str(self.draft(title="old title", caption="old caption")), "--article", "naskh", "--description", "Kept.")
         essay = json.loads(self.essay.read_text(encoding="utf-8"))

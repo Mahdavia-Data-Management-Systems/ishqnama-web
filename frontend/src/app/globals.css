@@ -267,6 +267,10 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* Keep the scrollbar's gutter whether or not the page scrolls, so a centred column does not
+     jump sideways between a long page and a short one (an essay and its Reflections tab), or
+     when a sheet locks the page. Overlay scrollbars (phones, macOS) reserve nothing anyway. */
+  scrollbar-gutter: stable;
 }
 
 ::selection {

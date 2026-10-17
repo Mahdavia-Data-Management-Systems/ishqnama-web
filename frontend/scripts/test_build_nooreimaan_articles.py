@@ -4,9 +4,27 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from build_nooreimaan_articles import carry_reflections, convert
+from build_nooreimaan_articles import carry_reflections, convert, write_reflections_index
 
 MANIFEST = [{"slug": "naskh", "title": "Naskh", "urduTitle": "نسخ"}]
+
+
+class ReflectionsIndexTests(unittest.TestCase):
+    def test_lists_only_the_essays_with_reflections_by_slug(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            essays = Path(tmp) / "essays"
+            essays.mkdir()
+            naskh = [{"title": "نسخ", "caption": "Naskh", "url": "articles/nooreimaan/naskh.timeline.v1.json"}]
+            (essays / "naskh.json").write_text(json.dumps({"slug": "naskh", "blocks": [], "reflections": naskh}, ensure_ascii=False), encoding="utf-8")
+            (essays / "hazf.json").write_text(json.dumps({"slug": "hazf", "blocks": [], "reflections": []}), encoding="utf-8")
+            (essays / "amanat.json").write_text(json.dumps({"slug": "amanat", "blocks": []}), encoding="utf-8")
+            index_path = Path(tmp) / "nooreimaan-reflections.json"
+            index = write_reflections_index(essays, index_path)
+            self.assertEqual(index, {"naskh": naskh})
+            text = index_path.read_text(encoding="utf-8")
+            self.assertEqual(json.loads(text), {"naskh": naskh})
+            self.assertIn("نسخ", text)  # not escaped
+            self.assertTrue(text.endswith("}\n"))
 
 
 def doc(body: str) -> str:

@@ -1,28 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ArticleShareButton from "@/components/articles/article-share-button";
 import EssayGate from "@/components/articles/essay-gate";
 import EssayReader from "@/components/articles/essay-reader";
-import EssayStickyBar from "@/components/articles/essay-sticky-bar";
 import BackToTop from "@/components/ui/back-to-top";
-import Icon from "@/components/ui/icon";
 import {
-  NOOR_E_IMAAN_ESSAYS,
   NOOR_E_IMAAN_ESSAY_BY_SLUG,
   essayNeighbours,
   essayPath,
+  essayStaticParams,
 } from "@/data/articles/nooreimaan";
 import { pageMetadata } from "@/lib/page-metadata";
 import type { EssayMeta } from "@/types/articles";
 import styles from "./essay.module.css";
 
 export const dynamicParams = false;
-
-const ESSAY_TITLE_ID = "essay-title";
-
-export function generateStaticParams() {
-  return NOOR_E_IMAAN_ESSAYS.map(({ slug }) => ({ slug }));
-}
+export const generateStaticParams = essayStaticParams;
 
 interface EssayPageProps {
   params: Promise<{ slug: string }>;
@@ -50,6 +42,7 @@ function Neighbour({ essay, rel }: { essay: EssayMeta; rel: "prev" | "next" }) {
   );
 }
 
+/** The essay's text, under the head the layout gives both of its pages. */
 export default async function EssayPage({ params }: EssayPageProps) {
   const { slug } = await params;
   const essay = NOOR_E_IMAAN_ESSAY_BY_SLUG.get(slug);
@@ -57,39 +50,7 @@ export default async function EssayPage({ params }: EssayPageProps) {
   const { previous, next } = essayNeighbours(slug);
 
   return (
-    <main className={styles.main}>
-      {/* A child of <main>, not the header, so it stays pinned for the whole essay */}
-      <EssayStickyBar
-        className={styles.bar}
-        title={essay.urduTitle}
-        titleId={ESSAY_TITLE_ID}
-        start={
-          <Link href="/articles/" className={styles.back}>
-            <Icon name="chevronLeft" size={16} />
-            Articles
-          </Link>
-        }
-        end={
-          <div className={styles.share}>
-            <ArticleShareButton
-              path={essayPath(slug)}
-              title={essay.title}
-              text={`Noor-e-Imaan | ${essay.urduTitle}\n${essay.title}\n`}
-              page="essay"
-            />
-          </div>
-        }
-      />
-
-      <header className={styles.head}>
-        <h1 id={ESSAY_TITLE_ID} className={styles.title} lang="ur" dir="rtl">
-          <span className={styles.bracket} aria-hidden="true">﴿</span>
-          {essay.urduTitle}
-          <span className={styles.bracket} aria-hidden="true">﴾</span>
-        </h1>
-        <p className={styles.subtitle}>{essay.title}</p>
-      </header>
-
+    <>
       <EssayReader
         prev={previous && { href: essayPath(previous.slug), name: previous.title }}
         next={next && { href: essayPath(next.slug), name: next.title }}
@@ -106,6 +67,6 @@ export default async function EssayPage({ params }: EssayPageProps) {
       </nav>
 
       <BackToTop />
-    </main>
+    </>
   );
 }

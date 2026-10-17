@@ -90,6 +90,9 @@ RELEASE_DIR = Path(__file__).resolve().parents[2] / "audio" / "podcasts" / "arti
 # under the bucket's /podcasts/, which the repo's audio/podcasts/ folder mirrors, so any released
 # episode can be attached, wherever under /podcasts/ it lives.
 ESSAYS_DIR = Path(__file__).resolve().parents[2] / "backend" / "src" / "Ishqnama.Application" / "Articles" / "NoorEImaan"
+# The static pages' copy of which essays have reflections, rewritten from the essays after every
+# attach; a folder given with --essays gets its own copy beside it, under the same name.
+from build_nooreimaan_articles import REFLECTIONS_INDEX, write_reflections_index  # noqa: E402
 PODCASTS_FOLDER = "podcasts"
 REFLECTION_URL = re.compile(r"^((?:[a-z0-9_-]+/)*[a-z0-9_-]+)\.timeline\.v([1-9][0-9]*)\.json$")
 CACHE_DIR = Path(os.environ.get("ISHQNAMA_PODCAST_CACHE", Path.home() / ".cache" / "ishqnama-podcast"))
@@ -617,6 +620,9 @@ def attach(timeline_path: Path, slug: str, overrides: dict, essays: str | None) 
     essay["reflections"] = upsert_reflection(essay.get("reflections", []), url, timeline, overrides, old_timeline)
     essay_path.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
     log(f"attached {url} to {slug}: {len(essay['reflections'])} reflection(s)")
+    index_path = REFLECTIONS_INDEX if essays is None else Path(essays).parent / REFLECTIONS_INDEX.name
+    index = write_reflections_index(essay_path.parent, index_path)
+    log(f"wrote {index_path}: {len(index)} essay(s) with reflections")
     return 0
 
 

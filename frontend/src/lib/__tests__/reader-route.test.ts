@@ -15,6 +15,10 @@ describe("isReaderRoute", () => {
     expect(isReaderRoute("/articles/nooreimaan/")).toBe(false);
   });
 
+  it("leaves an essay's reflections page, which has no toolbar, as an ordinary page", () => {
+    expect(isReaderRoute("/articles/nooreimaan/naskh/reflections/")).toBe(false);
+  });
+
   it("excludes the chapter index and every other page", () => {
     expect(isReaderRoute("/quran/")).toBe(false);
     expect(isReaderRoute("/")).toBe(false);

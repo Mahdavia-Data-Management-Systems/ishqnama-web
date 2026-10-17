@@ -18,6 +18,9 @@ FRONTEND = Path(__file__).resolve().parent.parent
 MANIFEST = FRONTEND / "src" / "data" / "articles" / "nooreimaan.json"
 OUT_DIR = FRONTEND.parent / "backend" / "src" / "Ishqnama.Application" / "Articles" / "NoorEImaan"
 DEFAULT_SOURCE = FRONTEND.parent / ".ishqnama" / "articles" / "31.html"
+# Which essays have reflections, for the static pages (the essay text never reaches them): slug to
+# reflections, essays without any left out. Derived from the essay files, never edited by hand.
+REFLECTIONS_INDEX = FRONTEND / "src" / "data" / "articles" / "nooreimaan-reflections.json"
 
 SKIPPED_ESSAYS = {unicodedata.normalize("NFC", "دعاء ختم القران")}
 SPAN_KINDS = {
@@ -199,6 +202,24 @@ def carry_reflections(essays: list[dict], out_dir: Path) -> list[dict]:
     return [{**e, "reflections": kept.get(e["slug"], [])} for e in essays]
 
 
+def reflections_index(essays_dir: Path) -> dict[str, list]:
+    """Slug to reflections for every essay in `essays_dir` that has any, by slug. An essay with none is
+    left out, so the file also says which essays have recordings at all."""
+    index: dict[str, list] = {}
+    for path in sorted(essays_dir.glob("*.json")):
+        reflections = json.loads(path.read_text(encoding="utf-8")).get("reflections") or []
+        if reflections:
+            index[path.stem] = reflections
+    return index
+
+
+def write_reflections_index(essays_dir: Path, index_path: Path) -> dict[str, list]:
+    """Writes the static pages' copy of the essays' reflections (see REFLECTIONS_INDEX)."""
+    index = reflections_index(essays_dir)
+    index_path.write_text(json.dumps(index, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    return index
+
+
 def essay_text(essay: dict) -> str:
     return json.dumps(essay, ensure_ascii=False, indent=1) + "\n"
 
@@ -213,6 +234,8 @@ def main(argv: list[str]) -> None:
     for essay in essays:
         (OUT_DIR / f"{essay['slug']}.json").write_text(essay_text(essay), encoding="utf-8", newline="\n")
     print(f"Wrote {len(essays)} essays to {OUT_DIR}")
+    index = write_reflections_index(OUT_DIR, REFLECTIONS_INDEX)
+    print(f"Wrote {REFLECTIONS_INDEX.name}: {len(index)} essay(s) with reflections")
 
 
 if __name__ == "__main__":
