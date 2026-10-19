@@ -1,0 +1,99 @@
+/* The art is 1328 by 800, drawn on a transparent ground, so the card keeps that ratio and paints
+   the hosts' gold wash under it (the same wash as their portraits in the bubble; opaque cream in
+   light, a gold tint over the raised surface in dark). The title is laid over the picture, so its
+   size follows the card's width through container units rather than the page's type scale. */
+.card {
+  container-type: inline-size;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1328 / 800;
+  border-radius: var(--radius-md);
+  background: linear-gradient(var(--gold-wash), var(--gold-wash)), var(--surface-raised);
+  box-shadow: inset 0 0 0 1px var(--tint-ink-12);
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+/* The title takes the part of the picture the artist left empty: a side when one host sits in
+   the other, the gap between them when both are drawn. The insets are measured from the art. */
+.title {
+  position: absolute;
+  inset: 8% 6%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  font-family: var(--font-display);
+  /* --title-fit is set by the component, stepping the size down until the longest word fits */
+  font-size: calc(6.3cqw * var(--title-fit, 1));
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* The title's words as one flowing run (the column above centres it), so the marked word takes
+   only its own width and wraps with the sentence rather than a line of its own. */
+.runs {
+  display: block;
+  text-wrap: balance;
+}
+
+.card[data-align="left"] .title {
+  inset-inline-end: 50%;
+  text-align: left;
+}
+
+.card[data-align="right"] .title {
+  inset-inline-start: 54%;
+  text-align: right;
+}
+
+.card[data-align="center"] .title {
+  inset-inline: 37%;
+  font-size: calc(5.8cqw * var(--title-fit, 1));
+  text-align: center;
+}
+
+/* The recording's length, in the bottom right corner on the overlay tint so it reads over the
+   desk, a sleeve or the wash alike; sized with the card like the title. */
+.duration {
+  position: absolute;
+  right: 3.5%;
+  bottom: 5%;
+  z-index: 1;
+  padding: 0.15em 0.5em;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: max(0.6875rem, 3.4cqw);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  color: var(--text-on-dark);
+  background: var(--surface-overlay);
+}
+
+/* The marked word: a block of bright gold, like a stroke of marker on the page. Gold reads the
+   same on both themes, so the text on it is the deep chrome teal in both. `clone` keeps the
+   block whole on each line when the mark wraps. */
+.highlight {
+  padding: 0.04em 0.16em;
+  border-radius: 0.14em;
+  background: var(--gold-bright);
+  color: var(--surface-chrome-deep);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* A marked term's words break only at their spaces, never inside a hyphenated one. */
+.word {
+  white-space: nowrap;
+}

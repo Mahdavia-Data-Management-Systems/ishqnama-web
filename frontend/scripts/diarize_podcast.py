@@ -590,18 +590,23 @@ def upsert_reflection(reflections: list[dict], url: str, timeline: dict, overrid
             elif timeline.get(field):
                 updated[field] = timeline[field]
         description = overrides.get("description") or reflection.get("description")
-        return reflections[:i] + [_reflection(updated, description, url)] + reflections[i + 1:]
+        # The picture card (its art, title and where the title sits) is written by hand and stays.
+        return reflections[:i] + [_reflection(updated, description, url, timeline, reflection.get("thumbnail"))] + reflections[i + 1:]
     added = {field: overrides.get(field) or timeline.get(field) for field in ("title", "caption")}
-    return reflections + [_reflection(added, overrides.get("description"), url)]
+    return reflections + [_reflection(added, overrides.get("description"), url, timeline)]
 
 
-def _reflection(fields: dict, description: str | None, url: str) -> dict:
-    """A reflection with its keys in order: title, caption, description, url (the empty ones left out)."""
+def _reflection(fields: dict, description: str | None, url: str, timeline: dict, thumbnail: dict | None = None) -> dict:
+    """A reflection with its keys in order: title, caption, description, durationMs (the timeline's),
+    thumbnail, url (the empty ones left out)."""
     if not fields.get("title"):
         raise SystemExit(f"{url} has no title: give the reflection one with --title")
     reflection = {k: v for k, v in fields.items() if v}
     if description:
         reflection["description"] = description
+    reflection["durationMs"] = timeline["durationMs"]
+    if thumbnail:
+        reflection["thumbnail"] = thumbnail
     reflection["url"] = url
     return reflection
 

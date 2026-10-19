@@ -25,7 +25,8 @@ export function reflectionsPath(slug: string): string {
  * `scripts/build_nooreimaan_articles.py` and by `scripts/diarize_podcast.py` on every attach, so the
  * pages know which essays have recordings without the essay text. Essays without any are absent.
  */
-const REFLECTIONS_BY_SLUG: Record<string, Reflection[]> = reflectionsIndex;
+// The JSON import widens the thumbnail's `align` to string; the API validates the file's values.
+const REFLECTIONS_BY_SLUG = reflectionsIndex as Record<string, Reflection[]>;
 
 /** An essay's recorded discussions in display order; `[]` for most essays. */
 export function essayReflections(slug: string): Reflection[] {

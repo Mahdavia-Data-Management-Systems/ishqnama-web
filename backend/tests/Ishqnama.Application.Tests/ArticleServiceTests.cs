@@ -76,6 +76,14 @@ public sealed class ArticleServiceTests
                 using var timeline = JsonDocument.Parse(File.ReadAllText(timelinePath));
                 var audio = Path.Combine(Path.GetDirectoryName(timelinePath)!, timeline.RootElement.GetProperty("audio").GetString()!);
                 Assert.True(File.Exists(audio), $"{slug}: {audio} is not released beside its timeline");
+                if (reflection.TryGetProperty("durationMs", out var duration))
+                    Assert.Equal(timeline.RootElement.GetProperty("durationMs").GetDouble(), duration.GetDouble());
+                if (reflection.TryGetProperty("thumbnail", out var thumbnail))
+                {
+                    var art = Path.Combine(podcasts, thumbnail.GetProperty("url").GetString()!);
+                    Assert.True(File.Exists(art), $"{slug}: {art} is not released");
+                    Assert.Equal(Path.GetDirectoryName(timelinePath), Path.GetDirectoryName(art));
+                }
             }
         }
     }
@@ -84,6 +92,8 @@ public sealed class ArticleServiceTests
     [InlineData("""{"reflections": []}""")]
     [InlineData("""{"reflections": [{"title": "نسخ", "url": "articles/nooreimaan/naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "caption": "c", "description": "d", "url": "talks/sabr_brief.timeline.v12.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "articles/nooreimaan/naskh/naskh.thumbnail.v1.png", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}, "url": "articles/nooreimaan/naskh/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "durationMs": 96896, "thumbnail": {"url": "naskh.thumbnail.v3.webp", "title": "Naskh", "align": "center"}, "url": "naskh.timeline.v1.json"}]}""")]
     public void Sound_reflections_pass(string json)
     {
         using var doc = JsonDocument.Parse(json);
@@ -102,6 +112,15 @@ public sealed class ArticleServiceTests
     [InlineData("""{"reflections": [{"title": "t", "url": "../naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "url": "naskh.timeline.v0.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "caption": 3, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "durationMs": "96896", "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "durationMs": -1, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": "naskh.thumbnail.v1.png", "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.v1.m4a", "title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "../naskh.thumbnail.v1.png", "title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": " ", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": "Naskh"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": "Naskh", "align": "top"}, "url": "naskh.timeline.v1.json"}]}""")]
     public void Unsound_reflections_fail_naming_the_essay(string json)
     {
         using var doc = JsonDocument.Parse(json);

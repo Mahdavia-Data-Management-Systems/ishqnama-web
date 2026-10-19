@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import ReflectionItem from "@/components/articles/reflection-item";
+import ReflectionsReel from "@/components/articles/reflections-reel";
 import {
   NOOR_E_IMAAN_ESSAY_BY_SLUG,
   essayReflections,
@@ -29,8 +30,9 @@ export async function generateMetadata({ params }: ReflectionsPageProps) {
 
 /**
  * The recorded discussions about an essay, under the head the layout gives both of its pages.
- * Only an essay with recordings has this page. For now it names each recording by its caption
- * and description; how they are heard here is to be designed.
+ * Only an essay with recordings has this page. The recordings are a reel of cards (sideways on
+ * a wide screen, a screen each on a phone), each its picture, caption and description; how they
+ * are heard here is to be designed.
  */
 export default async function ReflectionsPage({ params }: ReflectionsPageProps) {
   const { slug } = await params;
@@ -39,11 +41,11 @@ export default async function ReflectionsPage({ params }: ReflectionsPageProps) 
 
   return (
     <section className={styles.reflections} aria-label="Reflections">
-      <ol className={styles.list}>
+      <ReflectionsReel>
         {reflections.map((reflection) => (
           <ReflectionItem key={reflection.url} reflection={reflection} />
         ))}
-      </ol>
+      </ReflectionsReel>
     </section>
   );
 }

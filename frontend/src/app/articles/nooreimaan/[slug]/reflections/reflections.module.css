@@ -1,11 +1,5 @@
-/* The recordings about the essay, one under another (each row is a ReflectionItem), with room
-   beneath so the page does not end on the last line. */
+/* The reel of recordings about the essay (ReflectionsReel, each card a ReflectionItem), with
+   room beneath so the page does not end on the reel's edge. */
 .reflections {
   margin-bottom: var(--space-20);
-}
-
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }

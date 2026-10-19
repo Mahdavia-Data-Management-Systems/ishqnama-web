@@ -120,6 +120,26 @@ export function episodeUrls(episode: string, version: number, origin: string = P
   return { timeline: `${base}${episode}.timeline.v${version}.json`, folder };
 }
 
+/** A recording's length as a clock reads it: "1:37", "19:48", "1:02:05". */
+export function formatDuration(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mm = h > 0 ? String(m).padStart(2, "0") : String(m);
+  return `${h > 0 ? `${h}:` : ""}${mm}:${String(s).padStart(2, "0")}`;
+}
+
+/**
+ * Where a released file under `/podcasts/` is served from, by its path there: a reflection's
+ * thumbnail, `articles/nooreimaan/naskh/naskh.thumbnail.v1.png`, sits beside its timeline and
+ * recording and is named the same way, versioned because the bucket serves it as immutable.
+ */
+export function podcastFileUrl(path: string, origin: string = PODCAST_AUDIO_ORIGIN): string {
+  if (!/^[\w-]+(\/[\w-]+)*(\.[\w-]+)+$/.test(path)) throw new Error(`not a released file under /podcasts/: ${path}`);
+  return `${origin.replace(/\/$/, "")}/podcasts/${path}`;
+}
+
 /**
  * The episode and version an essay reflection's `url` names, for `episodeUrls`/`useEpisode`:
  * `articles/nooreimaan/naskh/naskh.timeline.v1.json` is `{ episode: "articles/nooreimaan/naskh/naskh",

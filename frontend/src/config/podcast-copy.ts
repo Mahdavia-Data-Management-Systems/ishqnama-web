@@ -24,4 +24,6 @@ export const PODCAST_COPY = {
   opening: "Hamza and Zoya are about to begin",
   /** The lab page when the episode cannot be fetched. */
   unavailable: "This discussion isn't available.",
+  /** On a recording's card when its description is cut short; opens the whole of it. */
+  readMore: "Read more",
 } as const;

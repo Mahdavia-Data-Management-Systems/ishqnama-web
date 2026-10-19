@@ -56,9 +56,21 @@ public sealed class ArticleService
         @"^(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.timeline\.v[1-9][0-9]*\.json$", RegexOptions.CultureInvariant);
 
     /// <summary>
+    /// A reflection's <c>thumbnail.url</c>: the art released beside the timeline, under the same
+    /// <c>/podcasts/</c>, versioned like it.
+    /// </summary>
+    public static readonly Regex ThumbnailUrl = new(
+        @"^(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.thumbnail\.v[1-9][0-9]*\.(?:png|webp|jpg)$", RegexOptions.CultureInvariant);
+
+    private static readonly string[] ThumbnailAligns = ["left", "right", "center"];
+
+    /// <summary>
     /// Checks an essay's <c>reflections</c>: present, an array (empty for an essay without
     /// recordings), each an object with a non-empty <c>title</c>, a <c>url</c> matching
-    /// <see cref="ReflectionUrl"/>, and <c>caption</c>/<c>description</c> strings when given.
+    /// <see cref="ReflectionUrl"/>, <c>caption</c>/<c>description</c> strings when given, a
+    /// non-negative <c>durationMs</c> number when given (the timeline's, copied at attach), and
+    /// when given a <c>thumbnail</c> object with a <c>url</c> matching <see cref="ThumbnailUrl"/>,
+    /// a non-empty <c>title</c> and an <c>align</c> of left, right or center.
     /// Throws naming the essay and the reflection, so a bad file fails the tests in CI (and, in the
     /// API, the first essay request, when this singleton is built).
     /// </summary>
@@ -81,6 +93,19 @@ public sealed class ArticleService
                 foreach (var optional in new[] { "caption", "description" })
                     if (reflection.TryGetProperty(optional, out var value) && value.ValueKind != JsonValueKind.String)
                         return $"has a {optional} that is not a string";
+                if (reflection.TryGetProperty("durationMs", out var duration) && (duration.ValueKind != JsonValueKind.Number || duration.GetDouble() < 0))
+                    return "has a durationMs that is not a non-negative number";
+                if (reflection.TryGetProperty("thumbnail", out var thumbnail))
+                {
+                    if (thumbnail.ValueKind != JsonValueKind.Object)
+                        return "has a thumbnail that is not an object";
+                    if (!thumbnail.TryGetProperty("url", out var art) || art.ValueKind != JsonValueKind.String || !ThumbnailUrl.IsMatch(art.GetString()!))
+                        return "has a thumbnail with no url to released art under /podcasts/";
+                    if (!thumbnail.TryGetProperty("title", out var heading) || heading.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(heading.GetString()))
+                        return "has a thumbnail with no title";
+                    if (!thumbnail.TryGetProperty("align", out var align) || align.ValueKind != JsonValueKind.String || Array.IndexOf(ThumbnailAligns, align.GetString()) < 0)
+                        return "has a thumbnail whose align is not left, right or center";
+                }
                 return null;
             }
 

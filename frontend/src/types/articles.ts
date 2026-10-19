@@ -31,7 +31,23 @@ export interface Reflection {
   title: string;
   caption?: string;
   description?: string;
+  /** The recording's length, copied from its timeline when it is attached. */
+  durationMs?: number;
+  /** Its picture card, when the art has been drawn for it. */
+  thumbnail?: ReflectionThumbnail;
   url: string;
+}
+
+/**
+ * A recording's picture card: the art released beside its timeline (`url`, a path under
+ * `/podcasts/` like the timeline's, e.g. `articles/nooreimaan/naskh/naskh.thumbnail.v1.png`), the
+ * title set over it with the word or two to highlight between asterisks, and which part of the
+ * picture the artist left for the title: the left or right half, or the gap between the hosts.
+ */
+export interface ReflectionThumbnail {
+  url: string;
+  title: string;
+  align: "left" | "right" | "center";
 }
 
 export interface EssayDto {

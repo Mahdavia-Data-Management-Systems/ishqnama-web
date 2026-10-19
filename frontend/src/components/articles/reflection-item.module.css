@@ -1,13 +1,92 @@
-/* One recording in the list, parted from the next by a hairline. */
+/* One card: picture, caption and description in a column, as tall as its parts (ReflectionsReel
+   sets the card's width and snap on the wide screen's rail). The caption keeps room for two
+   lines and the description for six, so the cards on a rail line up whatever their words. */
 .item {
-  padding-block: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
-.item + .item {
-  border-top: 1px solid var(--tint-ink-12);
+/* The picture is the button that opens the discussion: the card fills it, a play glyph sits in
+   the corner opposite the length, and the whole lifts a little under the pointer. */
+.play {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.play:hover,
+.play:focus-visible {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.play:focus-visible {
+  outline-offset: 3px;
+}
+
+.thumbnail {
+  width: 100%;
+}
+
+.playGlyph {
+  position: absolute;
+  left: 3.5%;
+  bottom: 5%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--text-on-dark);
+  background: var(--surface-overlay);
+}
+
+.play[aria-pressed="true"] .playGlyph {
+  color: var(--surface-chrome-deep);
+  background: var(--gold-bright);
+}
+
+/* A recording without art is opened by a plain link-like button in its place. */
+.playPlain {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--teal-primary);
+  cursor: pointer;
+}
+
+.playPlain:hover {
+  color: var(--teal-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* When the recording could not be reached, under the caption. */
+.unavailable {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
 }
 
 .caption {
+  flex: none;
+  min-height: calc(2 * var(--leading-snug) * var(--text-xl));
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 500;
@@ -16,13 +95,64 @@
   text-wrap: balance;
 }
 
+/* The room the description has: six of its lines (the box's own type metrics are the
+   description's, so the component's measurement comes out at six). */
+.descriptionBox {
+  flex: none;
+  height: calc(6 * var(--leading-relaxed) * var(--text-base));
+  overflow: hidden;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+/* Clamped to the whole lines that fit the box (--description-lines), the last of them ending in
+   an ellipsis when more was cut. Only as tall as those lines, so nothing shows under the ellipsis. */
 .description {
-  margin-top: var(--space-3);
-  max-width: 68ch;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--description-lines, 6);
+  line-clamp: var(--description-lines, 6);
+  overflow: hidden;
+  margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--text-secondary);
   text-align: justify;
   hyphens: auto;
   text-wrap: pretty;
+}
+
+/* The row keeps its place whether or not the description was cut, so the cards stay level; the
+   link only shows when something was cut. */
+.more {
+  flex: none;
+  min-height: 1.5rem;
+  visibility: hidden;
+}
+
+.more[data-clipped] {
+  visibility: visible;
+}
+
+.readMore {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--teal-primary);
+  cursor: pointer;
+}
+
+.readMore:hover {
+  color: var(--teal-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.readMore:focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }

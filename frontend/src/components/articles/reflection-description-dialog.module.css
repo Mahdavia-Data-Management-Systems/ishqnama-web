@@ -1,0 +1,72 @@
+/* The same overlay and card as the site's other dialogs (create-bookmark-dialog.module.css), a
+   reading width wide, never taller than the screen: a long description scrolls inside its body. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: var(--surface-overlay);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--tint-teal-8);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.closeButton {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--tint-teal-6);
+}
+
+.body {
+  margin: 0;
+  padding: var(--space-6);
+  overflow-y: auto;
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  text-align: justify;
+  hyphens: auto;
+  text-wrap: pretty;
+}

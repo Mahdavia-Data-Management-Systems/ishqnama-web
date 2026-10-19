@@ -718,12 +718,24 @@
   {
    "title": "استثناء منقطع",
    "caption": "Istisna munqati, the disjoined exception, a brief overview",
+   "durationMs": 111455,
+   "thumbnail": {
+    "url": "articles/nooreimaan/istisna-munqati/munqate_brief.thumbnail.v1.png",
+    "title": "Kya Quran mein *istisna munqati* hai?",
+    "align": "left"
+   },
    "url": "articles/nooreimaan/istisna-munqati/munqate_brief.timeline.v1.json"
   },
   {
    "title": "استثناء منقطع",
    "caption": "Istisna munqati, the disjoined exception, discussed at length",
    "description": "Hamza and Zoya take the long way through istisna munqati, the exception that seems to cut away from what came before. They begin with the two kinds of exception, then follow Hazrat Mahdi ahs's position that the Quran holds no disjoined exception into two verses the grammarians had given up on: in Surah Yunus, how the township and the people of Yunus turn out to be one and the same, and in Surah al-Baqarah, how amani means recitation or invented tales rather than wishes. They end with what the principle asks of a reader of people as well as of books.",
+   "durationMs": 1687045,
+   "thumbnail": {
+    "url": "articles/nooreimaan/istisna-munqati/munqate_detail.thumbnail.v1.png",
+    "title": "*Istisna munqati* par tafseeli guftagu",
+    "align": "center"
+   },
    "url": "articles/nooreimaan/istisna-munqati/munqate_detail.timeline.v1.json"
   }
  ]

@@ -279,7 +279,7 @@ class ReflectionTest(unittest.TestCase):
         draft = self.draft(title="نسخ", caption="Naskh (abrogation)")
         self.assertEqual(self.run_main("--release", str(draft), "--article", "naskh", "--description", "A brief."), 0)
         self.assertEqual(self.reflections(), [{
-            "title": "نسخ", "caption": "Naskh (abrogation)", "description": "A brief.",
+            "title": "نسخ", "caption": "Naskh (abrogation)", "description": "A brief.", "durationMs": 10000,
             "url": "articles/nooreimaan/naskh.timeline.v1.json",
         }])
         text = self.essay.read_text(encoding="utf-8")
@@ -291,7 +291,7 @@ class ReflectionTest(unittest.TestCase):
         self.assertFalse(index_path.exists())
         self.run_main("--release", str(self.draft(title="نسخ", caption="Naskh (abrogation)")), "--article", "naskh")
         self.assertEqual(json.loads(index_path.read_text(encoding="utf-8")), {"naskh": self.reflections()})
-        self.assertEqual(list(json.loads(index_path.read_text(encoding="utf-8"))["naskh"][0]), ["title", "caption", "url"])
+        self.assertEqual(list(json.loads(index_path.read_text(encoding="utf-8"))["naskh"][0]), ["title", "caption", "durationMs", "url"])
 
     def test_a_new_version_replaces_the_url_keeps_a_hand_edited_title_and_the_description(self):
         self.run_main("--release", str(self.draft(title="old title", caption="old caption")), "--article", "naskh", "--description", "Kept.")
@@ -300,9 +300,20 @@ class ReflectionTest(unittest.TestCase):
         self.essay.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         self.run_main("--release", str(self.draft(audio_bytes=b"recording-two", title="new title", caption="new caption")), "--article", "naskh")
         self.assertEqual(self.reflections(), [{
-            "title": "edited by hand", "caption": "new caption", "description": "Kept.",
+            "title": "edited by hand", "caption": "new caption", "description": "Kept.", "durationMs": 10000,
             "url": "articles/nooreimaan/naskh.timeline.v2.json",
         }])
+
+    def test_a_new_version_keeps_the_hand_written_thumbnail_before_the_url(self):
+        self.run_main("--release", str(self.draft(title="t")), "--article", "naskh")
+        essay = json.loads(self.essay.read_text(encoding="utf-8"))
+        thumbnail = {"url": "articles/nooreimaan/naskh.thumbnail.v1.png", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}
+        essay["reflections"][0]["thumbnail"] = thumbnail
+        self.essay.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        self.run_main("--release", str(self.draft(audio_bytes=b"recording-two", title="t")), "--article", "naskh")
+        self.assertEqual(list(self.reflections()[0].items()), [
+            ("title", "t"), ("durationMs", 10000), ("thumbnail", thumbnail), ("url", "articles/nooreimaan/naskh.timeline.v2.json"),
+        ])
 
     def test_attach_adds_an_already_released_timeline_and_another_episode_is_appended(self):
         d.main(["--release", str(self.draft(title="one")), "--into", str(self.dest)])

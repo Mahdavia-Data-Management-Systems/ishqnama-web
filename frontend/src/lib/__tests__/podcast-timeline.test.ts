@@ -1,5 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { episodeUrls, mascotStates, parseTimeline, reflectionEpisode, turnAt, type PodcastTimeline } from "../podcast-timeline";
+import { episodeUrls, formatDuration, mascotStates, parseTimeline, podcastFileUrl, reflectionEpisode, turnAt, type PodcastTimeline } from "../podcast-timeline";
+
+describe("formatDuration", () => {
+  it("reads like a clock, with hours only when there are any", () => {
+    expect(formatDuration(96896)).toBe("1:37");
+    expect(formatDuration(1188281)).toBe("19:48");
+    expect(formatDuration(3725000)).toBe("1:02:05");
+    expect(formatDuration(0)).toBe("0:00");
+    expect(formatDuration(-5)).toBe("0:00");
+  });
+});
+
+describe("podcastFileUrl", () => {
+  it("serves a released file from the audio origin's /podcasts/", () => {
+    expect(podcastFileUrl("articles/nooreimaan/naskh/naskh.thumbnail.v1.png")).toBe(
+      "https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh/naskh.thumbnail.v1.png",
+    );
+    expect(podcastFileUrl("naskh.thumbnail.v1.png", "https://cdn.example/")).toBe("https://cdn.example/podcasts/naskh.thumbnail.v1.png");
+  });
+
+  it("refuses a path that leaves the folder or names no file", () => {
+    expect(() => podcastFileUrl("../secrets.png")).toThrow(/released file/);
+    expect(() => podcastFileUrl("articles/naskh")).toThrow(/released file/);
+    expect(() => podcastFileUrl("https://x/naskh.png")).toThrow(/released file/);
+  });
+});
 
 const timeline: PodcastTimeline = {
   version: 1,

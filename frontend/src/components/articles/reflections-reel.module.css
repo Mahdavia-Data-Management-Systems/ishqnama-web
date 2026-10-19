@@ -1,0 +1,59 @@
+/* On a wide screen the recordings sit on a horizontal rail like the Library's: as tall as a card,
+   bleeding to the column's edges, each card snapping to the start edge, swiped by touch and
+   dragged or wheeled by a mouse (useDragToScroll, useWheelToHorizontal, which hand the wheel
+   back to the page at either end). On a phone the cards stack in the page's own scroll, parted
+   by hairlines. Nothing scrolls inside a card on either. */
+.reel {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Set by useDragToScroll while a mouse drags the rail. */
+.reel[data-dragging],
+.reel[data-dragging] * {
+  cursor: grabbing;
+  user-select: none;
+}
+
+@media (min-width: 641px) {
+  .reel {
+    flex-direction: row;
+    gap: var(--space-6);
+    margin: 0 calc(-1 * var(--space-6));
+    padding: var(--space-1) var(--space-6) var(--space-3);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--space-6);
+    /* No scrollbar: touch swipes it and a mouse drags or wheels it. */
+    scrollbar-width: none;
+  }
+
+  .reel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .reel:focus-visible {
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .reel > * {
+    flex: 0 0 20rem;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .reel {
+    flex-direction: column;
+  }
+
+  .reel > * + * {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--tint-ink-12);
+  }
+}
