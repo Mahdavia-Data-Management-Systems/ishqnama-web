@@ -132,8 +132,8 @@ export function formatDuration(ms: number): string {
 
 /**
  * Where a released file under `/podcasts/` is served from, by its path there: a reflection's
- * thumbnail, `articles/nooreimaan/naskh/naskh.thumbnail.v1.webp`, sits beside its timeline and
- * recording and is named the same way, versioned because the bucket serves it as immutable.
+ * thumbnail, `images/zoya-talking.v1.webp`, is shared art in `/podcasts/images/`, versioned because
+ * the bucket serves it as immutable, so recordings drawn alike reuse one cached file.
  */
 export function podcastFileUrl(path: string, origin: string = PODCAST_AUDIO_ORIGIN): string {
   if (!/^[\w-]+(\/[\w-]+)*(\.[\w-]+)+$/.test(path)) throw new Error(`not a released file under /podcasts/: ${path}`);

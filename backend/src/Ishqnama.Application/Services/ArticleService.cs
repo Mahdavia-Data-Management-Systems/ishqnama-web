@@ -56,11 +56,11 @@ public sealed class ArticleService
         @"^(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.timeline\.v[1-9][0-9]*\.json$", RegexOptions.CultureInvariant);
 
     /// <summary>
-    /// A reflection's <c>thumbnail.url</c>: the art released beside the timeline, under the same
-    /// <c>/podcasts/</c>, versioned like it.
+    /// A reflection's <c>thumbnail.url</c>: shared art in <c>/podcasts/images/</c>, versioned because
+    /// the bucket serves it as immutable, so recordings drawn alike reuse one cached file.
     /// </summary>
     public static readonly Regex ThumbnailUrl = new(
-        @"^(?:[a-z0-9_-]+/)*[a-z0-9_-]+\.thumbnail\.v[1-9][0-9]*\.(?:png|webp|jpg)$", RegexOptions.CultureInvariant);
+        @"^images/[a-z0-9_-]+\.v[1-9][0-9]*\.(?:png|webp|jpg)$", RegexOptions.CultureInvariant);
 
     private static readonly string[] ThumbnailAligns = ["left", "right", "center"];
 
@@ -100,7 +100,7 @@ public sealed class ArticleService
                     if (thumbnail.ValueKind != JsonValueKind.Object)
                         return "has a thumbnail that is not an object";
                     if (!thumbnail.TryGetProperty("url", out var art) || art.ValueKind != JsonValueKind.String || !ThumbnailUrl.IsMatch(art.GetString()!))
-                        return "has a thumbnail with no url to released art under /podcasts/";
+                        return "has a thumbnail with no url to released art under /podcasts/images/";
                     if (!thumbnail.TryGetProperty("title", out var heading) || heading.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(heading.GetString()))
                         return "has a thumbnail with no title";
                     if (!thumbnail.TryGetProperty("align", out var align) || align.ValueKind != JsonValueKind.String || Array.IndexOf(ThumbnailAligns, align.GetString()) < 0)
