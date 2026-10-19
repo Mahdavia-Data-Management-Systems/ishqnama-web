@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import ReflectionItem from "@/components/articles/reflection-item";
 import {
   NOOR_E_IMAAN_ESSAY_BY_SLUG,
   essayReflections,
@@ -40,10 +41,7 @@ export default async function ReflectionsPage({ params }: ReflectionsPageProps) 
     <section className={styles.reflections} aria-label="Reflections">
       <ol className={styles.list}>
         {reflections.map((reflection) => (
-          <li key={reflection.url} className={styles.item}>
-            <h2 className={styles.caption}>{reflection.caption ?? reflection.title}</h2>
-            {reflection.description && <p className={styles.description}>{reflection.description}</p>}
-          </li>
+          <ReflectionItem key={reflection.url} reflection={reflection} />
         ))}
       </ol>
     </section>
