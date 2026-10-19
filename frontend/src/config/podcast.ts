@@ -1,7 +1,8 @@
 /**
  * Where the podcast recordings and their timelines live: the same Cloudflare R2 bucket as the
  * recitation, under `/podcasts/<episode>.vN.<ext>` and `/podcasts/<episode>.timeline.vN.json`,
- * where the episode path names the article it discusses (`articles/nooreimaan/naskh`) and N is
+ * where the episode path runs through the folder of the article it discusses
+ * (`articles/nooreimaan/naskh/naskh`, every recording about an essay in that essay's folder) and N is
  * the release version the onboarding skill's `--release` gave the file (they are served under a
  * one-year immutable cache header, so a change is always a new version). The repo's `audio/`
  * folder holds them at the same paths and `sync-audio.yml` copies it to the bucket. The env var
@@ -33,4 +34,4 @@ export function mascotImage(id: MascotId, expression: MascotExpression): string 
 }
 
 /** The episode, and the released version of its timeline, the lab page opens when its query names none. */
-export const DEFAULT_LAB_EPISODE = { episode: "articles/nooreimaan/naskh", version: 1 };
+export const DEFAULT_LAB_EPISODE = { episode: "articles/nooreimaan/naskh/naskh", version: 1 };

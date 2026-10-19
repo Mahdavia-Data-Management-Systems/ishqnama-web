@@ -106,7 +106,8 @@ export function mascotStates(timeline: PodcastTimeline, ms: number): Partial<Rec
 
 /**
  * Where an episode's files are: its timeline, and the folder its `audio` is in. The episode is
- * a path under `/podcasts/` with no extension or version, e.g. `articles/nooreimaan/naskh`, and
+ * a path under `/podcasts/` with no extension or version, e.g. `articles/nooreimaan/naskh/naskh`
+ * (every recording about an essay sits in a folder named after the essay's slug), and
  * the version picks the released timeline, `naskh.timeline.v1.json`. Released files are served
  * under a one-year immutable cache header and never change, so a corrected timeline is the next
  * version, and whatever names an episode has to name its version too.
@@ -121,7 +122,7 @@ export function episodeUrls(episode: string, version: number, origin: string = P
 
 /**
  * The episode and version an essay reflection's `url` names, for `episodeUrls`/`useEpisode`:
- * `articles/nooreimaan/naskh.timeline.v1.json` is `{ episode: "articles/nooreimaan/naskh",
+ * `articles/nooreimaan/naskh/naskh.timeline.v1.json` is `{ episode: "articles/nooreimaan/naskh/naskh",
  * version: 1 }`. The same pattern the API checks the essays against at startup.
  */
 export function reflectionEpisode(url: string): { episode: string; version: number } {

@@ -14,6 +14,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -360,6 +361,27 @@ class ReflectionTest(unittest.TestCase):
         d.main(["--release", str(self.draft(title="t")), "--into", str(outside)])
         with self.assertRaises(SystemExit):
             self.run_main("--attach", str(outside / "naskh.timeline.v1.json"), "--article", "naskh")
+
+    def test_a_release_with_an_article_goes_into_the_essays_own_folder(self):
+        with unittest.mock.patch.object(d, "RELEASE_DIR", self.dest):
+            self.assertEqual(d.main(["--release", str(self.draft(title="نسخ")), "--article", "naskh", "--essays", str(self.essays)]), 0)
+        self.assertEqual(sorted(p.name for p in (self.dest / "naskh").iterdir()), ["naskh.timeline.v1.json", "naskh.v1.m4a"])
+        self.assertEqual([r["url"] for r in self.reflections()], ["articles/nooreimaan/naskh/naskh.timeline.v1.json"])
+        self.assertEqual(json.loads((self.dest / "naskh" / "naskh.timeline.v1.json").read_text(encoding="utf-8"))["audio"], "naskh.v1.m4a")
+
+    def test_a_release_about_no_essay_needs_a_folder(self):
+        draft = self.draft(title="t")
+        with unittest.mock.patch.object(d, "RELEASE_DIR", self.dest), self.assertRaises(SystemExit):
+            d.main(["--release", str(draft)])
+        self.assertTrue(draft.exists() and (self.src / "raw.m4a").exists())
+        self.assertFalse(self.dest.exists())
+
+    def test_release_folder_is_the_essays_unless_given(self):
+        self.assertEqual(d.release_folder(None, "hazf"), d.RELEASE_DIR / "hazf")
+        self.assertEqual(d.release_folder(str(self.dest / "talks"), "hazf"), self.dest / "talks")
+        self.assertEqual(d.release_folder(str(self.dest / "talks"), None), self.dest / "talks")
+        with self.assertRaises(SystemExit):
+            d.release_folder(None, None)
 
     def test_reflection_episode_reads_only_released_timeline_paths(self):
         self.assertEqual(d.reflection_episode("articles/nooreimaan/mustanifa_brief.timeline.v12.json"), ("articles/nooreimaan/mustanifa_brief", 12))

@@ -12,21 +12,26 @@ Usage:
         [--speakers hamza=low,zoya=high | --speakers zoya] [--voices auto|1|2]
         [--map hamza=1,zoya=0] [--whisper-model small] [--no-transcript]
     python scripts/diarize_podcast.py --check FILE
-    python scripts/diarize_podcast.py --release FILE [--into FOLDER]
-        [--article SLUG [--title "..."] [--caption "..."] [--description "..."]]
+    python scripts/diarize_podcast.py --release FILE --article SLUG
+        [--title "..."] [--caption "..."] [--description "..."]
+    python scripts/diarize_podcast.py --release FILE --into FOLDER
     python scripts/diarize_podcast.py --attach RELEASED_TIMELINE --article SLUG
         [--title "..."] [--caption "..."] [--description "..."]
 
 The recording can be anywhere; the draft timeline is written beside it as
 <episode>.timeline.json, where the episode is the recording's own name unless
 --name gives another, and names the recording as it is. --release, once the
-draft passes --check, moves the pair into the served folder (audio/podcasts/
-articles/nooreimaan/ at the repo root, which sync-audio.yml copies to the
-bucket under a one-year immutable cache header) under versioned names,
-<episode>.vN.<ext> and <episode>.timeline.vN.json, and points the released
-timeline's `audio` at the versioned recording. Each file's version is one
-more than the highest already there; a recording identical to a released
-version keeps that version, so a corrected timeline adds only itself.
+draft passes --check, moves the pair into the served folder under versioned
+names, <episode>.vN.<ext> and <episode>.timeline.vN.json, and points the
+released timeline's `audio` at the versioned recording. The served folder is
+the essay's own, audio/podcasts/articles/nooreimaan/<slug>/ at the repo root
+(every recording about an essay sits in that essay's folder, so hazf's
+recordings are all in hazf/), unless --into names another; a recording about
+no essay has no folder of its own, so it needs --into. The whole audio/
+folder is what sync-audio.yml copies to the bucket under a one-year immutable
+cache header. Each file's version is one more than the highest already in
+the folder; a recording identical to a released version keeps that version,
+so a corrected timeline adds only itself.
 
 --article SLUG (with --release, or --attach for a timeline already released)
 adds the recording to that Noor e Imaan essay's `reflections` in
@@ -34,7 +39,8 @@ backend/src/Ishqnama.Application/Articles/NoorEImaan/<slug>.json, with `url`
 the released timeline's path under /podcasts/. An essay holds one reflection
 per episode: a newer version replaces the older one's `url`. --title and
 --caption set the reflection's own (else the timeline's), and --description
-adds a few sentences the timeline does not carry.
+adds a few sentences the timeline does not carry. A recording attached to a
+second essay stays in the folder it was released into.
 
 A recording with one voice (a solo brief) is detected on its own: when the
 two clusters of a two-way split sit close together, they are one speaker,
@@ -83,7 +89,8 @@ EXPRESSIONS = ("speaking", "laughing", "thoughtful")
 DEFAULT_SPEAKERS = "hamza=low,zoya=high"
 TIMELINE_VERSION = 1
 DRAFT_SUFFIX = ".timeline.json"
-# Where released episodes live: the repo's audio/ folder is laid out like the bucket.
+# Where released episodes live: the repo's audio/ folder is laid out like the bucket, and each essay's
+# recordings are in a folder named after its slug under here (release_folder()).
 RELEASE_DIR = Path(__file__).resolve().parents[2] / "audio" / "podcasts" / "articles" / "nooreimaan"
 # The essays a released recording can be attached to as a reflection (a recording need not be: it can
 # stand alone and play elsewhere on the site). A reflection's `url` is the released timeline's path
@@ -496,13 +503,23 @@ def _same_file(a: Path, b: Path) -> bool:
                 return True
 
 
+def release_folder(into: str | None, slug: str | None) -> Path:
+    """The folder a release goes into: `into` when given, else the essay's own folder under RELEASE_DIR
+    (audio/podcasts/articles/nooreimaan/<slug>/). A recording about no essay has no folder of its own."""
+    if into:
+        return Path(into)
+    if slug:
+        return RELEASE_DIR / slug
+    raise SystemExit("a recording about no essay has no folder of its own: give --article SLUG or --into FOLDER")
+
+
 def release(path: str, into: str | None) -> int:
     return 0 if release_files(path, into) else 1
 
 
-def release_files(path: str, into: str | None) -> Path | None:
-    """Move a reviewed draft timeline and its recording into the served folder under versioned names.
-    The released timeline's path, or None when the draft fails the check."""
+def release_files(path: str, into: str | None, slug: str | None = None) -> Path | None:
+    """Move a reviewed draft timeline and its recording into the served folder (release_folder()) under
+    versioned names. The released timeline's path, or None when the draft fails the check."""
     draft = Path(path)
     episode = episode_of(draft)
     timeline = json.loads(draft.read_text(encoding="utf-8"))
@@ -515,7 +532,7 @@ def release_files(path: str, into: str | None) -> Path | None:
     recording = draft.with_name(timeline["audio"])
     if not recording.is_file():
         raise SystemExit(f"the recording {recording} the timeline names is not beside it")
-    folder = Path(into) if into else RELEASE_DIR
+    folder = release_folder(into, slug)
     folder.mkdir(parents=True, exist_ok=True)
     existing = [p.name for p in folder.iterdir() if p.is_file()]
     plan = release_plan(existing, episode, recording.suffix.lower(), lambda name: _same_file(folder / name, recording))
@@ -533,7 +550,7 @@ def release_files(path: str, into: str | None) -> Path | None:
 
 
 def reflection_episode(url: str) -> tuple[str, int] | None:
-    """(episode path, version) of a reflection's `url`, e.g. ("articles/nooreimaan/naskh", 1), or None
+    """(episode path, version) of a reflection's `url`, e.g. ("articles/nooreimaan/naskh/naskh", 1), or None
     when it is not a released timeline's path under /podcasts/."""
     match = REFLECTION_URL.match(url)
     return (match.group(1), int(match.group(2))) if match else None
@@ -842,7 +859,7 @@ def main(argv=None) -> int:
     parser.add_argument("--no-transcript", action="store_true", help="skip transcription")
     parser.add_argument("--check", metavar="FILE", help="validate a timeline file instead of making one")
     parser.add_argument("--release", metavar="FILE", help="move a checked draft timeline and its recording into the served folder under versioned names")
-    parser.add_argument("--into", metavar="FOLDER", help=f"the served folder for --release (default {RELEASE_DIR})")
+    parser.add_argument("--into", metavar="FOLDER", help=f"the served folder for --release (default: the --article essay's own, {RELEASE_DIR / '<slug>'}; needed for a recording about no essay)")
     parser.add_argument("--attach", metavar="FILE", help="add a released timeline to the --article essay's reflections")
     parser.add_argument("--article", metavar="SLUG", help="the Noor e Imaan essay the released recording is a reflection on (with --release or --attach)")
     parser.add_argument("--description", help="a few sentences on the recording, for the essay's reflection")
@@ -860,7 +877,7 @@ def main(argv=None) -> int:
     if args.release:
         if args.description and not args.article:
             parser.error("--description needs --article SLUG")
-        released = release_files(args.release, args.into)
+        released = release_files(args.release, args.into, args.article)
         if not released:
             return 1
         return attach(released, args.article, overrides, args.essays) if args.article else 0

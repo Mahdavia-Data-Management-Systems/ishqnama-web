@@ -54,7 +54,10 @@ user already reviewed, start at step 5; to redo one, at step 1.
      Noor e Imaan essays, their slugs (the file names in
      `backend/src/Ishqnama.Application/Articles/NoorEImaan/`, e.g. `naskh`)
      and, if the user wants one, a description of a few sentences for the
-     essay page.
+     essay page. The first slug also names the folder the files are
+     released into (`audio/podcasts/articles/nooreimaan/<slug>/`); a
+     recording about no essay needs a folder of its own, so ask where
+     under `audio/podcasts/` it should live.
 
    A request that already states any of these is not asked for them
    again. Ask with `AskUserQuestion` when it is available, else in
@@ -97,36 +100,39 @@ user already reviewed, start at step 5; to redo one, at step 1.
 
    It must print `ok`.
 6. Release it. This moves the recording and the timeline out of the user's
-   folder into `audio/podcasts/articles/nooreimaan/` at the repo root (the
-   folder `sync-audio.yml` copies to the bucket, so a file there is served
+   folder into the essay's own folder, `audio/podcasts/articles/nooreimaan/<slug>/`
+   at the repo root (every recording about an essay sits in that essay's
+   folder, so all of hazf's are in `hazf/`; the whole `audio/` folder is
+   what `sync-audio.yml` copies to the bucket, so a file there is served
    under a one-year immutable cache header and must never change in place)
-   under versioned names, and points the released timeline's `audio` at the
-   versioned recording:
+   under versioned names, points the released timeline's `audio` at the
+   versioned recording, and adds the recording to that essay's
+   `reflections` in its JSON, titled and captioned from the timeline, with
+   `url` the released timeline's path under `/podcasts/` (add
+   `--description "<text>"` when the user gave one):
 
    ```
-   .venv-podcast/Scripts/python scripts/diarize_podcast.py --release "<folder of the recording>/<episode>.timeline.json"
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py --release "<folder of the recording>/<episode>.timeline.json" --article <slug>
    ```
 
    The script picks the versions: each file takes one more than the highest
-   `<episode>.vN.<ext>` or `<episode>.timeline.vN.json` already there, and
-   a recording byte-for-byte identical to a released one keeps that
-   version, so a corrected timeline adds only `timeline.v2.json`. It refuses
-   a draft that fails the check. Never choose a version or rename the files
+   `<episode>.vN.<ext>` or `<episode>.timeline.vN.json` already in the
+   folder, and a recording byte-for-byte identical to a released one keeps
+   that version, so a corrected timeline adds only `timeline.v2.json`. A new
+   version of an episode already on the essay replaces its `url` and keeps
+   a hand-edited title and the description. It refuses a draft that fails
+   the check. Never choose a version, a folder or a name for the files
    yourself, and never edit a released file: redo the draft and release
    again. The new files are untracked until the user commits them; the
    skill does not commit.
 
-   When the recording is a reflection on an essay, add
-   `--article <slug>` (and `--description "<text>"` when given) to the
-   release. It adds the recording to that essay's `reflections` in its
-   JSON, titled and captioned from the timeline, with `url` the released
-   timeline's path under `/podcasts/`; a new version of an episode already
-   on the essay replaces its `url` and keeps a hand-edited title and the
-   description. For a second essay, or a recording released earlier, attach
-   without releasing again:
+   A recording about no essay has no folder of its own: release it with
+   `--into "../audio/podcasts/<folder the user chose>"` in place of
+   `--article`. For a second essay, or a recording released earlier, attach
+   without releasing again (the files stay where they were released):
 
    ```
-   .venv-podcast/Scripts/python scripts/diarize_podcast.py --attach "../audio/podcasts/articles/nooreimaan/<episode>.timeline.vN.json" --article <slug>
+   .venv-podcast/Scripts/python scripts/diarize_podcast.py --attach "../audio/podcasts/articles/nooreimaan/<slug>/<episode>.timeline.vN.json" --article <slug>
    ```
 
    `--title` and `--caption` there set the reflection's own. It refuses an
@@ -169,15 +175,16 @@ given in the draft, `<episode>.vN.<ext>` once released), `durationMs`,
 never overlap. A pause under 1.2 s stays inside a turn, a run under 0.6 s
 joins its neighbour (a listener's "hmm" never flickers the glow), and a
 turn over 30 s is split at its widest pause so the expression can change.
-Released episodes live in `audio/podcasts/articles/nooreimaan/` in the
-repo, laid out as the bucket serves them under `/podcasts/`.
+Released episodes live in `audio/podcasts/articles/nooreimaan/<slug>/` in
+the repo, one folder per essay, laid out as the bucket serves them under
+`/podcasts/`.
 
 ## Common mistakes
 
 | Mistake | Instead |
 |---|---|
 | Running the script on a file you found, or on a path from an earlier episode, without asking | Ask the user for the recording's path first, every time it is not in the request |
-| Copying the files into `audio/podcasts/` by hand, choosing a version, or editing a released file | `--release` moves, versions and rewrites `audio`; a change is a new release |
+| Copying the files into `audio/podcasts/` by hand, choosing a version or a folder, or editing a released file | `--release --article <slug>` moves the pair into the essay's folder, versions them and rewrites `audio`; a change is a new release |
 | Renaming the recording by hand, or editing `audio` in the draft, to give the episode a name | Rerun with `--name`; the release carries it onto both files |
 | Building a pipeline by hand (pyannote needs a gated token; average-linkage clustering split a real pair into one voice plus a one-second sliver) | Run the script; it is tested against known turn times and both voice counts |
 | Deciding who is Hamza from the roles (the explainer "must" be Hamza, the asker Zoya) | Pitch decides; a solo brief can be either mascot and NotebookLM swaps roles freely |

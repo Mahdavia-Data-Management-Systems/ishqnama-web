@@ -23,7 +23,8 @@ export type Block =
 /**
  * A podcast recording about the essay, attached by `scripts/diarize_podcast.py --article`.
  * `url` is the released timeline's path under the audio origin's `/podcasts/`, e.g.
- * `articles/nooreimaan/naskh.timeline.v1.json`; `reflectionEpisode()` turns it into the
+ * `articles/nooreimaan/naskh/naskh.timeline.v1.json` (each essay's recordings in a folder named
+ * after its slug); `reflectionEpisode()` turns it into the
  * episode and version the player takes.
  */
 export interface Reflection {

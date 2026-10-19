@@ -12,7 +12,7 @@ import styles from "./podcast-lab.module.css";
 /**
  * A plain page with one button, to try the hosts' bubble against a real episode before the
  * feature has a home: `?episode=<path under /podcasts/>&v=<released timeline version>` picks
- * the recording, e.g. `?episode=articles/nooreimaan/naskh&v=1`.
+ * the recording, e.g. `?episode=articles/nooreimaan/naskh/naskh&v=1`.
  */
 export default function PodcastLab() {
   const params = useSearchParams();

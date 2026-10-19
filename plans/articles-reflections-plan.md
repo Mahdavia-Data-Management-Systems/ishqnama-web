@@ -31,11 +31,15 @@ In every file in `backend/src/Ishqnama.Application/Articles/NoorEImaan/`, after 
    "title": "نسخ",
    "caption": "Naskh (abrogation)",
    "description": "A short brief on why the Mahdavi reading admits no abrogated verse.",
-   "url": "articles/nooreimaan/naskh.timeline.v1.json"
+   "url": "articles/nooreimaan/naskh/naskh.timeline.v1.json"
   }
  ]
 }
 ```
+
+Each essay's recordings live in a folder named after its slug under `audio/podcasts/articles/nooreimaan/`
+(all of hazf's in `hazf/`), which `--release --article <slug>` chooses; the flat layout the first
+releases used was reorganised on 2026-10-19.
 
 | Field | Required | Meaning |
 |---|---|---|
