@@ -36,10 +36,10 @@ describe("parseThumbnailTitle", () => {
 describe("PodcastThumbnail", () => {
   it("shows the art and the title with its marked word highlighted", () => {
     const { container } = render(
-      <PodcastThumbnail title="Kya Quran mein *Naskh* hai?" imageUrl="https://audio.example/podcasts/naskh.thumbnail.v1.png" align="right" />,
+      <PodcastThumbnail title="Kya Quran mein *Naskh* hai?" imageUrl="https://audio.example/podcasts/naskh.thumbnail.v1.webp" align="right" />,
     );
     const img = container.querySelector("img") as HTMLImageElement;
-    expect(img.getAttribute("src")).toBe("https://audio.example/podcasts/naskh.thumbnail.v1.png");
+    expect(img.getAttribute("src")).toBe("https://audio.example/podcasts/naskh.thumbnail.v1.webp");
     expect(img.getAttribute("alt")).toBe("");
     expect(img.getAttribute("loading")).toBe("lazy");
     expect(screen.getByText("Naskh").closest("mark")).not.toBeNull();

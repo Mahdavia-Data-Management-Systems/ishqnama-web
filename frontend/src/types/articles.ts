@@ -40,7 +40,7 @@ export interface Reflection {
 
 /**
  * A recording's picture card: the art released beside its timeline (`url`, a path under
- * `/podcasts/` like the timeline's, e.g. `articles/nooreimaan/naskh/naskh.thumbnail.v1.png`), the
+ * `/podcasts/` like the timeline's, e.g. `articles/nooreimaan/naskh/naskh.thumbnail.v1.webp`), the
  * title set over it with the word or two to highlight between asterisks, and which part of the
  * picture the artist left for the title: the left or right half, or the gap between the hosts.
  */

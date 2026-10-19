@@ -307,7 +307,7 @@ class ReflectionTest(unittest.TestCase):
     def test_a_new_version_keeps_the_hand_written_thumbnail_before_the_url(self):
         self.run_main("--release", str(self.draft(title="t")), "--article", "naskh")
         essay = json.loads(self.essay.read_text(encoding="utf-8"))
-        thumbnail = {"url": "articles/nooreimaan/naskh.thumbnail.v1.png", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}
+        thumbnail = {"url": "articles/nooreimaan/naskh.thumbnail.v1.webp", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}
         essay["reflections"][0]["thumbnail"] = thumbnail
         self.essay.write_text(json.dumps(essay, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         self.run_main("--release", str(self.draft(audio_bytes=b"recording-two", title="t")), "--article", "naskh")

@@ -13,10 +13,10 @@ describe("formatDuration", () => {
 
 describe("podcastFileUrl", () => {
   it("serves a released file from the audio origin's /podcasts/", () => {
-    expect(podcastFileUrl("articles/nooreimaan/naskh/naskh.thumbnail.v1.png")).toBe(
-      "https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh/naskh.thumbnail.v1.png",
+    expect(podcastFileUrl("articles/nooreimaan/naskh/naskh.thumbnail.v1.webp")).toBe(
+      "https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh/naskh.thumbnail.v1.webp",
     );
-    expect(podcastFileUrl("naskh.thumbnail.v1.png", "https://cdn.example/")).toBe("https://cdn.example/podcasts/naskh.thumbnail.v1.png");
+    expect(podcastFileUrl("naskh.thumbnail.v1.webp", "https://cdn.example/")).toBe("https://cdn.example/podcasts/naskh.thumbnail.v1.webp");
   });
 
   it("refuses a path that leaves the folder or names no file", () => {

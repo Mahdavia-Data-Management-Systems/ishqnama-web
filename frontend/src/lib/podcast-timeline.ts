@@ -132,7 +132,7 @@ export function formatDuration(ms: number): string {
 
 /**
  * Where a released file under `/podcasts/` is served from, by its path there: a reflection's
- * thumbnail, `articles/nooreimaan/naskh/naskh.thumbnail.v1.png`, sits beside its timeline and
+ * thumbnail, `articles/nooreimaan/naskh/naskh.thumbnail.v1.webp`, sits beside its timeline and
  * recording and is named the same way, versioned because the bucket serves it as immutable.
  */
 export function podcastFileUrl(path: string, origin: string = PODCAST_AUDIO_ORIGIN): string {

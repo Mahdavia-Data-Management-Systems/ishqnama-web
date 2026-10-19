@@ -86,7 +86,7 @@ describe("ReflectionItem", () => {
           reflection={{
             title: "نسخ",
             caption: "Naskh (abrogation)",
-            thumbnail: { url: "articles/nooreimaan/naskh/naskh.thumbnail.v1.png", title: "*Naskh*", align: "right" },
+            thumbnail: { url: "articles/nooreimaan/naskh/naskh.thumbnail.v1.webp", title: "*Naskh*", align: "right" },
             url: "articles/nooreimaan/naskh/naskh.timeline.v1.json",
           }}
         />
@@ -127,14 +127,14 @@ describe("ReflectionItem", () => {
             title: "نسخ",
             caption: "Naskh (abrogation)",
             durationMs: 96896,
-            thumbnail: { url: "articles/nooreimaan/naskh/naskh.thumbnail.v1.png", title: "Kya Quran mein *Naskh* hai?", align: "right" },
+            thumbnail: { url: "articles/nooreimaan/naskh/naskh.thumbnail.v1.webp", title: "Kya Quran mein *Naskh* hai?", align: "right" },
             url: "articles/nooreimaan/naskh/naskh.timeline.v1.json",
           }}
         />
       </ul>,
     );
     const img = container.querySelector("img") as HTMLImageElement;
-    expect(img.getAttribute("src")).toBe("https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh/naskh.thumbnail.v1.png");
+    expect(img.getAttribute("src")).toBe("https://audio.ishqnama.com/podcasts/articles/nooreimaan/naskh/naskh.thumbnail.v1.webp");
     expect(screen.getByText("Naskh").closest("mark")).not.toBeNull();
     expect(screen.getByText("1:37")).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2, name: "Naskh (abrogation)" })).toBeTruthy();

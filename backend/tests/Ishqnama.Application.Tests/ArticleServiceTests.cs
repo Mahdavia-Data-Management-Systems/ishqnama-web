@@ -92,7 +92,7 @@ public sealed class ArticleServiceTests
     [InlineData("""{"reflections": []}""")]
     [InlineData("""{"reflections": [{"title": "نسخ", "url": "articles/nooreimaan/naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "caption": "c", "description": "d", "url": "talks/sabr_brief.timeline.v12.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "articles/nooreimaan/naskh/naskh.thumbnail.v1.png", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}, "url": "articles/nooreimaan/naskh/naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "articles/nooreimaan/naskh/naskh.thumbnail.v1.webp", "title": "Kya Quran mein *Naskh* hai?", "align": "right"}, "url": "articles/nooreimaan/naskh/naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "durationMs": 96896, "thumbnail": {"url": "naskh.thumbnail.v3.webp", "title": "Naskh", "align": "center"}, "url": "naskh.timeline.v1.json"}]}""")]
     public void Sound_reflections_pass(string json)
     {
@@ -114,13 +114,13 @@ public sealed class ArticleServiceTests
     [InlineData("""{"reflections": [{"title": "t", "caption": 3, "url": "naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "durationMs": "96896", "url": "naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "durationMs": -1, "url": "naskh.timeline.v1.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": "naskh.thumbnail.v1.png", "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": "naskh.thumbnail.v1.webp", "url": "naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
     [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.v1.m4a", "title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "../naskh.thumbnail.v1.png", "title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": " ", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": "Naskh"}, "url": "naskh.timeline.v1.json"}]}""")]
-    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.png", "title": "Naskh", "align": "top"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "../naskh.thumbnail.v1.webp", "title": "Naskh", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.webp", "title": " ", "align": "left"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.webp", "title": "Naskh"}, "url": "naskh.timeline.v1.json"}]}""")]
+    [InlineData("""{"reflections": [{"title": "t", "thumbnail": {"url": "naskh.thumbnail.v1.webp", "title": "Naskh", "align": "top"}, "url": "naskh.timeline.v1.json"}]}""")]
     public void Unsound_reflections_fail_naming_the_essay(string json)
     {
         using var doc = JsonDocument.Parse(json);
