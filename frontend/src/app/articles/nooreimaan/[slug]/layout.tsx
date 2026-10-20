@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import EssayScrollTop from "@/components/articles/essay-scroll-top";
 import EssayShareButton from "@/components/articles/essay-share-button";
 import EssayStickyBar from "@/components/articles/essay-sticky-bar";
 import EssayTabs from "@/components/articles/essay-tabs";
@@ -31,6 +32,7 @@ export default async function EssayLayout({ params, children }: EssayLayoutProps
 
   return (
     <main className={styles.main}>
+      <EssayScrollTop />
       {/* A child of <main>, not the header, so it stays pinned for the whole essay */}
       <EssayStickyBar
         className={styles.bar}
