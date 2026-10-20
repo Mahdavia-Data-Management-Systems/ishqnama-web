@@ -24,6 +24,7 @@ vi.mock("next/navigation", async (importOriginal) => ({
 const shareVerse = vi.hoisted(() => vi.fn(async () => "copied" as const));
 vi.mock("@/lib/share-verse", () => ({ shareVerse }));
 
+vi.mock("@/context/sign-in-prompt-context", () => ({ useSignInGate: () => (action: () => void) => action() }));
 vi.mock("@/components/articles/essay-gate", () => ({
   default: ({ slug }: { slug: string }) => <p>gate {slug}</p>,
 }));

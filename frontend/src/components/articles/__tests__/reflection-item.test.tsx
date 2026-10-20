@@ -1,5 +1,19 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+let signedIn = true;
+const promptSignIn = vi.fn();
+vi.mock("@/context/sign-in-prompt-context", () => ({
+  useSignInGate: (feature: string) => (action: () => void) => {
+    if (signedIn) {
+      action();
+      return true;
+    }
+    promptSignIn(feature);
+    return false;
+  },
+}));
+
 import ReflectionItem from "@/components/articles/reflection-item";
 
 const timeline = {
@@ -20,6 +34,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  signedIn = true;
+  promptSignIn.mockClear();
   delete (HTMLElement.prototype as { clientHeight?: number }).clientHeight;
   delete (HTMLElement.prototype as { scrollHeight?: number }).scrollHeight;
 });
@@ -104,6 +120,21 @@ describe("ReflectionItem", () => {
     expect(picture.getAttribute("aria-pressed")).toBe("true");
 
     fireEvent.click(within(bubble).getByRole("button", { name: "Close discussion" }));
+    expect(screen.queryByRole("region", { name: "Discussion" })).toBeNull();
+    expect(picture.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("asks an anonymous reader to sign in instead of opening the discussion", () => {
+    signedIn = false;
+    render(
+      <ul>
+        <ReflectionItem reflection={{ title: "نسخ", caption: "Naskh (abrogation)", url: "articles/nooreimaan/naskh/naskh.timeline.v1.json" }} />
+      </ul>,
+    );
+    const picture = screen.getByRole("button", { name: "Listen to the discussion: Naskh (abrogation)" });
+    fireEvent.click(picture);
+    expect(promptSignIn).toHaveBeenCalledWith("reflections");
+    expect(fetch).not.toHaveBeenCalled();
     expect(screen.queryByRole("region", { name: "Discussion" })).toBeNull();
     expect(picture.getAttribute("aria-pressed")).toBe("false");
   });

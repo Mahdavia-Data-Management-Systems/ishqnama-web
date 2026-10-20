@@ -8,7 +8,7 @@
  * body here, then wrap the action at the call site with `useSignInGate("<feature>")`.
  */
 
-export type SignInFeature = "settings" | "saved" | "bookmark" | "search" | "lists" | "favorites" | "articles";
+export type SignInFeature = "settings" | "saved" | "bookmark" | "search" | "lists" | "favorites" | "articles" | "reflections";
 
 export interface SignInCopy {
   /** Sheet heading, also the inline empty-state title where a page shows one. */
@@ -45,6 +45,10 @@ export const SIGN_IN_COPY: Record<SignInFeature, SignInCopy> = {
   articles: {
     title: "Sign in to read the articles",
     body: "The essays of Noor e Imaan are for signed-in readers.",
+  },
+  reflections: {
+    title: "Sign in to listen",
+    body: "The reflections on Ishqnama are for signed-in readers.",
   },
 };
 

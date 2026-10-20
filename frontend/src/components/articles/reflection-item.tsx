@@ -3,6 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import PodcastThumbnail from "@/components/podcast/podcast-thumbnail";
 import { PODCAST_COPY } from "@/config/podcast-copy";
+import { useSignInGate } from "@/context/sign-in-prompt-context";
 import { formatDuration, podcastFileUrl, reflectionEpisode } from "@/lib/podcast-timeline";
 import type { Reflection } from "@/types/articles";
 import ReflectionDescriptionDialog from "./reflection-description-dialog";
@@ -19,7 +20,8 @@ interface ReflectionItemProps {
  * recording's length in the corner, its caption (its title is only the essay's) and its
  * description, one under another. The picture is the way to hear it: a tap opens the hosts'
  * bubble (`ReflectionPlayer`) and the recording starts, one recording at a time across the list
- * (`useReflectionPlayer`). The description shows as many whole lines as its box holds (six,
+ * (`useReflectionPlayer`). Listening is for signed-in readers: an anonymous reader sees the
+ * whole card, and the tap opens the sign-in prompt instead. The description shows as many whole lines as its box holds (six,
  * from the stylesheet); when there is more of it, the last line ends in an ellipsis and Read
  * more opens the whole of it in a dialog.
  */
@@ -32,6 +34,7 @@ export default function ReflectionItem({ reflection }: ReflectionItemProps) {
   const [clipped, setClipped] = useState(false);
   const [open, setOpen] = useState(false);
   const player = useReflectionPlayer();
+  const gate = useSignInGate("reflections");
   const listening = player.openUrl === reflection.url;
   const episode = episodeOf(reflection.url);
 
@@ -68,7 +71,7 @@ export default function ReflectionItem({ reflection }: ReflectionItemProps) {
           className={thumbnail ? styles.play : styles.playPlain}
           aria-label={`${PODCAST_COPY.listen}: ${caption}`}
           aria-pressed={listening}
-          onClick={() => player.setOpenUrl(reflection.url)}
+          onClick={() => gate(() => player.setOpenUrl(reflection.url))}
         >
           {thumbnail ? (
             <>

@@ -18,7 +18,7 @@ const allStrings: string[] = [
 
 describe("sign-in copy", () => {
   it("covers every feature with a title and a body", () => {
-    for (const feature of ["settings", "saved", "bookmark", "search", "lists", "favorites", "articles"] as const) {
+    for (const feature of ["settings", "saved", "bookmark", "search", "lists", "favorites", "articles", "reflections"] as const) {
       expect(SIGN_IN_COPY[feature].title.length).toBeGreaterThan(0);
       expect(SIGN_IN_COPY[feature].body.length).toBeGreaterThan(0);
     }
@@ -33,7 +33,7 @@ describe("sign-in copy", () => {
   });
 
   it("is written in sentence case", () => {
-    const properNouns = ["Noor", "Imaan", "Mahdavia", "Data", "Management", "System"];
+    const properNouns = ["Noor", "Imaan", "Ishqnama", "Mahdavia", "Data", "Management", "System"];
     for (const s of allStrings) {
       expect(s[0], s).toBe(s[0].toUpperCase());
       expect(s, s).not.toBe(s.toUpperCase());
