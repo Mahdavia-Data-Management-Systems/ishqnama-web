@@ -64,6 +64,24 @@
   text-align: center;
 }
 
+/* The Ishqnama mark in the top left corner, sized with the card like the title. */
+.brand {
+  position: absolute;
+  left: 3.5%;
+  top: 5%;
+  z-index: 1;
+  display: block;
+  width: max(1.5rem, 8cqw);
+  aspect-ratio: 1096 / 920;
+  pointer-events: none;
+}
+
+.logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* The recording's length, in the bottom right corner on the overlay tint so it reads over the
    desk, a sleeve or the wash alike; sized with the card like the title. */
 .duration {

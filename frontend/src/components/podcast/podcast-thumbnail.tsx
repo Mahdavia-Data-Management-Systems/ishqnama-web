@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import ThemedLogo from "@/components/themed-logo";
 import styles from "./podcast-thumbnail.module.css";
 
 /** Which part of the picture the title takes: the half the artist left empty, or the gap between the hosts. */
@@ -94,6 +95,10 @@ export default function PodcastThumbnail({ title, imageUrl, align = "right", dur
   return (
     <span className={[styles.card, className].filter(Boolean).join(" ")} data-align={align}>
       <img className={styles.art} src={imageUrl} alt="" width={1328} height={800} loading="lazy" decoding="async" draggable={false} />
+      {/* The mark is decoration: the card's name comes from its title */}
+      <span className={styles.brand}>
+        <ThemedLogo alt="" width={38} height={32} className={styles.logo} />
+      </span>
       {/* One inline run inside the centring column, so a mark sits in its sentence like any word */}
       <span ref={titleRef} className={styles.title}>
         <span className={styles.runs}>{runs}</span>
