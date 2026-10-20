@@ -132,12 +132,12 @@
  "naskh": [
   {
    "title": "نسخ",
-   "caption": "Naskh (abrogation)",
+   "caption": "Kya Quran mein Naskh (abrogation) hai?",
    "description": "Mahdavia aqeede mein Quran ke andar naskh ka tasawwur kyun radd kiya jaata hai, teen baaton mein. Pehli: Hazrat Mahdi ahs ka wazeh farman ke maujooda Quran ki koi bhi parhi jaane wali aayat mansookh nahin; agar Allah Aleem-o-Hakeem hai to kisi aayat ko mehz tilawat ke liye kyun baaqi rakhe ga jis par amal na karna ho. Doosri: Shah Waliullah Dehlavi ne sainkron mansookh kahi jaane wali aayaat ko ghata kar paanch tak mehdood kiya tha, magar Mahdavi nuqta-e-nazar un paanch mein bhi naskh nahin maanta; woh aayaat mansookh nahin balke makhsoos haalaat ke lihaz se di gayi narmi ya riayat hain. Teesri: is nazariye ke tehet poora Quran aam qari ke liye wazeh hai, jaisa insaan ka haal hoga waisa hi hukm laagu hoga, jaise first aid kit mein koi dawa bekaar nahin hoti, bas dekhna hota hai ke maujooda haalat mein kaun si istemaal karni hai.",
    "durationMs": 96896,
    "thumbnail": {
     "url": "images/zoya-talking.v1.webp",
-    "title": "Kya Quran mein *Naskh* hai?",
+    "title": "*Naskh* ke radd mein, ye teen nukaat samajhte hain",
     "align": "right"
    },
    "url": "articles/nooreimaan/naskh/naskh.timeline.v1.json"
