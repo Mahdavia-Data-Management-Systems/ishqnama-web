@@ -54,3 +54,62 @@
 .body a:hover {
   color: var(--teal-hover);
 }
+
+/* Contact cards, after the MDMS site's contact page */
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+.contactCard {
+  background: var(--surface-card);
+  border: 1px solid var(--tint-ink-12);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.contactCard:hover {
+  border-color: var(--tint-teal-20);
+}
+
+.contactIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--tint-teal-8);
+  color: var(--teal-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+}
+
+.body .contactCardTitle {
+  font-size: var(--text-lg);
+  margin-top: 0;
+  margin-bottom: var(--space-1);
+}
+
+.contactCardText {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
+}
+
+.body a.contactLink {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .contactGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
