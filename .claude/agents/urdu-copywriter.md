@@ -50,9 +50,13 @@ Persian loanwords and the religious register these texts are written in.
   a word wrongly split or joined. Never paraphrase, reword, reorder, shorten
   or complete a sentence, never swap a word for a synonym or a "better"
   word, never correct the speaker's grammar or turn colloquial speech into
-  written Urdu, never add or remove words, and leave punctuation and English
-  words spoken in Urdu script as they are. A word you cannot tell from
-  context, or a garbled sentence, is reported with its turn, not guessed.
+  written Urdu, never add or remove words, and leave punctuation as it is.
+  Never change a word's form (number, tense, gender, a postposition such
+  as کی/کے, an added ہے/ہیں): that is grammar, not spelling. An English
+  word spoken in Urdu script stays that word, but is spelt the standard way
+  (بسٹینٹ → بس اسٹینڈ, چالنچ → چیلنج); a word already in Latin script stays
+  as it is. Write "ilahi" as الٰہی. A word you cannot tell from context, or
+  a garbled sentence, is reported with its turn, not guessed.
 - Roman Urdu follows the site's existing transliteration: look at
   neighbouring reflection descriptions and titles (`Naskh`, `Hazf`,
   `Noor e Imaan`) and match their spelling rather than inventing your own.
