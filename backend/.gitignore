@@ -24,3 +24,6 @@ local.settings.json
 
 ## Build
 publish/
+
+## Personal docker compose settings (e.g. COMPOSE_FILE)
+.env

@@ -22,7 +22,8 @@ npm test          # Vitest unit tests (jsdom)
 
 ```bash
 dotnet build                                    # Build solution
-cd backend && docker-compose up -d              # Start PostgreSQL + Cosmos DB Emulator + the API under dotnet watch (:5081, hot reload)
+cd backend && docker-compose up -d              # Start PostgreSQL + Cosmos DB Emulator + the API under dotnet watch (:5081, hot reload); Postgres is noormahdi/ishqnama-db:dev
+cd backend && docker compose -f docker-compose.yml -f docker-compose.local-db.yml up -d   # Same, with Postgres built from the sibling ishqnama-db repo
 cd src/Ishqnama.Functions && func start         # Run the Functions host (needs Azure Functions Core Tools) — :7071
 dotnet run --project src/Ishqnama.Api           # Run the Minimal API — :5080, Scalar UI at /scalar in Development
 ```

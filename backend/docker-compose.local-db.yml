@@ -1,0 +1,22 @@
+# Override for docker-compose.yml: builds Postgres from the sibling ishqnama-db repo
+# (../../ishqnama-db, next to ishqnama-web) instead of pulling noormahdi/ishqnama-db:dev.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.local-db.yml up -d
+#
+# Use the same two -f flags for down, logs and the rest, or set
+# COMPOSE_FILE=docker-compose.yml;docker-compose.local-db.yml (':' on macOS/Linux) for the shell.
+services:
+  postgres:
+    image: ishqnama-db:local
+    build:
+      context: ../../ishqnama-db/database
+      # The seed files as they are, explanations included (Dockerfile.dev is the obfuscated one).
+      dockerfile: Dockerfile
+    # Rebuild on every `up`. With unchanged seed files the build is cached and the container is
+    # kept; a changed seed file gives a new image, so the container is recreated.
+    pull_policy: build
+    # The data lives in memory instead of the postgres-data volume, so a recreated container always
+    # seeds itself from the current files.
+    volumes: !reset []
+    tmpfs:
+      - /var/lib/postgresql/data

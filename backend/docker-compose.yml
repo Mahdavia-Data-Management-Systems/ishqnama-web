@@ -1,4 +1,6 @@
 services:
+  # The published dev image (explanations obfuscated). To build it from the sibling ishqnama-db
+  # repo instead, add docker-compose.local-db.yml: `docker compose -f docker-compose.yml -f docker-compose.local-db.yml up -d`.
   postgres:
     image: docker.io/noormahdi/ishqnama-db:dev
     container_name: ishqnama-db
@@ -9,7 +11,9 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -q"]
+      # Over TCP: while the entrypoint seeds, Postgres answers only on its Unix socket, so a plain
+      # pg_isready would report healthy before the data is in.
+      test: ["CMD-SHELL", "pg_isready -q -h localhost"]
       interval: 5s
       timeout: 5s
       retries: 10

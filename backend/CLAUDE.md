@@ -30,6 +30,25 @@ dotnet run --project src/Ishqnama.Api
 docker-compose down
 ```
 
+**Which Postgres image**: `docker-compose.yml` alone pulls `docker.io/noormahdi/ishqnama-db:dev`
+(explanations obfuscated), data in the `postgres-data` volume. To run the database from the sibling
+`ishqnama-db` repo instead, add the override `docker-compose.local-db.yml`:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.local-db.yml up -d
+```
+
+It builds `ishqnama-db:local` from `../../ishqnama-db/database/Dockerfile` (the seed files as they
+stand, explanations included). `pull_policy: build` rebuilds on every `up` (cached when nothing
+changed), and it swaps the volume for a tmpfs (`volumes: !reset []`), so an edited seed file gives a
+new image, a recreated container and a fresh seed with no volume to clear. Pass the same two `-f`
+flags to `down`, `logs` and the rest, or set `COMPOSE_FILE` for the shell. To make it a personal
+default, put `COMPOSE_FILE=docker-compose.yml;docker-compose.local-db.yml` (`:` on macOS/Linux) in
+`backend/.env`, which is gitignored and never committed.
+
+The healthcheck uses `pg_isready -h localhost` (TCP) because during first-start seeding Postgres
+listens only on its Unix socket, so the API waits until the data is in.
+
 SDK pinned to **9.0.300** via `global.json`.
 
 ## Architecture
