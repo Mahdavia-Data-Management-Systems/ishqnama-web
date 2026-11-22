@@ -14,4 +14,5 @@ public sealed class UserSettings
     public string Reciter { get; set; } = "mishari-rashid-al-afasy-murattal";
     public bool ContinueRecitation { get; set; } = true;
     public double RecitationSpeed { get; set; } = 1;
+    public bool ShowTakhreej { get; set; } = true;
 }

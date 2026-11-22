@@ -11,4 +11,6 @@ public sealed record UserSettingsDto(
     // The recitation settings came later still: the one reciter, running on past the verse.
     string Reciter = "mishari-rashid-al-afasy-murattal",
     bool ContinueRecitation = true,
-    double RecitationSpeed = 1);
+    double RecitationSpeed = 1,
+    // Takhreej (the books cited in the tafseer) shows unless the reader turned it off.
+    bool ShowTakhreej = true);
