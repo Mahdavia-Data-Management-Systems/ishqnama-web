@@ -29,6 +29,7 @@ const SERVER: UserSettingsDto = {
   lang: "english",
   fontScale: 3,
   showTafseer: true,
+  showTakhreej: false,
   showSuraRukuMarks: true,
   showJuzRukuMarks: false,
   reciter: "abdul-basit-murattal",
@@ -100,6 +101,17 @@ describe("mergeSettings", () => {
     });
   });
 
+  it("shows takhreej by default", () => {
+    expect(DEFAULT_SETTINGS.showTakhreej).toBe(true);
+  });
+
+  it("shows takhreej for settings saved before it existed, never hides it", () => {
+    const { showTakhreej: _t, ...older } = SERVER;
+    expect(mergeSettings(older as UserSettingsDto, {}).showTakhreej).toBe(true);
+    expect(mergeSettings({ ...older, showTakhreej: null } as unknown as UserSettingsDto, {}).showTakhreej).toBe(true);
+    expect(mergeSettings(SERVER, {}).showTakhreej).toBe(false);
+  });
+
   it("returns the server settings unchanged for an empty patch", () => {
     expect(mergeSettings(SERVER, {})).toEqual(SERVER);
   });
@@ -124,6 +136,37 @@ describe("ReaderSettingsProvider sync", () => {
     expect(result.current.mode).toBe("continuous");
     expect(result.current.fontScale).toBe(3);
     expect(mockedSave).not.toHaveBeenCalled();
+  });
+
+  it("shows takhreej after loading settings saved before it existed", async () => {
+    const { showTakhreej: _t, ...older } = SERVER;
+    mockedGet.mockResolvedValueOnce(older as UserSettingsDto);
+    const { result } = renderHook(() => useReaderSettings(), { wrapper });
+    expect(result.current.showTakhreej).toBe(true);
+    await flush();
+    expect(result.current.showTakhreej).toBe(true);
+    expect(result.current.showTafseer).toBe(true);
+  });
+
+  it("saves a takhreej change with the reader's other settings, leaving tafseer as it was", async () => {
+    mockedGet.mockResolvedValueOnce({ ...SERVER, showTakhreej: true });
+    const { result } = renderHook(() => useReaderSettings(), { wrapper });
+    await flush();
+
+    act(() => result.current.updateSettings({ showTakhreej: false }));
+    expect(result.current.showTakhreej).toBe(false);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(mockedSave).toHaveBeenCalledTimes(1);
+    expect(mockedSave).toHaveBeenCalledWith({ ...SERVER, showTakhreej: false });
+
+    // Hiding tafseer does not touch the takhreej choice.
+    act(() => result.current.updateSettings({ showTafseer: false }));
+    expect(result.current.showTakhreej).toBe(false);
+    act(() => result.current.updateSettings({ showTakhreej: true, showTafseer: false }));
+    act(() => result.current.updateSettings({ showTafseer: true }));
+    expect(result.current.showTakhreej).toBe(true);
   });
 
   it("keeps a change made before the settings arrived and saves the merged result once", async () => {

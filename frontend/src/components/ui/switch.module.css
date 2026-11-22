@@ -42,3 +42,17 @@
 .on .thumb {
   transform: translateX(20px);
 }
+
+/* Not adjustable right now: muted, and it still shows its value. */
+.disabled {
+  cursor: not-allowed;
+}
+
+.disabled .label {
+  color: var(--text-tertiary);
+}
+
+.disabled .track {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

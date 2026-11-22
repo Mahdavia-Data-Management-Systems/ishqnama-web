@@ -39,6 +39,8 @@ export const DEFAULT_SETTINGS: UserSettingsDto = {
   fontScale: DEFAULT_FONT_SIZE_INDEX,
   // On for readers with no saved settings; anonymous readers see no tafseer either way (the API strips it).
   showTafseer: true,
+  // On for everyone, accounts saved before the setting existed included.
+  showTakhreej: true,
   showSuraRukuMarks: false,
   showJuzRukuMarks: true,
   reciter: RECITATION.timings.id,
@@ -54,7 +56,9 @@ export function mergeSettings(
   server: UserSettingsDto | null,
   patch: Partial<UserSettingsDto>,
 ): UserSettingsDto {
-  return { ...DEFAULT_SETTINGS, ...(server ?? {}), ...patch };
+  const merged = { ...DEFAULT_SETTINGS, ...(server ?? {}), ...patch };
+  // Settings saved before takhreej existed have no such field (or an empty one): that reads as on.
+  return { ...merged, showTakhreej: merged.showTakhreej ?? true };
 }
 
 interface ReaderSettingsContextValue {
@@ -62,6 +66,7 @@ interface ReaderSettingsContextValue {
   lang: TranslationLang;
   fontScale: number;
   showTafseer: boolean;
+  showTakhreej: boolean;
   showSuraRukuMarks: boolean;
   showJuzRukuMarks: boolean;
   reciter: string;
@@ -214,6 +219,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
       if (patch.lang !== undefined) defined.lang = patch.lang;
       if (patch.fontScale !== undefined) defined.fontScale = patch.fontScale;
       if (patch.showTafseer !== undefined) defined.showTafseer = patch.showTafseer;
+      if (patch.showTakhreej !== undefined) defined.showTakhreej = patch.showTakhreej;
       if (patch.showSuraRukuMarks !== undefined) defined.showSuraRukuMarks = patch.showSuraRukuMarks;
       if (patch.showJuzRukuMarks !== undefined) defined.showJuzRukuMarks = patch.showJuzRukuMarks;
       if (patch.reciter !== undefined) defined.reciter = patch.reciter;
@@ -254,7 +260,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
   const mode = settings.mode as ReadingMode;
   const lang = settings.lang as TranslationLang;
   const {
-    fontScale, showTafseer, showSuraRukuMarks, showJuzRukuMarks, reciter, continueRecitation, recitationSpeed,
+    fontScale, showTafseer, showTakhreej, showSuraRukuMarks, showJuzRukuMarks, reciter, continueRecitation, recitationSpeed,
   } = settings;
 
   return (
@@ -264,6 +270,7 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
         lang,
         fontScale,
         showTafseer,
+        showTakhreej,
         showSuraRukuMarks,
         showJuzRukuMarks,
         reciter,
@@ -293,6 +300,8 @@ export default function ReaderSettingsProvider({ children }: { children: React.R
           onFontScaleChange={(s) => updateSettings({ fontScale: s })}
           showTafseer={showTafseer}
           onTafseerChange={(t) => updateSettings({ showTafseer: t })}
+          showTakhreej={showTakhreej}
+          onTakhreejChange={(t) => updateSettings({ showTakhreej: t })}
           reciter={reciter}
           onReciterChange={(r) => updateSettings({ reciter: r })}
           continueRecitation={continueRecitation}

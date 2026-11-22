@@ -3,6 +3,8 @@ export interface UserSettingsDto {
   lang: string;
   fontScale: number;
   showTafseer: boolean;
+  /** The wash and book button on tafseer passages that cite books; only seen while tafseer shows. */
+  showTakhreej: boolean;
   /** Ruku rails under chapter cards in the Quran index. */
   showSuraRukuMarks: boolean;
   /** Ruku rails under juz cards in the Quran index. */

@@ -15,6 +15,8 @@ function renderSheet(props: Partial<React.ComponentProps<typeof SettingsSheet>> 
       onFontScaleChange={vi.fn()}
       showTafseer={false}
       onTafseerChange={vi.fn()}
+      showTakhreej
+      onTakhreejChange={vi.fn()}
       showSuraRukuMarks={false}
       onSuraRukuMarksChange={vi.fn()}
       showJuzRukuMarks
@@ -74,6 +76,8 @@ describe("SettingsSheet reader section", () => {
           onFontScaleChange={vi.fn()}
           showTafseer={false}
           onTafseerChange={vi.fn()}
+          showTakhreej
+          onTakhreejChange={vi.fn()}
           showSuraRukuMarks={false}
           onSuraRukuMarksChange={vi.fn()}
           showJuzRukuMarks
@@ -206,5 +210,46 @@ describe("SettingsSheet sections", () => {
     fireEvent.click(generalToggle());
     expect(generalToggle().getAttribute("aria-expanded")).toBe("false");
     expect(readerToggle().getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("SettingsSheet takhreej switch", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const tafseer = () => screen.getByRole("switch", { name: "Show tafseer" }) as HTMLButtonElement;
+  const takhreej = () => screen.getByRole("switch", { name: "Show takhreej on tafseer" }) as HTMLButtonElement;
+
+  it("sits directly below Show tafseer in the reader section", () => {
+    renderSheet({ expandedSection: "reader", showTafseer: true });
+    const switches = within(readerPanel()).getAllByRole("switch");
+    expect(switches.indexOf(takhreej())).toBe(switches.indexOf(tafseer()) + 1);
+    expect(switches[switches.length - 1]).toBe(takhreej());
+  });
+
+  it("can be toggled while tafseer shows", () => {
+    const onTakhreejChange = vi.fn();
+    renderSheet({ expandedSection: "reader", showTafseer: true, showTakhreej: true, onTakhreejChange });
+    expect(takhreej().disabled).toBe(false);
+    expect(takhreej().getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(takhreej());
+    expect(onTakhreejChange).toHaveBeenCalledWith(false);
+  });
+
+  it("is greyed out, keeping its value, while tafseer is hidden", () => {
+    const onTakhreejChange = vi.fn();
+    renderSheet({ expandedSection: "reader", showTafseer: false, showTakhreej: true, onTakhreejChange });
+    expect(takhreej().disabled).toBe(true);
+    expect(takhreej().getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(takhreej());
+    fireEvent.click(screen.getByText("Show takhreej on tafseer"));
+    expect(onTakhreejChange).not.toHaveBeenCalled();
+    expect(tafseer().disabled).toBe(false);
+  });
+
+  it("shows a saved off choice whether or not tafseer shows", () => {
+    renderSheet({ expandedSection: "reader", showTafseer: false, showTakhreej: false });
+    expect(takhreej().getAttribute("aria-checked")).toBe("false");
   });
 });

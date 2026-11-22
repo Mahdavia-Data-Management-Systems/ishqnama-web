@@ -44,6 +44,9 @@ interface SettingsSheetProps {
   onFontScaleChange: (scale: number) => void;
   showTafseer: boolean;
   onTafseerChange: (show: boolean) => void;
+  /** The wash and book button on cited tafseer passages; only adjustable while tafseer shows. */
+  showTakhreej: boolean;
+  onTakhreejChange: (show: boolean) => void;
   reciter: string;
   onReciterChange: (reciter: string) => void;
   continueRecitation: boolean;
@@ -80,6 +83,8 @@ export default function SettingsSheet({
   onFontScaleChange,
   showTafseer,
   onTafseerChange,
+  showTakhreej,
+  onTakhreejChange,
   reciter,
   onReciterChange,
   continueRecitation,
@@ -203,6 +208,18 @@ export default function SettingsSheet({
                 label="Show tafseer"
                 checked={showTafseer}
                 onChange={onTafseerChange}
+                className={styles.switchRow}
+              />
+            </div>
+
+            {/* Takhreej sits inside the tafseer, so it cannot be changed while tafseer is hidden;
+                it keeps showing the saved choice, which comes back with the tafseer. */}
+            <div className={styles.group}>
+              <Switch
+                label="Show takhreej on tafseer"
+                checked={showTakhreej}
+                onChange={onTakhreejChange}
+                disabled={!showTafseer}
                 className={styles.switchRow}
               />
             </div>
