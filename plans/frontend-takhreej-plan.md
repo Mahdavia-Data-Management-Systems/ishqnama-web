@@ -1,6 +1,6 @@
 # Takhreej (tafseer citations): passages, icons and a popup
 
-**Status (2026-11-05): planned, not started.** The data side (Part B) is being worked out in `ishqnama-db` alongside other changes; revisit the verse list, B1–B3 and the parser tolerances in A2 once the seed files have the new markup, before implementing.
+**Status (2026-11-22): Part A (frontend) is built and covered by tests, but not yet seen in a browser (Verification step 4 is still owed); the design record is `plans/frontend-takhreej-spec.md`. Parts B and C were in progress the same day. Earlier status (2026-11-05): planned, not started.** The data side (Part B) is being worked out in `ishqnama-db` alongside other changes; revisit the verse list, B1–B3 and the parser tolerances in A2 once the seed files have the new markup, before implementing.
 
 ## Context
 
@@ -74,7 +74,7 @@ Migration rules settled with the owner on 2026-11-22 (the data then had 717 mark
 - **One row per book, under its formal title.** Variant headings merge into one `Books` row named as the owner's original lists named it (`الجامع لأحكام القرآن، القرطبي`, not `تفسير القرطبي`; `تفسير القرآن العظيم، ابن كثير`; `معالم التنزيل، البغوي`; `جامع البيان، ابن جرير الطبري`). The script works from a hand-reviewed merge table (variant heading → book), never from fuzzy matching; an unknown heading fails the run.
 - **Author and year belong to the book.** Each book takes them once, from the lines that give them, so a line that names only `صحيح البخاري` still shows `البخاري ٢٥٦ه`. A collection no line gives an author for (`مسند أحمد`) has `Author` NULL. Mahdavi sources (انصاف نامہ, نقلیات, شواہد الولایت, توضیحات) have no year.
 - **Tags come out of the title.** `(مہدوی مصدر)` sets `Books."Kind"` to `mahdavi` and is not stored as text; a language tag (`فارسی`) and an edition tag (`ط. التركي`, `طيبة`, `ط التأصيل`) move to that citation's `Note`.
-- **No web addresses from the current data.** The 94 `search.hadith-mcp.org` addresses and the wording `«في ترقيم القاعدة المستعملة»` (198 lines) are dropped; the reference keeps the hadith number alone (`رقم ٦٩٣٠`). `Url` starts empty for every row and is filled by hand later with addresses readers should be sent to.
+- **Web addresses move to `Url`.** The 94 `search.hadith-mcp.org` addresses are carried into their row's `Url` (owner's decision later on 2026-11-22, reversing the first answer to drop them). The wording `«في ترقيم القاعدة المستعملة»` (198 lines, in three forms) is still dropped; the reference keeps the hadith number alone (`رقم ٦٩٣٠`). `Url` is empty for every other row and is filled by hand.
 
 Merge table answers from the owner (2026-11-22; the reviewed table itself, variant heading → book, is to be committed beside the migration script in `ishqnama-db`):
 - `جامع الترمذي، الترمذي ٢٧٩ه` (not `سنن الترمذي`); `تفسير ابن عربي، ابن عربي ٦٣٨ه` for all five Ibn Arabi headings, the `(المنسوب)` and `(مصدر المشروع)` tags dropped; `لباب التأويل في معاني التنزيل، الخازن ٧٤١ه` (standard spelling).

@@ -62,9 +62,9 @@ Api ───────┘──>  Infrastructure  ──>  Application
                                  ──>  Domain
 ```
 
-- **`Ishqnama.Domain`** — Sealed entity POCOs. Quran entities (10: Chapter, Verse, Juz, etc.) + user data entities (UserSettings, UserBookmark, UserFavorite, UserHistoryEntry, VerseList with its VerseListGroup). Zero dependencies.
+- **`Ishqnama.Domain`** — Sealed entity POCOs. Quran entities (12: Chapter, Verse, Juz, Book, etc.) + user data entities (UserSettings, UserBookmark, UserFavorite, UserHistoryEntry, VerseList with its VerseListGroup). Zero dependencies.
 - **`Ishqnama.Application`** — DTOs, interfaces (`IQuranReadOnlyRepository`, `IUserDataRepository`, `IVerseListRepository`), `DtoMappings`, service classes (5 Quran services + `UserDataService` + `VerseListService`), `QuranShape` (chapter verse counts, used for every range check). Depends only on Domain.
-- **`Ishqnama.Infrastructure`** — EF Core `QuranDbContext` + 10 entity configurations, `CachedQuranReadOnlyRepository` (singleton, loads all Quran data into memory), `CosmosUserDataRepository` and `CosmosVerseListRepository` (Cosmos DB SDK), `DependencyInjection.cs`. Depends on Domain + Application.
+- **`Ishqnama.Infrastructure`** — EF Core `QuranDbContext` + 12 entity configurations, `CachedQuranReadOnlyRepository` (singleton, loads all Quran data into memory), `CosmosUserDataRepository` and `CosmosVerseListRepository` (Cosmos DB SDK), `DependencyInjection.cs`. Depends on Domain + Application.
 - **`Ishqnama.Functions`** — Azure Functions isolated worker (presentation layer). 8 function classes: 12 Quran/health HTTP triggers + 8 user data triggers, 4 middleware (CORS, auth, exception handling, cache headers). Composition root. Depends on Application + Infrastructure.
 - **`Ishqnama.Api`** — ASP.NET Core Minimal API (presentation layer, same 20 routes). `Endpoints/*Endpoints.cs` one static class per resource, `Middleware/CacheHeaderMiddleware` + `GlobalExceptionHandler`, `Json/IshqnamaJsonContext` (source-generated STJ), `Contracts/` (request records, `ErrorResponse`). Framework CORS, JwtBearer auth, response compression, health checks, OpenAPI + Scalar (Development only). Composition root. Depends on Application + Infrastructure. Reads the **same configuration keys** as Functions (`ConnectionStrings:QuranDb`, `CosmosDb:*`, `Auth:*`, `Cors:AllowedOrigins`) from `appsettings.Development.json` / environment variables.
 
@@ -78,7 +78,9 @@ Api ───────┘──>  Infrastructure  ──>  Application
 
 Composite/natural keys. Schema and seed data live in `database/` project (SQL files run by postgres `docker-entrypoint-initdb.d`). The API is a read-only client — no EF Core migrations, no seeding logic.
 
-Key entities: `Chapter` (1-114), `Verse` (ChapterNumber, VerseNumber), `Juz` (1-30), `Manzil` (1-7), `Ruku` (surrogate), `Translation`, `TranslationSegment`.
+Key entities: `Chapter` (1-114), `Verse` (ChapterNumber, VerseNumber), `Juz` (1-30), `Manzil` (1-7), `Ruku` (surrogate), `Translation`, `TranslationSegment`, `Book`, `TranslationSegmentCitation`.
+
+**Takhreej (tafseer citations)**: `Books` (`Title`, nullable `Author`, `AuthorDeathYearHijri`, `Kind`) and `TranslationSegmentCitations` (`TranslationSegmentId`, `BlockOrdinal`, `SortOrder`, `BookId`, nullable `Reference`, `Note`, `Url`) hold the source books a segment's explanation cites. In the `Explanation` HTML each cited passage is `<mark>passage<ins data-takhreej="n"></ins></mark>`, where `n` is the citation rows' `BlockOrdinal` (1-based per segment); the API never parses or changes that HTML. `CachedQuranReadOnlyRepository` loads both tables with the rest and `AttachCitations` hangs each segment's citations (with their book) on `TranslationSegment.Citations` once, so every route that maps a segment with `TranslationSegment.ToDto()` (chapter verses, one verse, juz, ruku, verse range) returns them. On the wire each translation segment has `takhreej`: `null` when it cites nothing, otherwise blocks in ordinal order, `[{ ordinal, citations: [{ title, author, authorDeathYearHijri, reference, note, url }] }]`, citations in `SortOrder` (`TakhreejBlockDto`, `CitationDto`; `Kind` is not sent). `StripExplanations` in both hosts nulls `Takhreej` together with `Explanation`, since the citations are part of the tafseer. `/api/search` returns the raw explanation and no takhreej. The two configurations name their composite indexes by string (`HasIndex(nameof(...), ...)`) because an anonymous-type key expression adds an IL2026 trim warning to the API image.
 
 Connection string: `ConnectionStrings:QuranDb` in `local.settings.json` (Functions) / `appsettings.Development.json` (API), or the `ConnectionStrings__QuranDb` env var.
 
@@ -93,7 +95,7 @@ Config: `CosmosDb__Endpoint`, `CosmosDb__Key`, `CosmosDb__DatabaseName`, `Cosmos
 
 ## Authentication
 
-JWT bearer auth protects `/api/user/*`, `/api/search` and `/api/articles/*`. Other Quran endpoints remain anonymous, but a valid token on them unlocks the tafseer (`Explanation` is stripped for anonymous callers by `AuthExtensions.StripExplanations`); an invalid token on an anonymous route is ignored, not rejected. Search requires auth to prevent abuse — and that is the only reason `SearchResultDto.Explanation` is never stripped.
+JWT bearer auth protects `/api/user/*`, `/api/search` and `/api/articles/*`. Other Quran endpoints remain anonymous, but a valid token on them unlocks the tafseer (`Explanation` and `Takhreej` are stripped for anonymous callers by `AuthExtensions.StripExplanations`); an invalid token on an anonymous route is ignored, not rejected. Search requires auth to prevent abuse — and that is the only reason `SearchResultDto.Explanation` is never stripped.
 
 - Uses OIDC discovery from the Entra ID External (CIAM) authority (`Auth__Authority`, ends in `/v2.0`)
 - Validates `aud` claim against the **API** app registration (`Auth__ClientId`)
@@ -122,7 +124,7 @@ JWT bearer auth protects `/api/user/*`, `/api/search` and `/api/articles/*`. Oth
 ## Caching
 
 1. **In-memory data preloading** — `CachedQuranReadOnlyRepository` (singleton) loads all Quran data from PostgreSQL on first request using `SemaphoreSlim` for thread safety. All subsequent queries run against in-memory lists — zero DB queries after initial load. Shared by both hosts.
-2. **HTTP headers** — `Cache-Control: public, max-age=2592000, immutable` + ETag (assembly version based, suffixed `-a`/`-u` for authenticated/anonymous) + `Vary: Authorization` via `CacheHeaderMiddleware` in each host
+2. **HTTP headers** — `Cache-Control: public, max-age=2592000, immutable` + ETag (`"v3-<assembly version>-a|-u"`: authenticated/anonymous; the `v3-` prefix is bumped by hand when a response's shape changes, as takhreej did, because the assembly version is the same in every image) + `Vary: Authorization` via `CacheHeaderMiddleware` in each host
 3. **ETag 304 short-circuit** — Middleware returns 304 without executing the handler if `If-None-Match` matches
 
 ## Conventions
@@ -133,7 +135,7 @@ JWT bearer auth protects `/api/user/*`, `/api/search` and `/api/articles/*`. Oth
 - Cosmos DB uses `CosmosSerializationOptions` with `CamelCase` property naming
 - Nullable reference types enabled (`<Nullable>enable</Nullable>`)
 - `CS8618` suppressed in Domain and Infrastructure (EF Core navigation properties)
-- Tafseer `Explanation` field contains **raw HTML** (`<span lang="ar">`, `<ins>`) — preserve as-is
+- Tafseer `Explanation` field contains **raw HTML** (`<span lang="ar">`, and `<mark>…<ins data-takhreej="n"></ins></mark>` around a passage that cites books, see **Takhreej** above) — preserve as-is
 - All text is **NFC-normalized** Unicode
 - `tools/SqlToJsonConverter/` is a one-time utility — do not modify unless re-converting source data
 
@@ -166,7 +168,7 @@ The essays are embedded JSON in `Ishqnama.Application/Articles/NoorEImaan/`, gen
 | Method | Route | Description |
 |--------|-------|-------------|
 | GET | `/user/settings` | Get user settings (200 with empty body when none saved) |
-| PUT | `/user/settings` | Save user settings (`UserSettingsDto` body) |
+| PUT | `/user/settings` | Save user settings (`UserSettingsDto` body; fields added later, `showTakhreej` among them, default to on when a body or a stored document lacks them) |
 | GET | `/user/bookmarks` | List bookmarks |
 | POST | `/user/bookmarks` | Create bookmark (`{ title, icon }`) → 201 + `Location`, 409 on duplicate title |
 | PUT | `/user/bookmarks/{slug}/position` | Move bookmark (`{ chapterNumber, verseNumber }`) → 404 if slug unknown |
@@ -199,7 +201,7 @@ Someone else's list is always reported as 404, never 403, so the API never revea
 
 ## Tests
 
-`tests/Ishqnama.Application.Tests` (xUnit, in the solution) tests the Application services against in-memory fakes of the repositories (`Fakes.cs`): verse list validation, ownership, visibility and favourites, and the Arabic range checks. `dotnet test` runs it, and so do `pr-validation.yml` and `build-backend.yml`.
+`tests/Ishqnama.Application.Tests` (xUnit, in the solution) tests the Application services against in-memory fakes of the repositories (`Fakes.cs`): verse list validation, ownership, visibility and favourites, the Arabic range checks, the takhreej mapping (`TakhreejMappingTests`) and the settings defaults (`UserSettingsDtoTests`). The hosts' `StripExplanations` helpers are not reachable from it (the project references only Application). `dotnet test` runs it, and so do `pr-validation.yml` and `build-backend.yml`.
 
 ## NuGet Packages
 
