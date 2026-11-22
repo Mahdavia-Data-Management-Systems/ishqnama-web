@@ -24,8 +24,10 @@ public sealed class CacheHeaderMiddleware(RequestDelegate next)
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? "0";
 
-    private static readonly string AuthenticatedEtag = $"\"v2-{BaseVersion}-a\"";
-    private static readonly string UnauthenticatedEtag = $"\"v2-{BaseVersion}-u\"";
+    // The prefix changes when a response's shape does while the assembly version stays the same:
+    // v3 added takhreej to the translation segments.
+    private static readonly string AuthenticatedEtag = $"\"v3-{BaseVersion}-a\"";
+    private static readonly string UnauthenticatedEtag = $"\"v3-{BaseVersion}-u\"";
 
     /// <summary>How this middleware treats a route: left alone, long-lived Quran data, or the members-only essays.</summary>
     internal enum RouteCaching { None, Quran, Members }

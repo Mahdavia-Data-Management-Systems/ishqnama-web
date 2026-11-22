@@ -47,6 +47,10 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
             _rukus = await db.Rukus.ToListAsync();
             _translations = await db.Translations.ToListAsync();
             _translationSegments = await db.TranslationSegments.ToListAsync();
+            AttachCitations(
+                _translationSegments,
+                await db.Books.ToListAsync(),
+                await db.TranslationSegmentCitations.ToListAsync());
 
             _chapterNameLookup = _chapters.ToDictionary(c => c.ChapterNumber, c => c.TransliteratedName);
             _isLoaded = true;
@@ -297,7 +301,33 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
         return new PagedResponse<SearchResultDto>(results, page, pageSize, totalCount);
     }
 
-    // --- Private Helper ---
+    // --- Private Helpers ---
+
+    /// <summary>
+    /// Hangs every citation on its segment, with its book, once at load. The queries are
+    /// no-tracking, so EF does not wire the navigations itself. Every verse route maps its segments
+    /// with <c>TranslationSegment.ToDto()</c>, which reads <c>Citations</c>, so they all carry
+    /// takhreej from here on.
+    /// </summary>
+    private static void AttachCitations(
+        List<TranslationSegment> segments, List<Book> books, List<TranslationSegmentCitation> citations)
+    {
+        var bookLookup = books.ToDictionary(b => b.BookId);
+        var bySegment = citations.ToLookup(c => c.TranslationSegmentId);
+
+        foreach (var citation in citations)
+            citation.Book = bookLookup[citation.BookId];
+
+        foreach (var segment in segments)
+        {
+            var own = bySegment[segment.TranslationSegmentId];
+            if (!own.Any()) continue;
+
+            segment.Citations = own
+                .OrderBy(c => c.BlockOrdinal).ThenBy(c => c.SortOrder)
+                .ToList();
+        }
+    }
 
     private List<VerseDto> MapVersesWithTranslations(List<Verse> verses, int? translationId)
     {

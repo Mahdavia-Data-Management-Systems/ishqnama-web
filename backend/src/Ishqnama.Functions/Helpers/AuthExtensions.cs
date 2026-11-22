@@ -18,13 +18,17 @@ internal static class AuthExtensions
         }
     }
 
+    /// <summary>
+    /// What an anonymous caller gets: the translation without the tafseer. The takhreej goes with
+    /// the explanation, because its citations are part of it.
+    /// </summary>
     public static VerseDto StripExplanations(this VerseDto verse)
         => verse.Translations is null
             ? verse
             : verse with
             {
                 Translations = verse.Translations
-                    .Select(t => t with { Explanation = null })
+                    .Select(t => t with { Explanation = null, Takhreej = null })
                     .ToList()
             };
 

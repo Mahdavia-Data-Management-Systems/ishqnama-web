@@ -11,8 +11,9 @@ public sealed class CacheHeaderMiddleware : IFunctionsWorkerMiddleware
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? "0";
 
-    private static readonly string AuthenticatedEtag = $"\"v2-{BaseVersion}-a\"";
-    private static readonly string UnauthenticatedEtag = $"\"v2-{BaseVersion}-u\"";
+    // v3 added takhreej to the translation segments (same prefix as the API's middleware).
+    private static readonly string AuthenticatedEtag = $"\"v3-{BaseVersion}-a\"";
+    private static readonly string UnauthenticatedEtag = $"\"v3-{BaseVersion}-u\"";
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {

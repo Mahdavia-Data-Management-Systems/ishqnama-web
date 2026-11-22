@@ -12,4 +12,5 @@ public sealed class TranslationSegment
 
     public Translation Translation { get; set; } = null!;
     public Verse Verse { get; set; } = null!;
+    public ICollection<TranslationSegmentCitation> Citations { get; set; } = [];
 }

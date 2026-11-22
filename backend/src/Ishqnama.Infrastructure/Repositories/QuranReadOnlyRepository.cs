@@ -62,11 +62,11 @@ public sealed class QuranReadOnlyRepository(QuranDbContext db) : IQuranReadOnlyR
         if (verse is null) return null;
 
         var segments = await db.TranslationSegments
+            .Include(ts => ts.Citations).ThenInclude(c => c.Book)
             .Where(ts => ts.ChapterNumber == chapterNumber && ts.VerseNumber == verseNumber)
             .OrderBy(ts => ts.TranslationId).ThenBy(ts => ts.SegmentIndex)
-            .Select(ts => ts.ToDto())
             .ToListAsync();
-        return verse.ToDto(segments);
+        return verse.ToDto(segments.Select(ts => ts.ToDto()).ToList());
     }
 
     // --- Juz ---
@@ -231,6 +231,7 @@ public sealed class QuranReadOnlyRepository(QuranDbContext db) : IQuranReadOnlyR
         var chapterNumbers = verses.Select(v => v.ChapterNumber).Distinct().ToList();
 
         var segments = await db.TranslationSegments
+            .Include(ts => ts.Citations).ThenInclude(c => c.Book)
             .Where(ts => ts.TranslationId == translationId.Value
                 && chapterNumbers.Contains(ts.ChapterNumber))
             .OrderBy(ts => ts.SegmentIndex)

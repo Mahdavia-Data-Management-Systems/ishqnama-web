@@ -19,7 +19,29 @@ public static class DtoMappings
             v.JuzNumber, v.RukuId, v.HasSajdah, translations);
 
     public static TranslationSegmentDto ToDto(this TranslationSegment ts) =>
-        new(ts.TranslationId, ts.SegmentIndex, ts.TranslationText, ts.Explanation);
+        new(ts.TranslationId, ts.SegmentIndex, ts.TranslationText, ts.Explanation,
+            ts.Citations.ToTakhreej());
+
+    /// <summary>
+    /// A segment's citations as takhreej blocks: one block per anchor ordinal, in ordinal order,
+    /// its citations in sort order. Null when there are none.
+    /// </summary>
+    public static IReadOnlyList<TakhreejBlockDto>? ToTakhreej(this IEnumerable<TranslationSegmentCitation> citations)
+    {
+        var blocks = citations
+            .GroupBy(c => c.BlockOrdinal)
+            .OrderBy(g => g.Key)
+            .Select(g => new TakhreejBlockDto(
+                g.Key,
+                g.OrderBy(c => c.SortOrder).Select(c => c.ToDto()).ToList()))
+            .ToList();
+
+        return blocks.Count == 0 ? null : blocks;
+    }
+
+    public static CitationDto ToDto(this TranslationSegmentCitation c) =>
+        new(c.Book.Title, c.Book.Author, c.Book.AuthorDeathYearHijri,
+            c.Reference, c.Note, c.Url);
 
     public static JuzDto ToDto(this Juz j, int? startChapter = null, int? startVerse = null,
         int? endChapter = null, int? endVerse = null) =>

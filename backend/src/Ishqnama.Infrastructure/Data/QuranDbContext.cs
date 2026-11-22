@@ -15,6 +15,8 @@ public sealed class QuranDbContext(DbContextOptions<QuranDbContext> options) : D
     public DbSet<Verse> Verses => Set<Verse>();
     public DbSet<Translation> Translations => Set<Translation>();
     public DbSet<TranslationSegment> TranslationSegments => Set<TranslationSegment>();
+    public DbSet<Book> Books => Set<Book>();
+    public DbSet<TranslationSegmentCitation> TranslationSegmentCitations => Set<TranslationSegmentCitation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
