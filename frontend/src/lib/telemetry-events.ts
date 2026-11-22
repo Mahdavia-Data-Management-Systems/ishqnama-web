@@ -18,6 +18,7 @@ export type TelemetryEvent =
   | "article-shared"
   | "recording-played"
   | "recording-failed"
+  | "takhreej-opened"
   | "sign-in-prompt-shown"
   | "sign-in-started"
   | "translation-language-changed"

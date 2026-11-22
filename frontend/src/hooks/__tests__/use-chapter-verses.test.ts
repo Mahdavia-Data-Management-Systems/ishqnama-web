@@ -1,6 +1,6 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useChapterVerses } from "@/hooks/use-chapter-verses";
+import { toDisplayVerse, useChapterVerses } from "@/hooks/use-chapter-verses";
 import { getChapterVerses } from "@/lib/api";
 import { ensureTranslationFont } from "@/lib/translation-font";
 import type { VerseDto } from "@/types/api";
@@ -79,5 +79,22 @@ describe("useChapterVerses", () => {
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe("Failed to fetch");
+  });
+});
+
+describe("toDisplayVerse", () => {
+  it("carries a segment's takhreej onto the display segment", () => {
+    const takhreej = [{ ordinal: 1, citations: [{ title: "جامع البيان", authorDeathYearHijri: 310 }] }];
+    const verse = toDisplayVerse({
+      ...VERSE,
+      translations: [
+        { translationId: 2, segmentIndex: 1, translationText: "دو", explanation: "شرح", takhreej: null },
+        { translationId: 2, segmentIndex: 0, translationText: "ایک", explanation: "متن", takhreej },
+      ],
+    });
+    expect(verse.segments).toEqual([
+      { text: "ایک", explanation: "متن", takhreej },
+      { text: "دو", explanation: "شرح", takhreej: undefined },
+    ]);
   });
 });

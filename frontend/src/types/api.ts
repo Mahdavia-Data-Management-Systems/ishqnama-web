@@ -27,6 +27,25 @@ export interface TranslationSegmentDto {
   segmentIndex: number;
   translationText?: string;
   explanation?: string;
+  /** The sources of the passages marked in `explanation`; absent for anonymous readers. */
+  takhreej?: TakhreejBlockDto[] | null;
+}
+
+/** The books cited for one marked passage: `ordinal` matches its `<ins data-takhreej="n">` anchor. */
+export interface TakhreejBlockDto {
+  ordinal: number;
+  citations: CitationDto[];
+}
+
+export interface CitationDto {
+  title: string;
+  author?: string | null;
+  authorDeathYearHijri?: number | null;
+  /** Where in the book, as printed: a page, a chapter, a hadith number. */
+  reference?: string | null;
+  note?: string | null;
+  /** The reference's own address on the internet, when there is one. */
+  url?: string | null;
 }
 
 export interface VerseDto {

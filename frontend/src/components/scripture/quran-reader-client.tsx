@@ -9,6 +9,7 @@ import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import JuzQuarterMark from "@/components/scripture/juz-quarter-mark";
 import RukuMark from "@/components/scripture/ruku-mark";
 import SajdahMark from "@/components/scripture/sajdah-mark";
+import TafseerHtml from "@/components/scripture/tafseer-html";
 import PrevNextNav from "@/components/scripture/prev-next-nav";
 import ReaderToolbar, { type ReadingMode, type TranslationLang } from "@/components/reader-toolbar";
 import BackToTop from "@/components/ui/back-to-top";
@@ -60,6 +61,7 @@ export default function QuranReaderClient({
   const {
     mode: persistedMode,
     fontScale: persistedFontScale, showTafseer: persistedShowTafseer,
+    showTakhreej,
     reciter,
   } = useReaderSettings();
   const { bookmarks, savePosition, addBookmark } = useBookmarks();
@@ -281,7 +283,8 @@ export default function QuranReaderClient({
                     <BismillahBlock
                       arabic={verse.arabic}
                       translation={verse.segments?.map((s) => s.text).filter(Boolean).join(" ")}
-                      explanation={showTafseer ? verse.segments?.map((s) => s.explanation).filter(Boolean).join(" ") : undefined}
+                      segments={showTafseer ? verse.segments : undefined}
+                      showTakhreej={showTakhreej}
                       lang={lang}
                       fontScale={fontScale}
                     />
@@ -292,6 +295,7 @@ export default function QuranReaderClient({
                       arabic={verse.arabic}
                       segments={verse.segments}
                       showTafseer={showTafseer}
+                      showTakhreej={showTakhreej}
                       activeLang={lang}
                       fontScale={fontScale}
                       isBookmarked={bookmarkedVerses.has(bookmarkKey)}
@@ -547,7 +551,7 @@ export default function QuranReaderClient({
                       onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
                     >
                       <sup className={styles.popupSegRef}>{i + 1}</sup>{" "}
-                      <span dangerouslySetInnerHTML={{ __html: seg.explanation }} />
+                      <TafseerHtml html={seg.explanation} takhreej={seg.takhreej} showTakhreej={showTakhreej} />
                     </div>
                   ) : null,
                 )}

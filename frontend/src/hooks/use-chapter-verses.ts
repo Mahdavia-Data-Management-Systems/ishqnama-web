@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import { getChapterVerses } from "@/lib/api";
 import { getTranslationId } from "@/lib/translation-map";
 import { ensureTranslationFont } from "@/lib/translation-font";
-import type { VerseDto } from "@/types/api";
+import type { TakhreejBlockDto, VerseDto } from "@/types/api";
 import type { TranslationLang } from "@/components/scripture/ayah-block";
 
 export interface DisplaySegment {
   text?: string;
   explanation?: string;
+  /** The books cited for the passages marked in `explanation`, by anchor number. */
+  takhreej?: TakhreejBlockDto[];
 }
 
 export interface DisplayVerse {
@@ -30,6 +32,7 @@ export function toDisplayVerse(dto: VerseDto): DisplayVerse {
     .map((seg) => ({
       text: seg.translationText,
       explanation: seg.explanation,
+      takhreej: seg.takhreej ?? undefined,
     }));
 
   return {

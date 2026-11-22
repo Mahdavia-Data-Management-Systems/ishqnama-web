@@ -1,10 +1,8 @@
 import Link from "next/link";
+import { escapeRegExp, highlightHtml } from "@/lib/highlight-html";
+import { flattenTakhreej } from "@/lib/tafseer-takhreej";
 import type { SearchResultDto } from "@/types/api";
 import styles from "./search-result-card.module.css";
-
-function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function highlightText(text: string, query: string) {
   if (!query) return text;
@@ -19,20 +17,6 @@ function highlightText(text: string, query: string) {
       part
     ),
   );
-}
-
-function highlightHtml(html: string, query: string) {
-  if (!query) return html;
-  const escaped = escapeRegExp(query);
-  const matchRegex = new RegExp(escaped, "gi");
-  // Split into tags and text segments, only highlight within text
-  return html.replace(/(<[^>]*>)|([^<]+)/g, (segment, tag, text) => {
-    if (tag) return tag;
-    return text.replace(
-      matchRegex,
-      (m: string) => `<mark class="${styles.highlight}">${m}</mark>`,
-    );
-  });
 }
 
 function trimTextAroundQuery(text: string, query: string, contextChars = 80): string {
@@ -150,7 +134,8 @@ export default function SearchResultCard({ result, query, lang, searchScope }: S
           dir={isRtl ? "rtl" : undefined}
           lang={langCode}
           dangerouslySetInnerHTML={{
-            __html: highlightHtml(trimHtmlAroundQuery(result.explanation, query), query),
+            // The card is one link, so a cited passage reads as plain prose: no wash, no button, no books.
+            __html: highlightHtml(trimHtmlAroundQuery(flattenTakhreej(result.explanation), query), query, styles.highlight),
           }}
         />
       )}

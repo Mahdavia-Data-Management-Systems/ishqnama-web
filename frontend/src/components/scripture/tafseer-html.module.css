@@ -1,0 +1,132 @@
+/* A passage that carries takhreej: a wash lighter than the tapped segment's (15%), so the two
+   stack readably, and unlike the search mark, which is the caller's own class. */
+.passage {
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+  border-radius: 2px;
+  padding-inline: 0.1em;
+  color: inherit;
+}
+
+/* The open book at the passage's end. Sized in em, so it follows the reader's text size. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -0.15em;
+  margin-inline-start: 0.15em;
+  /* Room for a finger without opening up the line. */
+  padding: 0.2em;
+  margin-block: -0.2em;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gold);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--tint-teal-6);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 1px;
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+}
+
+/* Inside the sheet */
+
+.quote {
+  margin: 0 0 var(--space-3);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--gold);
+  font-family: var(--font-urdu);
+  font-size: var(--text-md);
+  line-height: var(--leading-urdu);
+  color: var(--text-tertiary);
+  text-align: start;
+}
+
+.quote :global(span[lang="ar"]) {
+  font-family: var(--font-arabic);
+  line-height: var(--leading-arabic);
+}
+
+.quote :global(span[lang="en"]) {
+  font-family: var(--font-display);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Naskh, not the Quran font: that one does not draw the numerals of years and page references. */
+  font-family: var(--font-naskh);
+  font-size: var(--text-lg);
+  line-height: var(--leading-arabic);
+  color: var(--text-primary);
+  text-align: start;
+}
+
+.item {
+  padding-block: var(--space-1);
+}
+
+.item + .item {
+  border-top: 1px solid var(--tint-ink-8);
+}
+
+.title {
+  color: var(--text-primary);
+}
+
+.meta {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.reference,
+.note {
+  display: block;
+  font-size: var(--text-sm);
+  line-height: var(--leading-arabic);
+}
+
+.reference {
+  color: var(--text-secondary);
+}
+
+.note {
+  color: var(--text-tertiary);
+}
+
+.link {
+  color: var(--teal-primary);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--teal-accent);
+  outline-offset: 1px;
+}
+
+.linkIcon {
+  width: 0.85em;
+  height: 0.85em;
+  /* Inline, so it stays on the line of the text it comes before. */
+  display: inline-block;
+  margin-inline-end: 0.35em;
+  vertical-align: -0.05em;
+}

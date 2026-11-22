@@ -43,7 +43,15 @@ export default function Sheet({ onClose, title, subtitle, size = "compact", chil
   }, [onClose]);
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div
+      className={styles.overlay}
+      // Stopped here because a sheet opened from inside a clickable block (the tafseer's
+      // takhreej) is still that block's child in React, even though it is drawn elsewhere.
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
       <div
         role="dialog"
         aria-modal="true"

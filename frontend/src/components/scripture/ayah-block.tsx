@@ -8,18 +8,16 @@ import AyahMarkerContainer from "@/components/scripture/ayah-marker-container";
 import JuzQuarterMark from "@/components/scripture/juz-quarter-mark";
 import RukuMark from "@/components/scripture/ruku-mark";
 import SajdahMark from "@/components/scripture/sajdah-mark";
+import TafseerHtml from "@/components/scripture/tafseer-html";
 import { FONT_SIZE_STEPS } from "@/config/reader-config";
 import type { DisplaySegment } from "@/hooks/use-chapter-verses";
 import type { JuzQuarter } from "@/data/juz-quarters";
 import type { RukuDto } from "@/types/api";
+import { escapeRegExp } from "@/lib/highlight-html";
 import { localizeNumber } from "@/lib/translation-map";
 import styles from "./ayah-block.module.css";
 
 export type TranslationLang = "urdu" | "hindi" | "english";
-
-function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function highlightText(text: string, query: string) {
   const regex = new RegExp(`(${escapeRegExp(query)})`, "gi");
@@ -33,18 +31,6 @@ function highlightText(text: string, query: string) {
   );
 }
 
-function highlightHtml(html: string, query: string) {
-  const escaped = escapeRegExp(query);
-  const matchRegex = new RegExp(escaped, "gi");
-  return html.replace(/(<[^>]*>)|([^<]+)/g, (segment, tag, text) => {
-    if (tag) return tag;
-    return text.replace(
-      matchRegex,
-      (m: string) => `<mark class="${styles.searchHighlight}">${m}</mark>`,
-    );
-  });
-}
-
 interface AyahBlockProps {
   chapterNumber: number;
   number: number;
@@ -52,6 +38,8 @@ interface AyahBlockProps {
   translations?: Partial<Record<TranslationLang, string>>;
   segments?: DisplaySegment[];
   showTafseer?: boolean;
+  /** The reader's "Show takhreej on tafseer" setting: the wash and book button on cited passages. */
+  showTakhreej?: boolean;
   activeLang: TranslationLang;
   isBookmarked?: boolean;
   isRukuEnd?: boolean;
@@ -79,6 +67,7 @@ export default function AyahBlock({
   translations,
   segments,
   showTafseer = false,
+  showTakhreej = true,
   activeLang,
   isBookmarked = false,
   isRukuEnd = false,
@@ -243,7 +232,13 @@ export default function AyahBlock({
                 onClick={() => setHighlightedSeg(highlightedSeg === i ? null : i)}
               >
                 <sup className={styles.segRef}>{i + 1}</sup>{" "}
-                <span dangerouslySetInnerHTML={{ __html: highlightQuery ? highlightHtml(seg.explanation, highlightQuery) : seg.explanation }} />
+                <TafseerHtml
+                  html={seg.explanation}
+                  takhreej={seg.takhreej}
+                  showTakhreej={showTakhreej}
+                  highlightQuery={highlightQuery}
+                  markClassName={styles.searchHighlight}
+                />
               </div>
             ) : null,
           )}
