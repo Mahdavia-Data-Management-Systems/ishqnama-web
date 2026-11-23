@@ -64,8 +64,9 @@ export default function TafseerHtml({
         // An anchor whose books did not arrive: the passage reads as ordinary prose.
         if (citations.length === 0) return <span key={i}>{passage}</span>;
         return (
-          <span key={i}>
-            {passage && <mark className={styles.passage}>{passage}</mark>}
+          // The wash is on the wrapper, so it runs under the button too.
+          <span key={i} className={passage ? styles.passage : undefined}>
+            {passage && <mark className={styles.mark}>{passage}</mark>}
             <TakhreejButton passageHtml={part.passageHtml} citations={citations} />
           </span>
         );

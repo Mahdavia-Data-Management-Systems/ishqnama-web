@@ -1,9 +1,17 @@
-/* A passage that carries takhreej: a wash lighter than the tapped segment's (15%), so the two
-   stack readably, and unlike the search mark, which is the caller's own class. */
+/* A passage that carries takhreej, with the button at its end: a wash lighter than the tapped
+   segment's (15%), so the two stack readably, and unlike the search mark, which is the caller's
+   own class. */
 .passage {
   background: color-mix(in srgb, var(--gold) 12%, transparent);
-  border-radius: 2px;
-  padding-inline: 0.1em;
+  /* Half-circle ends at the passage's start and end only: where it wraps onto another line the
+     wash is cut square, so it reads as one run. */
+  border-radius: 999px;
+  padding-inline: 0.5em;
+}
+
+/* The passage itself: the wash belongs to its wrapper, so the browser's own mark colours go. */
+.mark {
+  background: none;
   color: inherit;
 }
 

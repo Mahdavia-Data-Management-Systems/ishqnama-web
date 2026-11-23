@@ -54,7 +54,10 @@ describe("TafseerHtml", () => {
     expect(buttons()).toHaveLength(2);
     const marks = [...container.querySelectorAll("mark")];
     expect(marks.map((m) => m.textContent)).toEqual(["پہلا اقتباس", "دوسرا اقتباس"]);
-    expect(marks.every((m) => m.className === styles.passage)).toBe(true);
+    // The wash is on the wrapper, so it takes in the button after the passage as well.
+    const washes = [...container.querySelectorAll(`.${styles.passage}`)];
+    expect(washes).toHaveLength(2);
+    expect(washes.every((w, i) => w.contains(marks[i]) && w.querySelector("button"))).toBe(true);
     expect(container.textContent).toBe("شروع پہلا اقتباس درمیان دوسرا اقتباس آخر");
     expect(container.querySelector("ins")).toBeNull();
     expect(buttons()[0].getAttribute("aria-expanded")).toBe("false");
@@ -174,7 +177,7 @@ describe("TafseerHtml", () => {
       <TafseerHtml html={html} takhreej={BLOCKS} highlightQuery="مسلم" markClassName="hl" />,
     );
     expect(container.querySelectorAll("mark.hl")).toHaveLength(2);
-    expect(container.querySelector(`mark.${styles.passage} mark.hl`)).toBeTruthy();
+    expect(container.querySelector(`.${styles.passage} mark mark.hl`)).toBeTruthy();
 
     fireEvent.click(buttons()[0]);
     const dialog = screen.getByRole("dialog", { name: "Takhreej" });
