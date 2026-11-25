@@ -22,6 +22,7 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
     private List<Translation> _translations = [];
     private List<TranslationSegment> _translationSegments = [];
     private Dictionary<int, string> _chapterNameLookup = [];
+    private List<BibliographyBookDto> _bibliography = [];
 
     public CachedQuranReadOnlyRepository(IServiceScopeFactory scopeFactory)
     {
@@ -53,6 +54,9 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
                 await db.TranslationSegmentCitations.ToListAsync());
 
             _chapterNameLookup = _chapters.ToDictionary(c => c.ChapterNumber, c => c.TransliteratedName);
+            // Built once: the data never changes while the app runs, and DTOs are immutable.
+            _bibliography = _translationSegments.ToBibliography(
+                _verses.ToDictionary(v => (v.ChapterNumber, v.VerseNumber), v => v.RukuId));
             _isLoaded = true;
         }
         finally
@@ -239,6 +243,14 @@ public sealed class CachedQuranReadOnlyRepository : IQuranReadOnlyRepository
             .ToList();
 
         return MapVersesWithTranslations(verses, translationId);
+    }
+
+    // --- Bibliography ---
+
+    public async Task<List<BibliographyBookDto>> GetBibliographyAsync()
+    {
+        await EnsureLoadedAsync();
+        return _bibliography;
     }
 
     // --- Search ---

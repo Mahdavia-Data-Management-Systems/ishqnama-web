@@ -27,6 +27,9 @@ public interface IQuranReadOnlyRepository
     // Verse Range
     Task<List<VerseDto>> GetVerseRangeAsync(int fromChapter, int fromVerse, int toChapter, int toVerse, int? translationId = null);
 
+    // Bibliography
+    Task<List<BibliographyBookDto>> GetBibliographyAsync();
+
     // Search
     Task<PagedResponse<SearchResultDto>> SearchAsync(string query, string scope, int translationId, int page, int pageSize);
 }

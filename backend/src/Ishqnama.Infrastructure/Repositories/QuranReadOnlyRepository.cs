@@ -156,6 +156,25 @@ public sealed class QuranReadOnlyRepository(QuranDbContext db) : IQuranReadOnlyR
         return await MapVersesWithTranslationsAsync(verses, translationId);
     }
 
+    // --- Bibliography ---
+
+    public async Task<List<BibliographyBookDto>> GetBibliographyAsync()
+    {
+        var segments = await db.TranslationSegments
+            .Include(ts => ts.Citations).ThenInclude(c => c.Book)
+            .Where(ts => ts.Citations.Any())
+            .ToListAsync();
+
+        var chapters = segments.Select(ts => ts.ChapterNumber).Distinct().ToList();
+        var rukuByVerse = (await db.Verses
+                .Where(v => chapters.Contains(v.ChapterNumber))
+                .Select(v => new { v.ChapterNumber, v.VerseNumber, v.RukuId })
+                .ToListAsync())
+            .ToDictionary(v => (v.ChapterNumber, v.VerseNumber), v => v.RukuId);
+
+        return segments.ToBibliography(rukuByVerse);
+    }
+
     // --- Search ---
 
     public async Task<PagedResponse<SearchResultDto>> SearchAsync(

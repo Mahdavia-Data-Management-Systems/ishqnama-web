@@ -30,6 +30,10 @@ namespace Ishqnama.Api.Json;
 [JsonSerializable(typeof(PagedResponse<VerseDto>))]
 [JsonSerializable(typeof(ArabicVerseDto))]
 [JsonSerializable(typeof(List<ArabicVerseDto>))]
+[JsonSerializable(typeof(BibliographyBookDto))]
+[JsonSerializable(typeof(List<BibliographyBookDto>))]
+[JsonSerializable(typeof(BookCitationDto))]
+[JsonSerializable(typeof(IReadOnlyList<BookCitationDto>))]
 [JsonSerializable(typeof(SearchResultDto))]
 [JsonSerializable(typeof(PagedResponse<SearchResultDto>))]
 // User data

@@ -64,6 +64,7 @@ public sealed class ChapterServiceArabicTests
         public Task<bool> RukuExistsAsync(int rukuId) => throw new NotSupportedException();
         public Task<List<VerseDto>> GetRukuVersesAsync(int rukuId, int? translationId = null) => throw new NotSupportedException();
         public Task<List<TranslationDto>> GetTranslationsAsync() => throw new NotSupportedException();
+        public Task<List<BibliographyBookDto>> GetBibliographyAsync() => throw new NotSupportedException();
         public Task<PagedResponse<SearchResultDto>> SearchAsync(string query, string scope, int translationId, int page, int pageSize) => throw new NotSupportedException();
     }
 }

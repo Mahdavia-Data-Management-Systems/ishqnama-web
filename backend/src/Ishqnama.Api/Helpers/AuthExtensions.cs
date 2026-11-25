@@ -43,6 +43,13 @@ internal static class AuthExtensions
     public static List<VerseDto> StripExplanations(this List<VerseDto> verses)
         => verses.Select(v => v.StripExplanations()).ToList();
 
+    /// <summary>
+    /// What an anonymous caller gets of the bibliography: the books and their counts, without the
+    /// citations themselves, which are takhreej.
+    /// </summary>
+    public static List<BibliographyBookDto> StripCitations(this List<BibliographyBookDto> books)
+        => books.Select(b => b with { Citations = null }).ToList();
+
     public static PagedResponse<VerseDto> StripExplanations(this PagedResponse<VerseDto> response)
         => response with
         {
