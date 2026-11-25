@@ -63,9 +63,11 @@ export default function AboutPage() {
 
           <h2>About the recitation</h2>
           <p>
-            The recitation you can play alongside each verse is by Qari Abdul
-            Basit Abdul Samad, in the murattal style, from Tarteel&apos;s Quranic
-            Universal Library.
+            You can play a recitation alongside each verse, by either of two
+            reciters: Qari Mishari Rashid al-Afasy or Qari Abdul Basit Abdul
+            Samad. Both are in the murattal style, from Tarteel&apos;s Quranic
+            Universal Library. You can choose the reciter under Recitation
+            settings.
           </p>
 
           <h2>About MDMS</h2>
