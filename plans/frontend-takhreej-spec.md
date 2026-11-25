@@ -95,7 +95,8 @@ passage text stays, with no wash, button or sheet. There is no query-string over
 
 ## Non-goals
 
-- No pages for books, no list of every passage a book supports.
+- ~~No pages for books, no list of every passage a book supports.~~ Reversed on 2026-11-25 by the
+  bibliography page, `plans/frontend-bibliography-spec.md`.
 - No structured locators: `reference` is free text, shown as printed.
 - No links other than a citation's own `url`.
 - Takhreej is not searchable by book name; `/api/search` matches the explanation's prose.

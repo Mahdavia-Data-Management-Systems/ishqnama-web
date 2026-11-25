@@ -141,11 +141,19 @@ JWT bearer auth protects `/api/user/*`, `/api/search` and `/api/articles/*`. Oth
 
 ## API Endpoints
 
-All under `/api/` (route prefix set in `host.json` for Functions, `app.MapGroup("/api")` in the API). Both hosts serve the same routes with the same status codes and bodies, except the routes marked **API only** below (the `/chapters/{num}/arabic` slice, articles, and verse lists and favorites), which the legacy Functions host does not have.
+All under `/api/` (route prefix set in `host.json` for Functions, `app.MapGroup("/api")` in the API). Both hosts serve the same routes with the same status codes and bodies, except the routes marked **API only** below (the `/chapters/{num}/arabic` slice, the bibliography, articles, and verse lists and favorites), which the legacy Functions host does not have.
 
 ### Quran Endpoints (Anonymous)
 
 `/chapters?lang=`, `/chapters/{num}`, `/chapters/{num}/verses`, `/chapters/{num}/verses/{verseNum}`, `/chapters/{num}/arabic?from=&to=` (API only: `[{verseNumber, arabicText, hasSajdah}]` and nothing else, for verse lists; whole chapter without bounds, 400 for a range outside the chapter), `/juz`, `/juz/{num}/verses`, `/rukus?chapterNum=&juzNum=`, `/rukus/{id}/verses`, `/translations`, `/verses?from=&to=`, `/healthz`. Verse endpoints support `translationId`, `page`, `pageSize` query params. Default page size 50, max 200. The API additionally exposes `/health/live` and `/health/ready` (EF Core `CanConnect` check) for container probes.
+
+### Bibliography Endpoint (API only, Anonymous)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/bibliography` | Every cited book, most cited first: `[{ bookId, title, author, authorDeathYearHijri, kind, citationCount, citations }]` |
+
+`citations` is every place the book is cited, in reading order (`[{ chapterNumber, verseNumber, rukuId, reference, note, url }]`), and is `null` for an anonymous caller (`AuthExtensions.StripCitations`), since citations are takhreej and takhreej is part of the tafseer. A book nothing cites is left out. `DtoMappings.ToBibliography` builds it from the segments with their citations attached and a (chapter, verse) → ruku lookup; `CachedQuranReadOnlyRepository` builds it once at load. `BookId` is a serial, stable within a seed only, which is why the books and their citations travel in one response. It gets the default long-lived cache policy. Tested by `BibliographyMappingTests`.
 
 ### Search Endpoint (Authenticated — Bearer token required)
 
