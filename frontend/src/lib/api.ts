@@ -4,6 +4,7 @@ import {
   authenticatedApiFetch,
 } from "@/lib/api-client";
 import type {
+  BibliographyBookDto,
   ChapterDetailDto,
   ChapterDto,
   PagedResponse,
@@ -131,4 +132,11 @@ export function searchQuran(
 
 export function getHealth(signal?: AbortSignal) {
   return apiFetch<{ status: string }>("/healthz", { signal });
+}
+
+// --- Bibliography ---
+
+/** Every cited book; with an account, also every place each is cited. */
+export function getBibliography(signal?: AbortSignal) {
+  return apiFetchWithOptionalAuth<BibliographyBookDto[]>("/bibliography", { signal });
 }

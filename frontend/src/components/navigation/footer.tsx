@@ -10,6 +10,7 @@ import styles from "./footer.module.css";
 const footerLinks = [
   { href: "/about/", label: "About" },
   { href: "/contact/", label: "Contact" },
+  { href: "/bibliography/", label: "Bibliography" },
   { href: "/terms/", label: "Terms" },
   { href: "/privacy/", label: "Privacy" },
   { href: "/disclaimer/", label: "Disclaimer" },
@@ -20,6 +21,9 @@ export default function Footer() {
   // Reader pages keep the fixed ReaderToolbar along the bottom at every width;
   // elsewhere only the phone bottom nav needs clearing (see the stylesheet).
   const clears = isReaderRoute(pathname) ? "toolbar" : "bottom-nav";
+
+  // The bibliography's map fills the screen under the app bar, so nothing sits below it.
+  if (pathname?.startsWith("/bibliography")) return null;
 
   return (
     <footer className={styles.footer} data-clears={clears}>

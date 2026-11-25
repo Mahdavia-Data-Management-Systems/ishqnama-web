@@ -19,6 +19,7 @@ export type TelemetryEvent =
   | "recording-played"
   | "recording-failed"
   | "takhreej-opened"
+  | "bibliography-citation-opened"
   | "sign-in-prompt-shown"
   | "sign-in-started"
   | "translation-language-changed"

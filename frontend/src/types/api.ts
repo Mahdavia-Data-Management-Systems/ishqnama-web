@@ -48,6 +48,27 @@ export interface CitationDto {
   url?: string | null;
 }
 
+/** One book the tafseer cites. `citations` is absent for anonymous readers, who get the counts only. */
+export interface BibliographyBookDto {
+  bookId: number;
+  title: string;
+  author?: string | null;
+  authorDeathYearHijri?: number | null;
+  kind?: string | null;
+  citationCount: number;
+  citations?: BookCitationDto[] | null;
+}
+
+/** One place a book is cited: the verse whose tafseer cites it, and what it points at. */
+export interface BookCitationDto {
+  chapterNumber: number;
+  verseNumber: number;
+  rukuId: number;
+  reference?: string | null;
+  note?: string | null;
+  url?: string | null;
+}
+
 export interface VerseDto {
   chapterNumber: number;
   verseNumber: number;

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import Sheet from "@/components/lists/sheet";
+import CitationList from "@/components/scripture/citation-list";
 import Icon from "@/components/ui/icon";
 import { TAFSEER_COPY } from "@/config/tafseer-copy";
 import { highlightHtml } from "@/lib/highlight-html";
@@ -11,7 +12,6 @@ import {
   citationsFor,
   flattenTakhreej,
   splitTakhreej,
-  year,
   type Citation,
 } from "@/lib/tafseer-takhreej";
 import { routePattern, trackEvent } from "@/lib/telemetry";
@@ -120,42 +120,10 @@ function TakhreejButton({
                 dangerouslySetInnerHTML={{ __html: passageHtml }}
               />
             )}
-            <ol className={styles.list} dir="rtl" lang="ar">
-              {citations.map((citation, i) => (
-                <li key={i} className={styles.item}>
-                  {typeof citation === "string" ? citation : <CitationLines citation={citation} />}
-                </li>
-              ))}
-            </ol>
+            <CitationList citations={citations} />
           </Sheet>,
           document.body,
         )}
-    </>
-  );
-}
-
-/** One book: its title, then author and year, then where in the book, then any note. */
-function CitationLines({ citation }: { citation: Citation }) {
-  const { title, author, authorDeathYearHijri, reference, note, url } = citation;
-  // Only a secure address is ever linked, and the address itself is never printed.
-  const href = url?.startsWith("https://") ? url : undefined;
-  const meta = [author, authorDeathYearHijri != null ? year(authorDeathYearHijri) : null]
-    .filter(Boolean)
-    .join(" ");
-  const link = (text: string) => (
-    <a className={styles.link} href={href} target="_blank" rel="noopener noreferrer">
-      {/* Tells the reader this one leaves the site; the link's name stays the reference. */}
-      <Icon name="externalLink" className={styles.linkIcon} />
-      {text}
-    </a>
-  );
-
-  return (
-    <>
-      <span className={styles.title}>{href && !reference ? link(title) : title}</span>
-      {meta && <span className={styles.meta}> {meta}</span>}
-      {reference && <span className={styles.reference}>{href ? link(reference) : reference}</span>}
-      {note && <span className={styles.note}>{note}</span>}
     </>
   );
 }
