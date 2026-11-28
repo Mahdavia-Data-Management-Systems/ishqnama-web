@@ -20,7 +20,8 @@ This reverses the takhreej spec's non-goal "No pages for books".
 - **Access**: everyone sees the eras, authors and books with their counts. Opening a book needs an account;
   an anonymous tap opens the sign-in prompt (`useSignInGate("bibliography")`). Takhreej is part of
   the tafseer, which is the members' feature.
-- **Navigation**: a "Bibliography" link in the footer only.
+- **Navigation**: a "Bibliography" link in the footer only, hidden for now (commented out in `footerLinks`
+  in `footer.tsx`); the page still opens at its address.
 - **One response**: the page reads everything from one route, so a book's id always comes from
   the same response as the citations that use it (`BookId` is a serial and may change on a reseed).
 - **Eras**: `0-400`, `401-600`, `601-910` and `911-present` hijri, by the author's death year

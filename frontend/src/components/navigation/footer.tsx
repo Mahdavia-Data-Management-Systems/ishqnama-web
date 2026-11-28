@@ -10,7 +10,8 @@ import styles from "./footer.module.css";
 const footerLinks = [
   { href: "/about/", label: "About" },
   { href: "/contact/", label: "Contact" },
-  { href: "/bibliography/", label: "Bibliography" },
+  // Hidden for now; uncomment to link the bibliography again. The page itself still opens at its address.
+  // { href: "/bibliography/", label: "Bibliography" },
   { href: "/terms/", label: "Terms" },
   { href: "/privacy/", label: "Privacy" },
   { href: "/disclaimer/", label: "Disclaimer" },
