@@ -1,77 +1,96 @@
+import { BIBLIOGRAPHY_COPY } from "@/config/bibliography-copy";
 import { RUKU_BY_ID } from "@/data/rukus";
 import { suras } from "@/data/suras";
+import { year } from "@/lib/tafseer-takhreej";
 import type { BibliographyBookDto, BookCitationDto } from "@/types/api";
 
 /**
- * The bibliography map as plain data: which circles and lines show for the branch the reader
- * has open. Pure, so the canvas scene only draws what this returns.
+ * The bibliography map as plain data: the tree that shows for the branch the reader has open.
+ * Pure, so the map only measures, places and draws what this returns.
  *
- * The map opens one branch at a time: a book, then a chapter that cites it, then a ruku of that
- * chapter, then an ayah of that ruku. At each level the siblings of the open circle are dimmed
- * and stay selectable. An open ayah shows every citation on it, from every book; those of other
- * books are dimmed.
+ * The map opens one branch at a time: an era, then an author who died in it, then one of their
+ * books, then a chapter that cites it, then a ruku of that chapter, then an ayah of that ruku.
+ * At each level the siblings of the open one are dimmed and stay selectable. An open ayah shows
+ * every citation on it, from every book; those of other books are dimmed.
  */
 
-/** The open branch. Each level needs the ones before it. */
+/** A span of hijri years a book falls in by its author's death; "undated" when nothing places it. */
+export type EraId = "0-400" | "401-600" | "601-910" | "911-present" | "undated";
+
+/**
+ * The eras in order, each with the last year it holds, its name and its years in words. The
+ * last one is open-ended.
+ */
+const ERAS: readonly { id: EraId; to: number; label: string; years: string }[] = [
+  { id: "0-400", to: 400, label: BIBLIOGRAPHY_COPY.eraEarly, years: BIBLIOGRAPHY_COPY.eraEarlyYears },
+  { id: "401-600", to: 600, label: BIBLIOGRAPHY_COPY.eraMiddle, years: BIBLIOGRAPHY_COPY.eraMiddleYears },
+  { id: "601-910", to: 910, label: BIBLIOGRAPHY_COPY.eraLate, years: BIBLIOGRAPHY_COPY.eraLateYears },
+  { id: "911-present", to: Infinity, label: BIBLIOGRAPHY_COPY.eraPresent, years: BIBLIOGRAPHY_COPY.eraPresentYears },
+];
+const UNDATED = { id: "undated", label: BIBLIOGRAPHY_COPY.eraUndated, years: "" } as const;
+
+/** The open branch. Each level needs the ones before it, except that a book may have no author. */
 export interface BibliographyPath {
+  era?: EraId;
+  author?: string;
   bookId?: number;
   chapter?: number;
   rukuId?: number;
   verse?: number;
 }
 
-export type MapNodeKind = "book" | "chapter" | "ruku" | "verse" | "citation";
+export type MapNodeKind = "era" | "author" | "book" | "chapter" | "ruku" | "verse" | "citation";
 
 interface MapNodeBase {
-  /** Stable across selections, so a circle keeps its place while the branch changes. */
+  /** Stable across selections, so a shape keeps its identity while the branch changes. */
   id: string;
   kind: MapNodeKind;
-  radius: number;
-  /** Drawn inside the circle: a count or a number. */
-  inner: string;
-  /** Drawn under the circle. */
   label: string;
-  /** Whether `label` is Arabic script (book titles and references), for the font. */
+  /** A smaller second line: a count, an author's year, or an era's years and count. Empty when there is none. */
+  detail: string;
+  /** Whether `label` is Arabic script (authors, book titles and references), for the font. */
   arabic: boolean;
-  /** The reader's name for it in the list of choices, e.g. "al-Baqarah, 12 citations". */
+  /** The whole of it for a screen reader, e.g. "al-Baqarah, 12 citations". */
   name: string;
   dimmed: boolean;
   /** On the open branch. */
   open: boolean;
-  /** The circle it hangs from; none for a book. */
-  parentId?: string;
+  /** What it opens into; empty unless it is open. */
+  children: MapNode[];
 }
 
 export type MapNode =
-  | (MapNodeBase & { kind: "book"; book: BibliographyBookDto })
+  | (MapNodeBase & { kind: "era"; era: EraId })
+  | (MapNodeBase & { kind: "author"; era: EraId; author: string })
+  | (MapNodeBase & { kind: "book"; era: EraId; book: BibliographyBookDto; mahdavi: boolean })
   | (MapNodeBase & { kind: "chapter"; chapter: number })
   | (MapNodeBase & { kind: "ruku"; rukuId: number })
   | (MapNodeBase & { kind: "verse"; chapter: number; verse: number })
   | (MapNodeBase & { kind: "citation"; book: BibliographyBookDto; citation: BookCitationDto });
 
-export interface MapLink {
-  source: string;
-  target: string;
-  dimmed: boolean;
-}
-
-export interface MapGraph {
-  nodes: MapNode[];
-  links: MapLink[];
-}
-
-const MIN_BOOK_RADIUS = 12;
-const BOOK_RADIUS_PER_ROOT = 4.2;
-const CHILD_RADIUS = { chapter: 15, ruku: 13, verse: 12, citation: 8 } as const;
 const LABEL_LIMIT = 28;
 
-/** A book's circle: its area grows with its citations, so the radius grows with their square root. */
-export function bookRadius(citationCount: number): number {
-  return Math.max(MIN_BOOK_RADIUS, BOOK_RADIUS_PER_ROOT * Math.sqrt(Math.max(0, citationCount)));
+/**
+ * The era a book belongs to: by its author's death year, or after 910 for a Mahdavi book with
+ * no year, since Hazrat Imam Mahdi ahs departed in 910 hijri and every Mahdavi book was written
+ * after.
+ */
+export function eraOf(book: BibliographyBookDto): EraId {
+  const died = book.authorDeathYearHijri;
+  if (died != null) return ERAS.find((era) => died <= era.to)!.id;
+  return book.kind === "mahdavi" ? "911-present" : "undated";
 }
 
 export function countLabel(count: number): string {
   return count === 1 ? "1 citation" : `${count} citations`;
+}
+
+function booksLabel(count: number): string {
+  return count === 1 ? "1 book" : `${count} books`;
+}
+
+function eraLabel(era: EraId): string {
+  return ERAS.find((e) => e.id === era)?.label ?? UNDATED.label;
 }
 
 function chapterName(chapter: number): string {
@@ -81,6 +100,11 @@ function chapterName(chapter: number): string {
 function shorten(text: string): string {
   const clean = text.replace(/\s+/g, " ").trim();
   return clean.length > LABEL_LIMIT ? `${clean.slice(0, LABEL_LIMIT - 1).trimEnd()}…` : clean;
+}
+
+/** A book's author, or none when the name is missing or blank. */
+function authorOf(book: BibliographyBookDto): string | undefined {
+  return book.author?.trim() || undefined;
 }
 
 export function verseKey(chapter: number, verse: number): string {
@@ -115,14 +139,25 @@ function countBy<T>(items: readonly T[], key: (item: T) => number): [number, num
 }
 
 /**
- * Drops the parts of a path the books cannot show: an unknown book, a chapter the book does not
- * cite, and so on down. Keeps a stale path (after a refetch, say) from pointing at nothing.
+ * Drops the parts of a path the books cannot show: an era with no such author, a book that is
+ * not that author's, a chapter the book does not cite, and so on down. Keeps a stale path (after
+ * a refetch, say) from pointing at nothing. A book whose citations did not come cannot be open.
  */
 export function validPath(books: readonly BibliographyBookDto[], path: BibliographyPath): BibliographyPath {
-  const book = books.find((b) => b.bookId === path.bookId);
+  if (path.era == null) return {};
+  const inEra = books.filter((b) => eraOf(b) === path.era);
+  if (inEra.length === 0) return {};
+  const valid: BibliographyPath = { era: path.era };
+
+  if (path.author != null) {
+    if (!inEra.some((b) => authorOf(b) === path.author)) return valid;
+    valid.author = path.author;
+  }
+
+  const book = inEra.find((b) => b.bookId === path.bookId && authorOf(b) === valid.author);
   const citations = book?.citations;
-  if (!book || !citations) return {};
-  const valid: BibliographyPath = { bookId: book.bookId };
+  if (!book || !citations) return valid;
+  valid.bookId = book.bookId;
 
   if (path.chapter == null || !citations.some((c) => c.chapterNumber === path.chapter)) return valid;
   valid.chapter = path.chapter;
@@ -137,159 +172,213 @@ export function validPath(books: readonly BibliographyBookDto[], path: Bibliogra
   return valid;
 }
 
-/** The circles and lines for the open branch. Give it a path from `validPath`. */
-export function visibleGraph(
-  books: readonly BibliographyBookDto[],
+/** What an open book shows: the chapters that cite it, and under the open one its rukus, and so on. */
+function chapterNodes(
+  selected: BibliographyBookDto,
   path: BibliographyPath,
-  byVerse: Map<string, VerseCitation[]> = citationsByVerse(books),
-): MapGraph {
-  const nodes: MapNode[] = [];
-  const links: MapLink[] = [];
-  const selected = books.find((b) => b.bookId === path.bookId);
+  byVerse: Map<string, VerseCitation[]>,
+): MapNode[] {
+  const citations = selected.citations ?? [];
 
-  for (const book of books) {
-    nodes.push({
-      id: `book:${book.bookId}`,
-      kind: "book",
-      book,
-      radius: bookRadius(book.citationCount),
-      inner: String(book.citationCount),
-      label: book.title,
-      arabic: true,
-      name: `${book.title}, ${countLabel(book.citationCount)}`,
-      dimmed: selected != null && book !== selected,
-      open: book === selected,
+  return countBy(citations, (c) => c.chapterNumber).map(([chapter, count]): MapNode => {
+    const open = chapter === path.chapter;
+    const inChapter = citations.filter((c) => c.chapterNumber === chapter);
+
+    const rukus = countBy(inChapter, (c) => c.rukuId).map(([rukuId, rukuCount]): MapNode => {
+      const rukuOpen = rukuId === path.rukuId;
+      const rank = RUKU_BY_ID.get(rukuId)?.rankInChapter ?? rukuId;
+      const inRuku = inChapter.filter((c) => c.rukuId === rukuId);
+
+      const verses = countBy(inRuku, (c) => c.verseNumber).map(([verse, verseCount]): MapNode => {
+        const verseOpen = verse === path.verse;
+        const onVerse = byVerse.get(verseKey(chapter, verse)) ?? [];
+        // The open book's own citations first, so they lead the group.
+        const ordered = [...onVerse.filter((c) => c.book === selected), ...onVerse.filter((c) => c.book !== selected)];
+
+        return {
+          id: `verse:${verseKey(chapter, verse)}`,
+          kind: "verse",
+          chapter,
+          verse,
+          label: `Ayah ${verse}`,
+          detail: countLabel(verseCount),
+          arabic: false,
+          name: `Ayah ${verse}, ${countLabel(verseCount)}`,
+          dimmed: path.verse != null && !verseOpen,
+          open: verseOpen,
+          children: !verseOpen ? [] : ordered.map(({ book, citation, index }): MapNode => {
+            const own = book === selected;
+            const reference = citation.reference?.trim();
+            return {
+              id: `citation:${book.bookId}:${index}`,
+              kind: "citation",
+              book,
+              citation,
+              // Another book's citation is named by its book, since the reference alone would not say whose it is.
+              label: shorten(own ? reference || book.title : book.title),
+              detail: "",
+              arabic: true,
+              name: reference ? `${book.title}, ${reference}` : book.title,
+              dimmed: !own,
+              open: false,
+              children: [],
+            };
+          }),
+        };
+      });
+
+      return {
+        id: `ruku:${rukuId}`,
+        kind: "ruku",
+        rukuId,
+        label: `Ruku ${rank}`,
+        detail: countLabel(rukuCount),
+        arabic: false,
+        name: `Ruku ${rank}, ${countLabel(rukuCount)}`,
+        dimmed: path.rukuId != null && !rukuOpen,
+        open: rukuOpen,
+        children: rukuOpen ? verses : [],
+      };
     });
-  }
 
-  const citations = selected?.citations;
-  if (!selected || !citations) return { nodes, links };
-  const bookId = `book:${selected.bookId}`;
-
-  for (const [chapter, count] of countBy(citations, (c) => c.chapterNumber)) {
-    const id = `chapter:${chapter}`;
-    nodes.push({
-      id,
+    return {
+      id: `chapter:${chapter}`,
       kind: "chapter",
       chapter,
-      radius: CHILD_RADIUS.chapter,
-      inner: String(chapter),
       label: chapterName(chapter),
+      detail: countLabel(count),
       arabic: false,
       name: `${chapterName(chapter)}, ${countLabel(count)}`,
       // Once one is open its siblings step back, so the branch reads clearly over them.
-      dimmed: path.chapter != null && chapter !== path.chapter,
-      open: chapter === path.chapter,
-      parentId: bookId,
-    });
-    links.push({ source: bookId, target: id, dimmed: path.chapter != null && chapter !== path.chapter });
-  }
+      dimmed: path.chapter != null && !open,
+      open,
+      children: open ? rukus : [],
+    };
+  });
+}
 
-  if (path.chapter == null) return { nodes, links };
-  const chapterId = `chapter:${path.chapter}`;
-  const inChapter = citations.filter((c) => c.chapterNumber === path.chapter);
-
-  for (const [rukuId, count] of countBy(inChapter, (c) => c.rukuId)) {
-    const id = `ruku:${rukuId}`;
-    const rank = RUKU_BY_ID.get(rukuId)?.rankInChapter ?? rukuId;
-    nodes.push({
-      id,
-      kind: "ruku",
-      rukuId,
-      radius: CHILD_RADIUS.ruku,
-      inner: String(rank),
-      label: `Ruku ${rank}`,
-      arabic: false,
-      name: `Ruku ${rank}, ${countLabel(count)}`,
-      dimmed: path.rukuId != null && rukuId !== path.rukuId,
-      open: rukuId === path.rukuId,
-      parentId: chapterId,
-    });
-    links.push({ source: chapterId, target: id, dimmed: path.rukuId != null && rukuId !== path.rukuId });
-  }
-
-  if (path.rukuId == null) return { nodes, links };
-  const rukuNodeId = `ruku:${path.rukuId}`;
-  const inRuku = inChapter.filter((c) => c.rukuId === path.rukuId);
-
-  for (const [verse, count] of countBy(inRuku, (c) => c.verseNumber)) {
-    const id = `verse:${verseKey(path.chapter, verse)}`;
-    nodes.push({
-      id,
-      kind: "verse",
-      chapter: path.chapter,
-      verse,
-      radius: CHILD_RADIUS.verse,
-      inner: String(verse),
-      label: `Ayah ${verse}`,
-      arabic: false,
-      name: `Ayah ${verse}, ${countLabel(count)}`,
-      dimmed: path.verse != null && verse !== path.verse,
-      open: verse === path.verse,
-      parentId: rukuNodeId,
-    });
-    links.push({ source: rukuNodeId, target: id, dimmed: path.verse != null && verse !== path.verse });
-  }
-
-  if (path.verse == null) return { nodes, links };
-  const verseNodeId = `verse:${verseKey(path.chapter, path.verse)}`;
-  const onVerse = byVerse.get(verseKey(path.chapter, path.verse)) ?? [];
-  // The open book's own citations first, so they lead the list of choices.
-  const ordered = [...onVerse.filter((c) => c.book === selected), ...onVerse.filter((c) => c.book !== selected)];
-
-  for (const { book, citation, index } of ordered) {
-    const own = book === selected;
-    const id = `citation:${book.bookId}:${index}`;
-    const reference = citation.reference?.trim();
-    nodes.push({
-      id,
-      kind: "citation",
+/**
+ * The eras, and under the open one its branch. Give it a path from `validPath`. An era with no
+ * books still shows, so the four spans are always there; the undated one only when a book needs it.
+ */
+export function visibleTree(
+  books: readonly BibliographyBookDto[],
+  path: BibliographyPath,
+  byVerse: Map<string, VerseCitation[]> = citationsByVerse(books),
+): MapNode[] {
+  const bookNode = (book: BibliographyBookDto, era: EraId, anyOpen: boolean): MapNode => {
+    const open = book.bookId === path.bookId;
+    return {
+      id: `book:${book.bookId}`,
+      kind: "book",
+      era,
       book,
-      citation,
-      radius: CHILD_RADIUS.citation,
-      inner: "",
-      // Another book's citation is named by its book, since the reference alone would not say whose it is.
-      label: shorten(own ? reference || book.title : book.title),
+      mahdavi: book.kind === "mahdavi",
+      label: book.title,
+      detail: countLabel(book.citationCount),
       arabic: true,
-      name: reference ? `${book.title}, ${reference}` : book.title,
-      dimmed: !own,
-      open: false,
-      parentId: verseNodeId,
+      name: `${book.title}, ${countLabel(book.citationCount)}`,
+      dimmed: anyOpen && !open,
+      open,
+      children: open ? chapterNodes(book, path, byVerse) : [],
+    };
+  };
+
+  /** An era's authors, and the books with no author among them, oldest first. */
+  const authorLevel = (era: EraId, inEra: BibliographyBookDto[]): MapNode[] => {
+    const groups = new Map<string, BibliographyBookDto[]>();
+    const entries: { died: number; name: string; books: BibliographyBookDto[]; author?: string }[] = [];
+    for (const book of inEra) {
+      const author = authorOf(book);
+      const died = book.authorDeathYearHijri ?? Infinity;
+      if (author == null) {
+        entries.push({ died, name: book.title, books: [book] });
+      } else if (groups.has(author)) {
+        groups.get(author)!.push(book);
+      } else {
+        const list = [book];
+        groups.set(author, list);
+        entries.push({ died, name: author, books: list, author });
+      }
+    }
+    entries.sort((a, b) => a.died - b.died || a.name.localeCompare(b.name, "ar"));
+
+    // Either an author or an authorless book is open at this level, never both.
+    const anyOpen = path.author != null || path.bookId != null;
+    return entries.map(({ died, books: theirs, author }): MapNode => {
+      if (author == null) return bookNode(theirs[0], era, anyOpen);
+      const open = author === path.author;
+      return {
+        id: `author:${era}:${author}`,
+        kind: "author",
+        era,
+        author,
+        label: author,
+        detail: Number.isFinite(died) ? year(died) : "",
+        arabic: true,
+        name: `${author}, ${booksLabel(theirs.length)}`,
+        dimmed: anyOpen && !open,
+        open,
+        children: open ? theirs.map((book) => bookNode(book, era, path.bookId != null)) : [],
+      };
     });
-    links.push({ source: verseNodeId, target: id, dimmed: !own });
+  };
+
+  const byEra = new Map<EraId, BibliographyBookDto[]>();
+  for (const book of books) {
+    const era = eraOf(book);
+    const list = byEra.get(era);
+    if (list) list.push(book);
+    else byEra.set(era, [book]);
   }
 
-  return { nodes, links };
+  const shown = byEra.has("undated") ? [...ERAS, UNDATED] : ERAS;
+  return shown.map(({ id, label, years }): MapNode => {
+    const inEra = byEra.get(id) ?? [];
+    const open = id === path.era;
+    // Under the name: the era's years, then how many books it holds.
+    const facts = [years, booksLabel(inEra.length)].filter(Boolean);
+    return {
+      id: `era:${id}`,
+      kind: "era",
+      era: id,
+      label,
+      detail: facts.join(" · "),
+      arabic: false,
+      name: [label, ...facts].join(", "),
+      dimmed: path.era != null && !open,
+      open,
+      children: open ? authorLevel(id, inEra) : [],
+    };
+  });
 }
 
-/** The circles the reader can choose from next: the children of the deepest open circle, or the books. */
-export function currentChoices(graph: MapGraph, path: BibliographyPath): MapNode[] {
-  const kind: MapNodeKind =
-    path.verse != null ? "citation"
-    : path.rukuId != null ? "verse"
-    : path.chapter != null ? "ruku"
-    : path.bookId != null ? "chapter"
-    : "book";
-  return graph.nodes.filter((n) => n.kind === kind);
-}
-
-/** The path after the reader picks a circle: opens it, or closes it when it was already open. */
+/** The path after the reader picks a shape: opens it, or closes it when it was already open. */
 export function pathAfterSelecting(path: BibliographyPath, node: MapNode): BibliographyPath {
   switch (node.kind) {
-    case "book":
-      return path.bookId === node.book.bookId ? {} : { bookId: node.book.bookId };
-    case "chapter":
-      return path.chapter === node.chapter
-        ? { bookId: path.bookId }
-        : { bookId: path.bookId, chapter: node.chapter };
-    case "ruku":
-      return path.rukuId === node.rukuId
-        ? { bookId: path.bookId, chapter: path.chapter }
-        : { bookId: path.bookId, chapter: path.chapter, rukuId: node.rukuId };
-    case "verse":
-      return path.verse === node.verse
-        ? { bookId: path.bookId, chapter: path.chapter, rukuId: path.rukuId }
-        : { ...path, verse: node.verse };
+    case "era":
+      return path.era === node.era ? {} : { era: node.era };
+    case "author":
+      return path.era === node.era && path.author === node.author
+        ? { era: node.era }
+        : { era: node.era, author: node.author };
+    case "book": {
+      const author = authorOf(node.book);
+      const above: BibliographyPath = author == null ? { era: node.era } : { era: node.era, author };
+      return path.bookId === node.book.bookId ? above : { ...above, bookId: node.book.bookId };
+    }
+    case "chapter": {
+      const { chapter: _chapter, rukuId: _rukuId, verse: _verse, ...book } = path;
+      return path.chapter === node.chapter ? book : { ...book, chapter: node.chapter };
+    }
+    case "ruku": {
+      const { rukuId: _rukuId, verse: _verse, ...chapter } = path;
+      return path.rukuId === node.rukuId ? chapter : { ...chapter, rukuId: node.rukuId };
+    }
+    case "verse": {
+      const { verse: _verse, ...ruku } = path;
+      return path.verse === node.verse ? ruku : { ...ruku, verse: node.verse };
+    }
     case "citation":
       return path;
   }
@@ -303,27 +392,31 @@ export interface Crumb {
   path: BibliographyPath;
 }
 
-/** The open branch as a trail back to the books. `home` is the first crumb's label. */
+/** The open branch as a trail back to the eras. `home` is the first crumb's label. */
 export function crumbs(books: readonly BibliographyBookDto[], path: BibliographyPath, home: string): Crumb[] {
   const trail: Crumb[] = [{ label: home, arabic: false, path: {} }];
+  if (path.era == null) return trail;
+  let here: BibliographyPath = { era: path.era };
+  trail.push({ label: eraLabel(path.era), arabic: false, path: here });
+
+  if (path.author != null) {
+    here = { ...here, author: path.author };
+    trail.push({ label: path.author, arabic: true, path: here });
+  }
+
   const book = books.find((b) => b.bookId === path.bookId);
   if (!book) return trail;
-  trail.push({ label: book.title, arabic: true, path: { bookId: book.bookId } });
+  here = { ...here, bookId: book.bookId };
+  trail.push({ label: book.title, arabic: true, path: here });
 
   if (path.chapter == null) return trail;
-  trail.push({
-    label: chapterName(path.chapter),
-    arabic: false,
-    path: { bookId: book.bookId, chapter: path.chapter },
-  });
+  here = { ...here, chapter: path.chapter };
+  trail.push({ label: chapterName(path.chapter), arabic: false, path: here });
 
   if (path.rukuId == null) return trail;
   const rank = RUKU_BY_ID.get(path.rukuId)?.rankInChapter ?? path.rukuId;
-  trail.push({
-    label: `Ruku ${rank}`,
-    arabic: false,
-    path: { bookId: book.bookId, chapter: path.chapter, rukuId: path.rukuId },
-  });
+  here = { ...here, rukuId: path.rukuId };
+  trail.push({ label: `Ruku ${rank}`, arabic: false, path: here });
 
   if (path.verse == null) return trail;
   trail.push({ label: `Ayah ${path.verse}`, arabic: false, path });

@@ -1,0 +1,236 @@
+/* The box the reader looks through: it takes the wheel, pinch and drag itself. */
+.viewport {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+/* The map itself, moved and scaled as a whole from its top left corner. */
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  /* No `will-change: transform` here: it makes the browser draw the map once at natural size and
+     stretch that picture, so text blurs when the reader zooms in. Without it the text is drawn
+     again, sharp, at each zoom. */
+}
+
+.braces {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  /* The layer has no width of its own, so a percentage cap would leave nothing to draw in. */
+  max-width: none;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.brace {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: appear var(--duration-slow) var(--ease-out) both;
+}
+
+/* One shape. In the map it is placed by its transform; in the measuring box it lies as it falls. */
+.node {
+  display: flex;
+  /* The mark leads on the right, the side the map is read from. */
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-width: 17rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--tint-ink-12);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  text-align: center;
+  line-height: var(--leading-snug);
+}
+
+.layer .node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  cursor: pointer;
+  transition:
+    transform var(--duration-slow) var(--ease-out),
+    opacity var(--duration-normal) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+  animation: appear var(--duration-slow) var(--ease-out) both;
+}
+
+.layer .node:hover {
+  background: var(--tint-teal-8);
+  border-color: var(--tint-teal-20);
+}
+
+.layer .node:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
+.node[data-kind="era"] .text {
+  flex: 1;
+}
+
+.icon {
+  flex: none;
+  color: var(--gold-label);
+}
+
+/* A ruku's mark: the ain the mushaf prints at its end. */
+.ain {
+  flex: none;
+  font-family: var(--font-naskh);
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--gold-label);
+}
+
+.label {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.label[lang="ar"] {
+  font-family: var(--font-naskh);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.detail {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.detail[lang="ar"] {
+  font-family: var(--font-naskh);
+  font-size: var(--text-sm);
+}
+
+/* The eras head the map. */
+.node[data-kind="era"] {
+  /* The eras share one width, so their marks line up at the right and the text sits in the rest. */
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  border-color: var(--gold);
+  border-radius: var(--radius-lg);
+}
+
+.node[data-kind="era"] .label {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--teal-primary);
+  white-space: nowrap;
+}
+
+/* A book is a card with a spine on its leading edge; a Mahdavi book's spine is gold. */
+.node[data-kind="book"] {
+  border-right: 4px solid var(--tint-teal-20);
+  border-radius: var(--radius-sm);
+}
+
+.node[data-kind="book"][data-mahdavi] {
+  border-right-color: var(--gold);
+}
+
+.node[data-kind="chapter"],
+.node[data-kind="ruku"],
+.node[data-kind="verse"] {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.node[data-kind="citation"] {
+  padding: var(--space-1) var(--space-3);
+  background: var(--gold-wash);
+  border-color: transparent;
+  border-radius: var(--radius-sm);
+}
+
+/* The open branch stands out; the rest of its group steps back but stays in reach. */
+.node[data-open],
+.layer .node[data-open]:hover {
+  background: var(--fill-primary);
+  border-color: var(--fill-primary);
+  color: var(--text-on-dark);
+}
+
+.node[data-open] .label,
+.node[data-open] .detail {
+  color: var(--text-on-dark);
+}
+
+.node[data-open] .icon,
+.node[data-open] .ain {
+  color: var(--gold-bright);
+}
+
+.node[data-kind="book"][data-open] {
+  border-right-color: var(--gold);
+}
+
+.node[data-dimmed] {
+  opacity: 0.6;
+}
+
+.layer .node[data-dimmed]:hover,
+.layer .node[data-dimmed]:focus-visible {
+  opacity: 1;
+}
+
+.measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Wide enough that no shape is squeezed by the screen while it is sized. */
+  width: 200rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer .node,
+  .brace {
+    transition: none;
+    animation: none;
+  }
+}

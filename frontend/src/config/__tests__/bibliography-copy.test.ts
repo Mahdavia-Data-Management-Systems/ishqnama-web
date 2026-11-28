@@ -16,7 +16,8 @@ describe("bibliography copy", () => {
   });
 
   it("is written in sentence case", () => {
-    const properNouns = ["Noor", "Imaan"];
+    // The eras are names, so each of their words is capitalised.
+    const properNouns = ["Noor", "Imaan", "Works", "Classical", "Mahdavia", "PreMahdavia"];
     for (const s of allStrings) {
       expect(s[0], s).toBe(s[0].toUpperCase());
       expect(s, s).not.toBe(s.toUpperCase());

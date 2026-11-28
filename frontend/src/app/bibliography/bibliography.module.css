@@ -26,8 +26,6 @@
 .map {
   position: absolute;
   inset: 0;
-  /* The map pans and zooms itself; the browser must not also scroll or zoom the page. */
-  touch-action: none;
 }
 
 .panel {
@@ -90,59 +88,9 @@
   font-weight: 600;
 }
 
-.crumbButton[lang="ar"],
-.choice[lang="ar"] {
+.crumbButton[lang="ar"] {
   font-family: var(--font-naskh);
   font-size: var(--text-base);
-}
-
-/* The list of choices: clipped away until focus is inside it, then part of the panel. */
-.choices:not(:focus-within) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
-
-.choices:focus-within {
-  margin-top: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--tint-ink-12);
-}
-
-.choicesHeading {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text-tertiary);
-}
-
-.choiceList {
-  max-height: 40dvh;
-  margin-top: var(--space-2);
-  padding: 0;
-  overflow-y: auto;
-  list-style: none;
-}
-
-.choice {
-  display: block;
-  width: 100%;
-  padding: var(--space-1) var(--space-2);
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  text-align: start;
-  cursor: pointer;
-}
-
-.choice:hover,
-.choice:focus-visible {
-  background: var(--tint-teal-8);
 }
 
 .fitButton {

@@ -17,10 +17,9 @@ import { useApiReadiness } from "@/lib/api-readiness";
 import {
   citationsByVerse,
   crumbs,
-  currentChoices,
   pathAfterSelecting,
   validPath,
-  visibleGraph,
+  visibleTree,
   type BibliographyPath,
   type MapNode,
 } from "@/lib/bibliography-graph";
@@ -31,11 +30,11 @@ import styles from "./bibliography.module.css";
 type CitationNode = Extract<MapNode, { kind: "citation" }>;
 
 /**
- * Every book the takhreej cites, as a map that fills the screen: a circle per book, sized by
- * how often it is cited, opening into the chapters, rukus, ayaat and citations that use it.
- * The books are open to everyone; opening one needs an account, since takhreej is part of the
- * tafseer. The trail and the list of choices drive the same selection as the canvas, for
- * keyboards and screen readers.
+ * Every book the takhreej cites, as a brace map that fills the screen: the eras the authors
+ * died in, an era's authors, an author's books, then the chapters, rukus, ayaat and citations
+ * that use a book. Eras, authors and books are open to everyone; opening a book needs an
+ * account, since takhreej is part of the tafseer. The trail shows where the reader is and steps
+ * back up the branch.
  */
 export default function BibliographyPage() {
   const isAuthenticated = useIsAuthenticated();
@@ -51,8 +50,8 @@ export default function BibliographyPage() {
 
   const byVerse = useMemo(() => (books ? citationsByVerse(books) : null), [books]);
   const path = useMemo(() => (books ? validPath(books, chosenPath) : {}), [books, chosenPath]);
-  const graph = useMemo(
-    () => (books && byVerse ? visibleGraph(books, path, byVerse) : null),
+  const tree = useMemo(
+    () => (books && byVerse ? visibleTree(books, path, byVerse) : null),
     [books, byVerse, path],
   );
 
@@ -65,14 +64,15 @@ export default function BibliographyPage() {
       }
       const open = () => setChosenPath((current) => pathAfterSelecting(current, node));
       // The books are for everyone; what a book opens into is takhreej, for signed-in readers.
-      if (node.kind === "book") gate(open);
+      // Closing an open book needs no account.
+      if (node.kind === "book" && !node.open) gate(open);
       else open();
     },
     [gate, pathname],
   );
   const closeSheet = useCallback(() => setOpened(null), []);
 
-  if (!books || !graph) {
+  if (!books || !tree) {
     // While warming or unreachable the hook retries on its own once the API is ready
     const waiting = readiness === "warming" || readiness === "unreachable" || !failed;
     const message =
@@ -96,13 +96,12 @@ export default function BibliographyPage() {
     );
   }
 
-  const trail = crumbs(books, path, BIBLIOGRAPHY_COPY.allBooks);
-  const choices = currentChoices(graph, path);
+  const trail = crumbs(books, path, BIBLIOGRAPHY_COPY.allEras);
   const atHome = trail.length === 1;
 
   return (
     <main className={styles.main}>
-      <BibliographyMap ref={mapRef} graph={graph} onSelect={select} className={styles.map} />
+      <BibliographyMap ref={mapRef} tree={tree} onSelect={select} className={styles.map} />
 
       <div className={styles.panel}>
         <h1 className={styles.title}>{BIBLIOGRAPHY_COPY.title}</h1>
@@ -132,25 +131,6 @@ export default function BibliographyPage() {
             </ol>
           </nav>
         )}
-
-        {/* Out of sight until a keyboard reaches it; screen readers always have it. */}
-        <div className={styles.choices}>
-          <h2 className={styles.choicesHeading}>{BIBLIOGRAPHY_COPY.choices}</h2>
-          <ul className={styles.choiceList}>
-            {choices.map((node) => (
-              <li key={node.id}>
-                <button
-                  type="button"
-                  className={styles.choice}
-                  lang={node.arabic ? "ar" : undefined}
-                  onClick={() => select(node)}
-                >
-                  {node.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
       <button type="button" className={styles.fitButton} onClick={() => mapRef.current?.fit()}>
